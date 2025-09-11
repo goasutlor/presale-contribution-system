@@ -40,10 +40,10 @@ try {
 // PostgreSQL connection
 const pgPool = new Pool({
   connectionString: postgresUrl,
-  ssl: process.env.RAILWAY_ENVIRONMENT === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: false, // Railway internal network doesn't need SSL
   max: 1,
-  idleTimeoutMillis: 5000,
-  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 30000,
 });
 
 // Test connection first

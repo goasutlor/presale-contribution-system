@@ -35,7 +35,7 @@ RUN echo 'export NODE_ENV=${NODE_ENV:-production}' >> /app/start.sh
 RUN echo 'if [ "$DATABASE_URL" ]; then' >> /app/start.sh
 RUN echo '  echo "🐘 Using PostgreSQL database"' >> /app/start.sh
 RUN echo '  echo "🔄 Testing PostgreSQL connection..."' >> /app/start.sh
-RUN echo '  node test-postgres-connection.js' >> /app/start.sh
+RUN echo '  node simple-postgres-test.js' >> /app/start.sh
 RUN echo '  if [ $? -ne 0 ]; then' >> /app/start.sh
 RUN echo '    echo "❌ PostgreSQL connection test failed"' >> /app/start.sh
 RUN echo '    exit 1' >> /app/start.sh

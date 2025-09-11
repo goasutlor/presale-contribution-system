@@ -6,10 +6,10 @@ export function getDatabase(): Pool {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.RAILWAY_ENVIRONMENT === 'production' ? { rejectUnauthorized: false } : false,
+      ssl: false, // Railway internal network doesn't need SSL
       max: 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 10000,
     });
   }
   return pool;

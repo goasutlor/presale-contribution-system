@@ -34,10 +34,10 @@ async function testPostgreSQLConnection() {
   // Test connection
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.RAILWAY_ENVIRONMENT === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: false, // Railway internal network doesn't need SSL
     max: 1,
-    idleTimeoutMillis: 5000,
-    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 30000,
   });
   
   try {
@@ -71,6 +71,28 @@ async function testPostgreSQLConnection() {
     console.error('Error Message:', error.message);
     console.error('Error Detail:', error.detail);
     console.error('Error Hint:', error.hint);
+    console.error('Full Error:', error);
+    
+    // Try with different SSL settings
+    console.log('🔄 Retrying with different SSL settings...');
+    try {
+      const retryPool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+        max: 1,
+        idleTimeoutMillis: 10000,
+        connectionTimeoutMillis: 30000,
+      });
+      
+      const retryClient = await retryPool.connect();
+      console.log('✅ Retry successful with SSL!');
+      retryClient.release();
+      await retryPool.end();
+      return;
+    } catch (retryError) {
+      console.error('❌ Retry also failed:', retryError.message);
+    }
+    
     process.exit(1);
   } finally {
     await pool.end();
