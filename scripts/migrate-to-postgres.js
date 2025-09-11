@@ -33,7 +33,7 @@ async function createDefaultUsers() {
     const client = await pgPool.connect();
     
     // Create default admin user
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const adminPassword = await bcrypt.hash('admin123', 10);
     
     await client.query(`
@@ -221,7 +221,7 @@ async function migrate() {
       console.log('⚠️  SQLite database not found, skipping migration');
       console.log('📝 Creating admin user in PostgreSQL...');
       
-      const bcrypt = require('bcrypt');
+      const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash('password', 10);
       
       const client = await pgPool.connect();

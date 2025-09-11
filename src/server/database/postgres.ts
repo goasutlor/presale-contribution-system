@@ -86,7 +86,7 @@ async function createTables(): Promise<void> {
 
 async function createAdminUser(): Promise<void> {
   const db = getDatabase();
-  const bcrypt = require('bcrypt');
+  const bcrypt = require('bcryptjs');
   
   try {
     // Check if admin user exists

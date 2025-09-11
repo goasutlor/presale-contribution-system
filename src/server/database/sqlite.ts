@@ -88,7 +88,7 @@ export async function initializeDatabase(): Promise<void> {
 
 async function createAdminUser(): Promise<void> {
   const database = getDatabase();
-  const bcrypt = require('bcrypt');
+  const bcrypt = require('bcryptjs');
   
   return new Promise((resolve, reject) => {
     database.get('SELECT id FROM users WHERE email = ?', ['admin@presale.com'], async (err, row) => {

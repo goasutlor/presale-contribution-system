@@ -58,7 +58,7 @@ async function runMigration() {
     // Create default admin user
     const adminExists = await client.query('SELECT id FROM users WHERE email = $1', ['admin@company.com']);
     if (adminExists.rows.length === 0) {
-      const bcrypt = require('bcrypt');
+      const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash('admin123', 10);
       
       await client.query(`
