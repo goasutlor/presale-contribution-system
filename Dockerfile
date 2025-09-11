@@ -8,11 +8,8 @@ COPY package.json package-lock.json ./
 # Install server dependencies
 RUN npm install
 
-# Copy source code (excluding client for now)
+# Copy everything including client directory
 COPY . .
-
-# Copy client directory separately
-COPY client/ ./client/
 
 # Verify client files exist
 RUN ls -la client/
