@@ -20,16 +20,9 @@ if (!process.env.NODE_ENV && process.env.RAILWAY_ENVIRONMENT === 'production') {
   process.env.NODE_ENV = 'production';
 }
 
-// Force HTTPS in production (Railway handles this automatically)
-if (process.env.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
-    if (req.header('x-forwarded-proto') !== 'https') {
-      res.redirect(`https://${req.header('host')}${req.url}`);
-    } else {
-      next();
-    }
-  });
-}
+// Disable HTTPS redirect on Railway to avoid breaking healthchecks and internal HTTP
+// Railway terminates TLS at the edge and forwards HTTP internally
+// If needed, enforce HTTPS at the reverse proxy level instead
 
 // Security middleware
 app.use(helmet({
