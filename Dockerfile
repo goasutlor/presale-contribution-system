@@ -13,7 +13,6 @@ COPY . .
 
 # Install client dependencies
 WORKDIR /app/client
-COPY client/ ./
 RUN npm install
 
 # Go back to root directory
