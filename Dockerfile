@@ -15,7 +15,8 @@ COPY . .
 RUN ls -la client/
 RUN find client/ -name "*.html" -type f
 RUN find client/ -type d -name "public"
-RUN ls -la client/public/
+RUN find client/ -name "public" -type d
+RUN ls -la client/public/ || echo "client/public/ not found"
 
 # Install client dependencies
 WORKDIR /app/client
