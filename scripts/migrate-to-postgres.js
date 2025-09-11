@@ -25,19 +25,90 @@ const pgPool = new Pool({
 // SQLite connection
 const sqliteDb = new sqlite3.Database(sqlitePath);
 
+// Create default users function
+async function createDefaultUsers() {
+  console.log('👤 Creating default users in PostgreSQL...');
+  
+  try {
+    const client = await pgPool.connect();
+    
+    // Create default admin user
+    const bcrypt = require('bcrypt');
+    const adminPassword = await bcrypt.hash('admin123', 10);
+    
+    await client.query(`
+      INSERT INTO users (fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, status, canViewOthers, createdAt, updatedAt)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      ON CONFLICT (email) DO NOTHING
+    `, [
+      'Admin User',
+      'ADMIN001',
+      'admin@company.com',
+      adminPassword,
+      JSON.stringify(['G-Able Account']),
+      JSON.stringify(['Sales Team A']),
+      JSON.stringify(['sales@g-able.com']),
+      'admin',
+      'active',
+      true,
+      new Date(),
+      new Date()
+    ]);
+    
+    console.log('✅ Created default admin user (admin@company.com / admin123)');
+    
+    // Create default regular user
+    const userPassword = await bcrypt.hash('user123', 10);
+    
+    await client.query(`
+      INSERT INTO users (fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, status, canViewOthers, createdAt, updatedAt)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      ON CONFLICT (email) DO NOTHING
+    `, [
+      'Regular User',
+      'USER001',
+      'user@company.com',
+      userPassword,
+      JSON.stringify(['Client Account']),
+      JSON.stringify(['Sales Team B']),
+      JSON.stringify(['client@g-able.com']),
+      'user',
+      'active',
+      false,
+      new Date(),
+      new Date()
+    ]);
+    
+    console.log('✅ Created default regular user (user@company.com / user123)');
+    
+    client.release();
+  } catch (error) {
+    console.error('❌ Error creating default users:', error);
+    throw error;
+  }
+}
+
 async function migrateUsers() {
   console.log('👥 Migrating users...');
   
   return new Promise((resolve, reject) => {
+    // Check if SQLite file exists
+    if (!fs.existsSync(sqlitePath)) {
+      console.log('⚠️  SQLite database not found, creating default users in PostgreSQL');
+      createDefaultUsers().then(resolve).catch(reject);
+      return;
+    }
+    
     sqliteDb.all('SELECT * FROM users', async (err, rows) => {
       if (err) {
-        reject(err);
+        console.log('⚠️  Error reading SQLite database, creating default users in PostgreSQL');
+        createDefaultUsers().then(resolve).catch(reject);
         return;
       }
 
       if (rows.length === 0) {
-        console.log('⚠️  No users found in SQLite database');
-        resolve();
+        console.log('⚠️  No users found in SQLite database, creating default users');
+        createDefaultUsers().then(resolve).catch(reject);
         return;
       }
 
@@ -80,9 +151,17 @@ async function migrateContributions() {
   console.log('📊 Migrating contributions...');
   
   return new Promise((resolve, reject) => {
+    // Check if SQLite file exists
+    if (!fs.existsSync(sqlitePath)) {
+      console.log('⚠️  SQLite database not found, skipping contributions migration');
+      resolve();
+      return;
+    }
+    
     sqliteDb.all('SELECT * FROM contributions', async (err, rows) => {
       if (err) {
-        reject(err);
+        console.log('⚠️  Error reading SQLite contributions, skipping migration');
+        resolve();
         return;
       }
 
