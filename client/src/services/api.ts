@@ -282,7 +282,7 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  },
+  }
 
   // Health check
   async healthCheck(): Promise<ApiResponse<any>> {
