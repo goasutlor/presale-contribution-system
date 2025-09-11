@@ -9,6 +9,9 @@ console.log('Starting minimal server...');
 console.log('Port:', PORT);
 console.log('Environment:', process.env.NODE_ENV);
 
+// Serve static files from client build directory
+app.use(express.static(path.join(__dirname, 'client', 'build')));
+
 // Health check endpoint (for Railway)
 app.get('/health', (req, res) => {
   console.log('Health check received');
@@ -23,11 +26,8 @@ app.get('/health', (req, res) => {
 // Serve React app for all other routes
 app.get('*', (req, res) => {
   console.log('Serving React app for:', req.path);
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
-
-// Serve static files from build directory
-app.use(express.static(path.join(__dirname, 'build')));
 
 // Favicon handler
 app.get('/favicon.ico', (req, res) => {
@@ -47,7 +47,7 @@ app.get('/api/health', (req, res) => {
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Health check: http://0.0.0.0:${PORT}/`);
+  console.log(`Health check: http://0.0.0.0:${PORT}/health`);
 });
 
 // Error handling
