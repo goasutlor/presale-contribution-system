@@ -274,6 +274,14 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+
+  // Admin reset user password
+  async adminResetPassword(data: { userId: string; newPassword: string }): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/api/auth/admin-reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
   // Health check

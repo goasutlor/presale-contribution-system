@@ -409,6 +409,88 @@ router.get('/profile', authenticateToken, asyncHandler(async (req: Request, res:
   }
 }));
 
+// Admin reset user password (Admin only - no current password required)
+router.post('/admin-reset-password', [
+  requireAdmin,
+  body('userId').isLength({ min: 1 }).withMessage('User ID is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+], asyncHandler(async (req: Request, res: Response): Promise<any> => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed'
+      });
+    }
+
+    const { userId, newPassword } = req.body;
+    const adminUser = (req as any).user;
+    
+    if (!adminUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin user not found'
+      });
+    }
+
+    const db = getDatabase();
+
+    // Check if target user exists
+    db.get(
+      'SELECT id, email, fullName FROM users WHERE id = ?',
+      [userId],
+      async (err, userRow: any): Promise<any> => {
+        if (err) {
+          console.error('Database error during admin password reset:', err);
+          return res.status(500).json({
+            success: false,
+            message: 'Password reset failed'
+          });
+        }
+
+        if (!userRow) {
+          return res.status(404).json({
+            success: false,
+            message: 'User not found'
+          });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password
+        db.run(
+          'UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
+          [hashedPassword, userId],
+          (err) => {
+            if (err) {
+              console.error('Database error updating password:', err);
+              return res.status(500).json({
+                success: false,
+                message: 'Password update failed'
+              });
+            }
+
+            console.log(`Admin ${adminUser.email} reset password for user ${userRow.email}`);
+            
+            return res.json({
+              success: true,
+              message: `Password successfully reset for ${userRow.fullName} (${userRow.email})`
+            });
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.error('Admin password reset error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Password reset failed'
+    });
+  }
+}));
+
 // Change password
 router.post('/change-password', [
   body('currentPassword').isLength({ min: 1 }).withMessage('Current password is required'),

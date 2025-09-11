@@ -10,6 +10,7 @@ import {
   DocumentTextIcon,
   CheckCircleIcon,
   CogIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 
 interface AdminDashboardData {
@@ -48,6 +49,19 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserContribution | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showAdminResetModal, setShowAdminResetModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [resetPasswordData, setResetPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  });
   
   // Timeline (Time Series / Matrix) data for Admin (aggregated across users)
   interface AdminMonthlyData {
@@ -230,6 +244,44 @@ const AdminDashboard: React.FC = () => {
     } catch (error: any) {
       console.error('❌ Navigation error:', error);
       toast.error('Navigation failed: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  const handleAdminResetPassword = (userId: string) => {
+    setSelectedUserId(userId);
+    setResetPasswordData({ newPassword: '', confirmPassword: '' });
+    setShowAdminResetModal(true);
+  };
+
+  const handleAdminResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (resetPasswordData.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      const response = await apiService.adminResetPassword({
+        userId: selectedUserId,
+        newPassword: resetPasswordData.newPassword
+      });
+
+      if (response.success) {
+        toast.success('Password reset successfully');
+        setShowAdminResetModal(false);
+        setResetPasswordData({ newPassword: '', confirmPassword: '' });
+      } else {
+        toast.error(response.message || 'Failed to reset password');
+      }
+    } catch (error) {
+      console.error('Admin reset password error:', error);
+      toast.error('Failed to reset password');
     }
   };
 
@@ -527,6 +579,19 @@ const AdminDashboard: React.FC = () => {
             <CheckCircleIcon className="h-6 w-6 mr-2" />
             Review Submissions
           </button>
+          <button 
+            type="button"
+            onClick={(e) => {
+              console.log('🔍 Change Password button clicked!');
+              e.preventDefault();
+              e.stopPropagation();
+              setShowPasswordModal(true);
+            }}
+            className="flex items-center justify-center p-4 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 hover:border-primary-400 hover:text-primary-700 hover:bg-primary-50 transition-all duration-200 cursor-pointer"
+          >
+            <LockClosedIcon className="h-6 w-6 mr-2" />
+            Change Password
+          </button>
         </div>
       </div>
 
@@ -616,7 +681,13 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-between mt-6">
+              <button
+                onClick={() => handleAdminResetPassword(selectedUser.userId)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Reset Password
+              </button>
               <button
                 onClick={() => setShowUserDetails(false)}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -624,6 +695,66 @@ const AdminDashboard: React.FC = () => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Reset Password Modal */}
+      {showAdminResetModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reset User Password</h3>
+            <form onSubmit={handleAdminResetSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={resetPasswordData.newPassword}
+                    onChange={(e) => setResetPasswordData({
+                      ...resetPasswordData,
+                      newPassword: e.target.value
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Enter new password"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={resetPasswordData.confirmPassword}
+                    onChange={(e) => setResetPasswordData({
+                      ...resetPasswordData,
+                      confirmPassword: e.target.value
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Confirm new password"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowAdminResetModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                >
+                  Reset Password
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
