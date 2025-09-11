@@ -19,7 +19,16 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  // Avoid redirecting while auth is resolving so refresh keeps the current page
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -35,9 +44,7 @@ const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={
-          user?.role === 'admin' ? <AdminDashboard /> : <Dashboard />
-        } />
+        <Route path="dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Dashboard />} />
         <Route path="my-contributions" element={
           user?.role === 'admin' ? <AllContributions /> : <MyContributions />
         } />

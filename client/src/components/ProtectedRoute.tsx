@@ -18,6 +18,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     );
   }
 
+  // If not authenticated after loading, send to login, otherwise keep route
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
