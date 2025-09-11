@@ -56,17 +56,29 @@ app.use(compression());
 // Logging middleware
 app.use(morgan('combined'));
 
-// Static files (for production build)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../../client/build')));
-}
-
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/test', testRoutes);
+
+// Static files (for production build) - must be after API routes
+if (isProduction) {
+  const buildPath = path.join(__dirname, '../../client/build');
+  console.log('🔍 Static files path:', buildPath);
+  console.log('🔍 Build directory exists:', require('fs').existsSync(buildPath));
+  
+  app.use(express.static(buildPath, {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      } else if (path.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      }
+    }
+  }));
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
