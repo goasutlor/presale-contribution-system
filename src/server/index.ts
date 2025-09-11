@@ -118,13 +118,25 @@ if (isProduction) {
   }));
 }
 
-// Health check endpoint
+// Health check endpoints
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     app: 'Presale Contribution System'
+  });
+});
+
+// Root health check for Railway
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    message: 'Presale Contribution System API is running',
+    version: '1.0.0',
+    https: req.header('x-forwarded-proto') === 'https'
   });
 });
 
@@ -186,6 +198,8 @@ app.use(errorHandler);
 // Initialize database and start server
 async function startServer() {
   try {
+    console.log('🚀 Starting server initialization...');
+    
     await initializeDatabase();
     console.log('✅ Database initialized successfully');
     
@@ -194,16 +208,37 @@ async function startServer() {
       NODE_ENV: process.env.NODE_ENV,
       RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
       isProduction: process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production',
-      PORT: process.env.PORT
+      PORT: process.env.PORT,
+      DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set'
     });
     
     // Railway handles HTTPS automatically, just start HTTP server
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/`);
+      console.log(`🔗 API Health check: http://localhost:${PORT}/api/health`);
       console.log(`🔐 Railway will handle HTTPS automatically`);
     });
+
+    // Handle server errors
+    server.on('error', (error: any) => {
+      console.error('❌ Server error:', error);
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use`);
+      }
+      process.exit(1);
+    });
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('🛑 SIGTERM received, shutting down gracefully');
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
+    });
+
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
