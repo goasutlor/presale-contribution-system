@@ -265,7 +265,7 @@ async function initializeDatabaseAsync() {
   }
 }
 
-// Start database initialization in background (disabled for now)
-// initializeDatabaseAsync();
+// Start database initialization in background
+initializeDatabaseAsync();
 
 export default app;
