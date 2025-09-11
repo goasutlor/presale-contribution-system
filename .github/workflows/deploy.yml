@@ -18,15 +18,27 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: false
         
-    - name: Clear npm cache
+    - name: Clear npm cache and node_modules
       run: |
         npm cache clean --force
+        rm -rf node_modules
+        rm -rf client/node_modules
+        rm -f package-lock.json
+        rm -f client/package-lock.json
         
     - name: Install dependencies
       run: |
         npm install --legacy-peer-deps --force
         cd client && npm install --legacy-peer-deps --force
+        
+    - name: Verify TypeScript versions
+      run: |
+        echo "Root TypeScript version:"
+        npm list typescript
+        echo "Client TypeScript version:"
+        cd client && npm list typescript
         
     - name: Build application
       run: |
