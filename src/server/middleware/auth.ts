@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { getDatabase } from '../database/init';
+import { dbQueryOne } from '../database/init';
 import { User } from '../types';
 import { createError } from './errorHandler';
 
@@ -34,51 +34,42 @@ export const authenticateToken = async (
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     console.log('🔍 Token decoded:', { userId: decoded.userId });
     
-    const db = getDatabase();
+    const row: any = await dbQueryOne('SELECT * FROM users WHERE id = ?', [decoded.userId]);
+    if (!row) return next(createError('User not found', 401));
 
-    db.get(
-      'SELECT * FROM users WHERE id = ?',
-      [decoded.userId],
-      (err: any, row: any) => {
-        if (err) {
-          console.error('Database error during authentication:', err);
-          return next(createError('Authentication failed', 500));
-        }
+    console.log('🔍 Database User Row:', {
+      id: row.id,
+      email: row.email,
+      involvedAccountNames: row.involvedAccountNames,
+      involvedSaleNames: row.involvedSaleNames,
+      involvedSaleEmails: row.involvedSaleEmails
+    });
 
-        if (!row) {
-          return next(createError('User not found', 401));
-        }
+    const safeParse = (v: any) => {
+      if (Array.isArray(v)) return v;
+      if (typeof v === 'string' && v.trim().length > 0) { try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; } }
+      return [];
+    };
 
-        console.log('🔍 Database User Row:', {
-          id: row.id,
-          email: row.email,
-          involvedAccountNames: row.involvedAccountNames,
-          involvedSaleNames: row.involvedSaleNames,
-          involvedSaleEmails: row.involvedSaleEmails
-        });
+    const user: User = {
+      ...row,
+      involvedAccountNames: safeParse(row.involvedAccountNames),
+      involvedSaleNames: safeParse(row.involvedSaleNames),
+      involvedSaleEmails: safeParse(row.involvedSaleEmails),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt)
+    };
 
-        // Parse JSON fields
-        const user: User = {
-          ...row,
-          involvedAccountNames: JSON.parse(row.involvedAccountNames),
-          involvedSaleNames: JSON.parse(row.involvedSaleNames),
-          involvedSaleEmails: JSON.parse(row.involvedSaleEmails),
-          createdAt: new Date(row.createdAt),
-          updatedAt: new Date(row.updatedAt)
-        };
+    console.log('🔍 Parsed User Data:', {
+      id: user.id,
+      email: user.email,
+      involvedAccountNames: user.involvedAccountNames,
+      involvedSaleNames: user.involvedSaleNames,
+      involvedSaleEmails: user.involvedSaleEmails
+    });
 
-        console.log('🔍 Parsed User Data:', {
-          id: user.id,
-          email: user.email,
-          involvedAccountNames: user.involvedAccountNames,
-          involvedSaleNames: user.involvedSaleNames,
-          involvedSaleEmails: user.involvedSaleEmails
-        });
-
-        req.user = user;
-        next();
-      }
-    );
+    req.user = user;
+    next();
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === 'JsonWebTokenError') {
@@ -147,38 +138,13 @@ export const canViewUser = (targetUserId: string) => {
 
     // Check if user has permission to view others
     if (req.user.canViewOthers) {
-      const db = getDatabase();
-      
-      db.get(
-        'SELECT * FROM users WHERE id = ?',
-        [targetUserId],
-        (err: any, targetUser: any) => {
-          if (err) {
-            console.error('Database error checking user permissions:', err);
-            next(createError('Permission check failed', 500));
-            return;
-          }
+      const targetUser: any = await dbQueryOne('SELECT involvedAccountNames FROM users WHERE id = ?', [targetUserId]);
+      if (!targetUser) { next(createError('Target user not found', 404)); return; }
 
-          if (!targetUser) {
-            next(createError('Target user not found', 404));
-            return;
-          }
-
-          // Check if users share any accounts
-          const userAccounts = req.user!.involvedAccountNames;
-          const targetAccounts = JSON.parse(targetUser.involvedAccountNames);
-          
-          const hasSharedAccount = userAccounts.some((account: string) => 
-            targetAccounts.includes(account)
-          );
-
-          if (hasSharedAccount) {
-            next();
-          } else {
-            next(createError('Insufficient permissions to view this user', 403));
-          }
-        }
-      );
+      const userAccounts = req.user!.involvedAccountNames;
+      const targetAccounts = Array.isArray(targetUser.involvedAccountNames) ? targetUser.involvedAccountNames : (typeof targetUser.involvedAccountNames === 'string' ? JSON.parse(targetUser.involvedAccountNames) : []);
+      const hasSharedAccount = userAccounts.some((account: string) => targetAccounts.includes(account));
+      if (hasSharedAccount) next(); else next(createError('Insufficient permissions to view this user', 403));
     } else {
       next(createError('Insufficient permissions to view other users', 403));
     }

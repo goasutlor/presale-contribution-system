@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { body, validationResult } from 'express-validator';
-import { getDatabase } from '../database/init';
+import { dbQuery, dbQueryOne, dbExecute } from '../database/init';
 import { authenticateToken, requireUser, AuthRequest } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
@@ -11,6 +11,14 @@ const router = Router();
 
 // Apply authentication to all routes
 router.use(authenticateToken);
+
+const parseJsonArraySafe = (value: any): any[] => {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value.trim().length > 0) {
+    try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+  }
+  return [];
+};
 
 // Validation for creating contributions
 const createContributionValidation = [
@@ -46,7 +54,6 @@ const updateContributionValidation = [
 
 // Get all contributions for current user (or all for admin)
 router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
-  const db = getDatabase();
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
   
@@ -64,14 +71,9 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
   }
   
   query += ' ORDER BY c.createdAt DESC';
-  
-  db.all(query, params, (err: any, rows: any[]) => {
-    if (err) {
-      console.error('Database error fetching contributions:', err);
-      throw createError('Failed to fetch contributions', 500);
-    }
+  const rows = await dbQuery(query, params);
 
-    const contributions = rows.map(row => ({
+  const contributions = rows.map((row: any) => ({
       id: row.id,
       userId: row.userId,
       userName: row.userName,
@@ -89,17 +91,13 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
       saleApproval: Boolean(row.saleApproval),
       saleApprovalDate: row.saleApprovalDate,
       saleApprovalNotes: row.saleApprovalNotes,
-      attachments: row.attachments ? JSON.parse(row.attachments) : [],
-      tags: row.tags ? JSON.parse(row.tags) : [],
+      attachments: parseJsonArraySafe(row.attachments),
+      tags: parseJsonArraySafe(row.tags),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
     }));
 
-    res.json({
-      success: true,
-      data: contributions
-    });
-  });
+  res.json({ success: true, data: contributions });
 }));
 
 // Get all contributions (admin view)
@@ -108,20 +106,14 @@ router.get('/admin', requireUser, asyncHandler(async (req: AuthRequest, res: Res
     throw createError('Admin access required', 403);
   }
 
-  const db = getDatabase();
-  
-  db.all(`
+  const rows = await dbQuery(`
     SELECT c.*, u.fullName as userName 
     FROM contributions c 
     JOIN users u ON c.userId = u.id 
     ORDER BY c.createdAt DESC
-  `, (err: any, rows: any[]) => {
-    if (err) {
-      console.error('Database error fetching all contributions:', err);
-      throw createError('Failed to fetch contributions', 500);
-    }
+  `);
 
-    const contributions = rows.map(row => ({
+  const contributions = rows.map((row: any) => ({
       id: row.id,
       userId: row.userId,
       userName: row.userName,
@@ -139,74 +131,55 @@ router.get('/admin', requireUser, asyncHandler(async (req: AuthRequest, res: Res
       saleApproval: Boolean(row.saleApproval),
       saleApprovalDate: row.saleApprovalDate,
       saleApprovalNotes: row.saleApprovalNotes,
-      attachments: row.attachments ? JSON.parse(row.attachments) : [],
-      tags: row.tags ? JSON.parse(row.tags) : [],
+      attachments: parseJsonArraySafe(row.attachments),
+      tags: parseJsonArraySafe(row.tags),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
-    }));
+  }));
 
-    res.json({
-      success: true,
-      data: contributions
-    });
-  });
+  res.json({ success: true, data: contributions });
 }));
 
 // Get contribution by ID
 router.get('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const db = getDatabase();
   const userId = req.user!.id;
 
-  db.get(`
+  const row = await dbQueryOne(`
     SELECT c.*, u.fullName as userName 
     FROM contributions c 
     JOIN users u ON c.userId = u.id 
     WHERE c.id = ?
-  `, [id], (err: any, row: any) => {
-    if (err) {
-      console.error('Database error fetching contribution:', err);
-      throw createError('Failed to fetch contribution', 500);
-    }
+  `, [id]);
 
-    if (!row) {
-      throw createError('Contribution not found', 404);
-    }
+  if (!row) throw createError('Contribution not found', 404);
+  if (req.user!.role !== 'admin' && row.userId !== userId) throw createError('Access denied', 403);
 
-    // Check if user can view this contribution
-    if (req.user!.role !== 'admin' && row.userId !== userId) {
-      throw createError('Access denied', 403);
-    }
+  const contribution = {
+    id: row.id,
+    userId: row.userId,
+    userName: row.userName,
+    accountName: row.accountName,
+    saleName: row.saleName,
+    saleEmail: row.saleEmail,
+    contributionType: row.contributionType,
+    title: row.title,
+    description: row.description,
+    impact: row.impact,
+    effort: row.effort,
+    estimatedImpactValue: row.estimatedImpactValue || 0,
+    contributionMonth: row.contributionMonth,
+    status: row.status,
+    saleApproval: Boolean(row.saleApproval),
+    saleApprovalDate: row.saleApprovalDate,
+    saleApprovalNotes: row.saleApprovalNotes,
+    attachments: parseJsonArraySafe(row.attachments),
+    tags: parseJsonArraySafe(row.tags),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
 
-    const contribution = {
-      id: row.id,
-      userId: row.userId,
-      userName: row.userName,
-      accountName: row.accountName,
-      saleName: row.saleName,
-      saleEmail: row.saleEmail,
-      contributionType: row.contributionType,
-      title: row.title,
-      description: row.description,
-      impact: row.impact,
-      effort: row.effort,
-      estimatedImpactValue: row.estimatedImpactValue || 0,
-      contributionMonth: row.contributionMonth,
-      status: row.status,
-      saleApproval: Boolean(row.saleApproval),
-      saleApprovalDate: row.saleApprovalDate,
-      saleApprovalNotes: row.saleApprovalNotes,
-      attachments: row.attachments ? JSON.parse(row.attachments) : [],
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt
-    };
-
-    res.json({
-      success: true,
-      data: contribution
-    });
-  });
+  res.json({ success: true, data: contribution });
 }));
 
 // Create new contribution
@@ -226,7 +199,6 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   console.log('🔍 ContributionData after assignment:', contributionData);
   console.log('🔍 ContributionData.status:', contributionData.status);
   
-  const db = getDatabase();
   const userId = req.user!.id;
 
   // Validate contribution month format (YYYY-MM)
@@ -270,7 +242,7 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
     fullContributionData: contributionData
   });
   
-  db.run(`
+  await dbExecute(`
     INSERT INTO contributions (
       id, userId, accountName, saleName, saleEmail, contributionType, 
       title, description, impact, effort, estimatedImpactValue, contributionMonth, 
@@ -292,18 +264,9 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
     finalStatus,
     JSON.stringify(contributionData.tags),
     JSON.stringify([])
-  ], function(this: any, err: any) {
-    if (err) {
-      console.error('Database error creating contribution:', err);
-      throw createError('Failed to create contribution', 500);
-    }
+  ]);
 
-    res.status(201).json({
-      success: true,
-      message: 'Contribution created successfully',
-      data: { id: contributionId }
-    });
-  });
+  res.status(201).json({ success: true, message: 'Contribution created successfully', data: { id: contributionId } });
 }));
 
 // Update contribution
@@ -315,23 +278,12 @@ router.put('/:id', requireUser, updateContributionValidation, asyncHandler(async
 
   const { id } = req.params;
   const updateData: UpdateContributionRequest = req.body;
-  const db = getDatabase();
   const userId = req.user!.id;
 
   // Check if contribution exists and user can edit it
-  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err: any, row: any) => {
-    if (err) {
-      console.error('Database error checking contribution:', err);
-      throw createError('Failed to update contribution', 500);
-    }
-
-    if (!row) {
-      throw createError('Contribution not found', 404);
-    }
-
-    if (req.user!.role !== 'admin' && row.userId !== userId) {
-      throw createError('Access denied', 403);
-    }
+  const row = await dbQueryOne('SELECT * FROM contributions WHERE id = ?', [id]);
+  if (!row) throw createError('Contribution not found', 404);
+  if (req.user!.role !== 'admin' && row.userId !== userId) throw createError('Access denied', 403);
 
     // Validate contribution month format if being updated
     if (updateData.contributionMonth && !/^\d{4}-\d{2}$/.test(updateData.contributionMonth)) {
@@ -405,102 +357,36 @@ router.put('/:id', requireUser, updateContributionValidation, asyncHandler(async
     updateValues.push(id);
 
     const updateQuery = `UPDATE contributions SET ${updateFields.join(', ')} WHERE id = ?`;
-
-    db.run(updateQuery, updateValues, function(this: any, err: any) {
-      if (err) {
-        console.error('Database error updating contribution:', err);
-        throw createError('Failed to update contribution', 500);
-      }
-
-      res.json({
-        success: true,
-        message: 'Contribution updated successfully'
-      });
-    });
-  });
+    await dbExecute(updateQuery, updateValues);
+    res.json({ success: true, message: 'Contribution updated successfully' });
 }));
 
 // Delete contribution
 router.delete('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const db = getDatabase();
   const userId = req.user!.id;
 
   // Check if contribution exists and user can delete it
-  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err: any, row: any) => {
-    if (err) {
-      console.error('Database error checking contribution:', err);
-      throw createError('Failed to delete contribution', 500);
-    }
-
-    if (!row) {
-      throw createError('Contribution not found', 404);
-    }
-
-    if (req.user!.role !== 'admin' && row.userId !== userId) {
-      throw createError('Access denied', 403);
-    }
-
-    // Only allow deletion of draft contributions
-    if (row.status !== 'draft' && req.user!.role !== 'admin') {
-      throw createError('Only draft contributions can be deleted', 400);
-    }
-
-    db.run('DELETE FROM contributions WHERE id = ?', [id], function(this: any, err: any) {
-      if (err) {
-        console.error('Database error deleting contribution:', err);
-        throw createError('Failed to delete contribution', 500);
-      }
-
-      res.json({
-        success: true,
-        message: 'Contribution deleted successfully'
-      });
-    });
-  });
+  const row = await dbQueryOne('SELECT * FROM contributions WHERE id = ?', [id]);
+  if (!row) throw createError('Contribution not found', 404);
+  if (req.user!.role !== 'admin' && row.userId !== userId) throw createError('Access denied', 403);
+  if (row.status !== 'draft' && req.user!.role !== 'admin') throw createError('Only draft contributions can be deleted', 400);
+  await dbExecute('DELETE FROM contributions WHERE id = ?', [id]);
+  res.json({ success: true, message: 'Contribution deleted successfully' });
 }));
 
 // Submit contribution for approval
 router.post('/:id/submit', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const db = getDatabase();
   const userId = req.user!.id;
 
   // Check if contribution exists and user can submit it
-  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err: any, row: any) => {
-    if (err) {
-      console.error('Database error checking contribution:', err);
-      throw createError('Failed to submit contribution', 500);
-    }
-
-    if (!row) {
-      throw createError('Contribution not found', 404);
-    }
-
-    if (req.user!.role !== 'admin' && row.userId !== userId) {
-      throw createError('Access denied', 403);
-    }
-
-    if (row.status !== 'draft') {
-      throw createError('Only draft contributions can be submitted', 400);
-    }
-
-    db.run(
-      'UPDATE contributions SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-      ['submitted', id],
-      function(this: any, err: any) {
-        if (err) {
-          console.error('Database error submitting contribution:', err);
-          throw createError('Failed to submit contribution', 500);
-        }
-
-        res.json({
-          success: true,
-          message: 'Contribution submitted successfully'
-        });
-      }
-    );
-  });
+  const row = await dbQueryOne('SELECT * FROM contributions WHERE id = ?', [id]);
+  if (!row) throw createError('Contribution not found', 404);
+  if (req.user!.role !== 'admin' && row.userId !== userId) throw createError('Access denied', 403);
+  if (row.status !== 'draft') throw createError('Only draft contributions can be submitted', 400);
+  await dbExecute('UPDATE contributions SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?', ['submitted', id]);
+  res.json({ success: true, message: 'Contribution submitted successfully' });
 }));
 
 export { router as contributionRoutes };
