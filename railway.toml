@@ -11,9 +11,6 @@ restartPolicyMaxRetries = 10
 [env]
 NODE_ENV = "production"
 PORT = "5001"
-DB_PATH = "/app/data/presale_contributions.db"
 JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
 CORS_ORIGIN = "https://*.railway.app"
-
-[volume]
-mountPath = "/app/data"
+# DATABASE_URL will be provided by Railway PostgreSQL service
