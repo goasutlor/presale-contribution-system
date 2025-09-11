@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { body, validationResult } from 'express-validator';
-import { getDatabase } from '../database/init';
+import { dbQueryOne, dbExecute } from '../database/init';
 import { generateToken, authenticateToken, requireAdmin } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
@@ -71,96 +71,83 @@ router.post('/login', loginValidation, asyncHandler(async (req: Request, res: Re
 
     const { email, password } = req.body;
     console.log('📧 Looking for user with email:', email);
-    const db = getDatabase();
 
-    db.get(
-      'SELECT * FROM users WHERE email = ?',
-      [email],
-      async (err: any, user: any): Promise<any> => {
-        if (err) {
-          console.error('❌ Database error during login:', err);
-          return res.status(500).json({
-            success: false,
-            message: 'Login failed'
-          });
-        }
+    const user: any = await dbQueryOne('SELECT * FROM users WHERE email = ?', [email]);
 
-        console.log('👤 User found:', user ? { id: user.id, email: user.email, role: user.role } : 'No user found');
+    console.log('👤 User found:', user ? { id: user.id, email: user.email, role: user.role } : 'No user found');
 
-        if (!user) {
-          console.log('❌ No user found with email:', email);
-          return res.status(401).json({
-            success: false,
-            message: 'Invalid credentials'
-          });
-        }
+    if (!user) {
+      console.log('❌ No user found with email:', email);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
 
-        try {
-          console.log('🔐 Comparing password...');
-          const isValidPassword = await bcrypt.compare(password, user.password);
-          console.log('🔐 Password valid:', isValidPassword);
-          
-          if (!isValidPassword) {
-            console.log('❌ Invalid password for user:', email);
-            return res.status(401).json({
-              success: false,
-              message: 'Invalid credentials'
-            });
-          }
-
-          // Check account status
-          if (user.status === 'pending') {
-            console.log('❌ Account pending approval for user:', email);
-            return res.status(403).json({
-              success: false,
-              message: 'Account pending approval'
-            });
-          }
-
-          if (user.status === 'rejected') {
-            console.log('❌ Account rejected for user:', email);
-            return res.status(403).json({
-              success: false,
-              message: 'Account rejected'
-            });
-          }
-
-          // Generate JWT token
-          const token = generateToken(user.id);
-
-          // Parse JSON fields for response
-          const userResponse = {
-            id: user.id,
-            fullName: user.fullName,
-            staffId: user.staffId,
-            email: user.email,
-            involvedAccountNames: JSON.parse(user.involvedAccountNames),
-            involvedSaleNames: JSON.parse(user.involvedSaleNames),
-            involvedSaleEmails: JSON.parse(user.involvedSaleEmails),
-            role: user.role,
-            status: user.status || 'approved', // Default to approved for existing users
-            canViewOthers: Boolean(user.canViewOthers),
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-          };
-
-          res.json({
-            success: true,
-            message: 'Login successful',
-            data: {
-              token,
-              user: userResponse
-            }
-          });
-        } catch (error) {
-          console.error('Error during login:', error);
-          return res.status(500).json({
-            success: false,
-            message: 'Login failed'
-          });
-        }
+    try {
+      console.log('🔐 Comparing password...');
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      console.log('🔐 Password valid:', isValidPassword);
+      
+      if (!isValidPassword) {
+        console.log('❌ Invalid password for user:', email);
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid credentials'
+        });
       }
-    );
+
+      // Check account status
+      if (user.status === 'pending') {
+        console.log('❌ Account pending approval for user:', email);
+        return res.status(403).json({
+          success: false,
+          message: 'Account pending approval'
+        });
+      }
+
+      if (user.status === 'rejected') {
+        console.log('❌ Account rejected for user:', email);
+        return res.status(403).json({
+          success: false,
+          message: 'Account rejected'
+        });
+      }
+
+      // Generate JWT token
+      const token = generateToken(user.id);
+
+      // Parse JSON fields for response
+      const userResponse = {
+        id: user.id,
+        fullName: user.fullName,
+        staffId: user.staffId,
+        email: user.email,
+        involvedAccountNames: JSON.parse(user.involvedAccountNames),
+        involvedSaleNames: JSON.parse(user.involvedSaleNames),
+        involvedSaleEmails: JSON.parse(user.involvedSaleEmails),
+        role: user.role,
+        status: user.status || 'approved',
+        canViewOthers: Boolean(user.canViewOthers),
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+
+      res.json({
+        success: true,
+        message: 'Login successful',
+        data: {
+          token,
+          user: userResponse
+        }
+      });
+    } catch (error) {
+      console.error('Error during login:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Login failed'
+      });
+    }
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({
@@ -207,30 +194,21 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
     const cleanedAccountNames = involvedAccountNames.map((name: string) => cleanSpecialCharacters(name));
     const cleanedSaleNames = involvedSaleNames.map((name: string) => cleanSpecialCharacters(name));
 
-    const db = getDatabase();
-
     // Check if user already exists
-    db.get(
+    const existingUser: any = await dbQueryOne(
       'SELECT id FROM users WHERE email = ? OR staffId = ?',
-      [email, staffId],
-      async (err: any, existingUser: any): Promise<any> => {
-        if (err) {
-          console.error('❌ Database error during signup check:', err);
-          return res.status(500).json({
-            success: false,
-            message: 'Signup failed'
-          });
-        }
+      [email, staffId]
+    );
 
-        if (existingUser) {
-          console.log('❌ User already exists:', { email, staffId });
-          return res.status(400).json({
-            success: false,
-            message: 'User with this email or staff ID already exists'
-          });
-        }
+    if (existingUser) {
+      console.log('❌ User already exists:', { email, staffId });
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email or staff ID already exists'
+      });
+    }
 
-        try {
+    try {
           // Hash password
           const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -263,7 +241,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
             false
           ]);
 
-          db.run(
+          await dbExecute(
             insertQuery,
             [
               userId,
@@ -275,51 +253,29 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
               JSON.stringify(cleanedSaleNames),
               JSON.stringify(involvedSaleEmails),
               'user',
-              'pending', // Set status to pending for admin approval
+              'pending',
               false
-            ],
-            function(this: any, err: any): any {
-              if (err) {
-                console.error('❌ Database error during user creation:', err);
-                return res.status(500).json({
-                  success: false,
-                  message: 'User creation failed'
-                });
-              }
-
-              console.log('✅ User created successfully:', { 
-                id: userId, 
-                fullName: cleanedFullName, 
-                email, 
-                status: 'pending',
-                changes: this.changes
-              });
-
-              // Verify the user was actually inserted with the correct ID
-              db.get('SELECT id FROM users WHERE email = ?', [email], (err: any, insertedUser: any) => {
-                if (err) {
-                  console.error('❌ Error verifying user insertion:', err);
-                } else {
-                  console.log('🔍 Verification - inserted user ID:', insertedUser?.id);
-                  if (insertedUser?.id !== userId) {
-                    console.error('❌ CRITICAL: User ID mismatch! Expected:', userId, 'Got:', insertedUser?.id);
-                  }
-                }
-              });
-
-              return res.status(201).json({
-                success: true,
-                message: 'User registered successfully. Please wait for admin approval.',
-                data: {
-                  id: userId, // Use the generated UUID, not this.lastID
-                  fullName: cleanedFullName,
-                  staffId: cleanedStaffId,
-                  email,
-                  status: 'pending'
-                }
-              });
-            }
+            ]
           );
+
+          console.log('✅ User created successfully:', { 
+            id: userId, 
+            fullName: cleanedFullName, 
+            email, 
+            status: 'pending'
+          });
+
+          return res.status(201).json({
+            success: true,
+            message: 'User registered successfully. Please wait for admin approval.',
+            data: {
+              id: userId,
+              fullName: cleanedFullName,
+              staffId: cleanedStaffId,
+              email,
+              status: 'pending'
+            }
+          });
         } catch (error) {
           console.error('Error during signup:', error);
           return res.status(500).json({
@@ -328,7 +284,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
           });
         }
       }
-    );
+    
   } catch (error) {
     console.error('Signup error:', error);
     return res.status(500).json({
@@ -434,54 +390,34 @@ router.post('/admin-reset-password', [
       });
     }
 
-    const db = getDatabase();
-
     // Check if target user exists
-    db.get(
+    const userRow: any = await dbQueryOne(
       'SELECT id, email, fullName FROM users WHERE id = ?',
-      [userId],
-      async (err: any, userRow: any): Promise<any> => {
-        if (err) {
-          console.error('Database error during admin password reset:', err);
-          return res.status(500).json({
-            success: false,
-            message: 'Password reset failed'
-          });
-        }
-
-        if (!userRow) {
-          return res.status(404).json({
-            success: false,
-            message: 'User not found'
-          });
-        }
-
-        // Hash new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update password
-        db.run(
-          'UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-          [hashedPassword, userId],
-          (err: any) => {
-            if (err) {
-              console.error('Database error updating password:', err);
-              return res.status(500).json({
-                success: false,
-                message: 'Password update failed'
-              });
-            }
-
-            console.log(`Admin ${adminUser.email} reset password for user ${userRow.email}`);
-            
-            return res.json({
-              success: true,
-              message: `Password successfully reset for ${userRow.fullName} (${userRow.email})`
-            });
-          }
-        );
-      }
+      [userId]
     );
+
+    if (!userRow) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await dbExecute(
+      'UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
+      [hashedPassword, userId]
+    );
+
+    console.log(`Admin ${adminUser.email} reset password for user ${userRow.email}`);
+    
+    return res.json({
+      success: true,
+      message: `Password successfully reset for ${userRow.fullName} (${userRow.email})`
+    });
   } catch (error) {
     console.error('Admin password reset error:', error);
     return res.status(500).json({
@@ -515,68 +451,45 @@ router.post('/change-password', [
       });
     }
 
-    const db = getDatabase();
-
     // Verify current password
-    db.get(
-      'SELECT password FROM users WHERE id = ?',
-      [user.id],
-      async (err: any, row: any): Promise<any> => {
-        if (err) {
-          console.error('Database error during password change:', err);
-          return res.status(500).json({
-            success: false,
-            message: 'Password change failed'
-          });
-        }
+    const row: any = await dbQueryOne('SELECT password FROM users WHERE id = ?', [user.id]);
 
-        if (!row) {
-          return res.status(404).json({
-            success: false,
-            message: 'User not found'
-          });
-        }
+    if (!row) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
-        try {
-          const isValidPassword = await bcrypt.compare(currentPassword, row.password);
-          if (!isValidPassword) {
-            return res.status(400).json({
-              success: false,
-              message: 'Current password is incorrect'
-            });
-          }
-
-          // Hash new password
-          const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-          // Update password
-          db.run(
-            'UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-            [hashedPassword, user.id],
-            (err: any): any => {
-              if (err) {
-                console.error('Database error updating password:', err);
-                return res.status(500).json({
-                  success: false,
-                  message: 'Password update failed'
-                });
-              }
-
-              res.json({
-                success: true,
-                message: 'Password changed successfully'
-              });
-            }
-          );
-        } catch (error) {
-          console.error('Error during password change:', error);
-          return res.status(500).json({
-            success: false,
-            message: 'Password change failed'
-          });
-        }
+    try {
+      const isValidPassword = await bcrypt.compare(currentPassword, row.password);
+      if (!isValidPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is incorrect'
+        });
       }
-    );
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+      // Update password
+      await dbExecute(
+        'UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
+        [hashedPassword, user.id]
+      );
+
+      res.json({
+        success: true,
+        message: 'Password changed successfully'
+      });
+    } catch (error) {
+      console.error('Error during password change:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Password change failed'
+      });
+    }
   } catch (error) {
     console.error('Change password error:', error);
     return res.status(500).json({
