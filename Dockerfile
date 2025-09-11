@@ -2,30 +2,29 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy server package files and install dependencies
 COPY package.json package-lock.json ./
-
-# Install server dependencies
 RUN npm install
 
-# Copy everything including client directory
-COPY . .
+# Copy server source files explicitly
+COPY tsconfig.server.json ./
+COPY src/ ./src/
+COPY server.js ./
 
-# Verify client files exist
-RUN ls -la client/
-RUN find client/ -name "*.html" -type f
-RUN find client/ -type d -name "public"
-RUN find client/ -name "public" -type d
-RUN ls -la client/public/ || echo "client/public/ not found"
-
-# Install client dependencies
+# Prepare and install client dependencies
+COPY client/package.json client/package-lock.json ./client/
 WORKDIR /app/client
 RUN npm install
 
-# Go back to root directory
-WORKDIR /app
+# Copy client source and public explicitly
+COPY client/public ./public
+COPY client/src ./src
+COPY client/tailwind.config.js ./tailwind.config.js
+COPY client/postcss.config.js ./postcss.config.js
+COPY client/tsconfig.json ./tsconfig.json
 
-# Build React app
+# Build full app (server build + CRA build)
+WORKDIR /app
 RUN npm run build
 
 # Expose port
