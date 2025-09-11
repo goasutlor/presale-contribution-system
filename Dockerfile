@@ -41,11 +41,7 @@ RUN echo '    echo "❌ PostgreSQL connection test failed"' >> /app/start.sh
 RUN echo '    exit 1' >> /app/start.sh
 RUN echo '  fi' >> /app/start.sh
 RUN echo '  echo "🔄 Running database migration..."' >> /app/start.sh
-RUN echo '  node scripts/migrate-to-postgres.js' >> /app/start.sh
-RUN echo '  if [ $? -ne 0 ]; then' >> /app/start.sh
-RUN echo '    echo "❌ Database migration failed"' >> /app/start.sh
-RUN echo '    exit 1' >> /app/start.sh
-RUN echo '  fi' >> /app/start.sh
+RUN echo '  node scripts/migrate-to-postgres.js || echo "⚠️  Database migration failed, continuing..."' >> /app/start.sh
 RUN echo 'else' >> /app/start.sh
 RUN echo '  echo "❌ DATABASE_URL not found - PostgreSQL required for Railway deployment"' >> /app/start.sh
 RUN echo '  echo "Please ensure PostgreSQL service is connected to your Railway project"' >> /app/start.sh

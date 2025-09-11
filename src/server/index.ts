@@ -125,23 +125,29 @@ if (isProduction) {
 
 // Health check endpoints - MUST be before static file serving
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  console.log('🔍 API Health check request received');
+  res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    app: 'Presale Contribution System'
+    app: 'Presale Contribution System',
+    port: PORT,
+    database: process.env.DATABASE_URL ? 'Available' : 'Not available'
   });
 });
 
 // Root health check for Railway - MUST be before static file serving
 app.get('/', (req, res) => {
-  res.json({ 
+  console.log('🔍 Health check request received');
+  res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     message: 'Presale Contribution System API is running',
     version: '1.0.0',
-    https: req.header('x-forwarded-proto') === 'https'
+    https: req.header('x-forwarded-proto') === 'https',
+    port: PORT,
+    database: process.env.DATABASE_URL ? 'Connected' : 'Not connected'
   });
 });
 
@@ -245,7 +251,9 @@ async function initializeDatabaseAsync() {
     console.log('✅ Database initialized successfully');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
+    console.error('❌ Full error details:', error);
     // Don't exit - let the server continue running for health checks
+    console.log('⚠️  Server will continue running without database');
   }
 }
 

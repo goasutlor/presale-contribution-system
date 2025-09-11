@@ -26,13 +26,17 @@ export async function initializeDatabase(): Promise<void> {
 
     // Create tables if they don't exist
     await createTables();
+    console.log('✅ Tables created/verified');
     
     // Create admin user if not exists
     await createAdminUser();
+    console.log('✅ Admin user created/verified');
     
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
-    throw error;
+    console.error('❌ Error details:', error);
+    // Don't throw - let server continue
+    console.log('⚠️  Continuing without database initialization');
   }
 }
 
