@@ -41,7 +41,7 @@ const FunctionalTest: React.FC = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/test/run-full-test', {
+      const response = await fetch('/api/test/run-full-test', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
