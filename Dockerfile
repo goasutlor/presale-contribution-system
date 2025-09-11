@@ -10,8 +10,8 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
-RUN cd client && npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production --legacy-peer-deps && npm cache clean --force
+RUN cd client && npm ci --only=production --legacy-peer-deps && npm cache clean --force
 
 # Build the application
 FROM base AS builder
@@ -21,8 +21,8 @@ WORKDIR /app
 COPY . .
 
 # Install all dependencies (including dev dependencies)
-RUN npm ci
-RUN cd client && npm ci
+RUN npm ci --legacy-peer-deps
+RUN cd client && npm ci --legacy-peer-deps
 
 # Build the application
 RUN npm run build
