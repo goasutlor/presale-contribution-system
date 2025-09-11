@@ -29,7 +29,9 @@ EXPOSE 5001
 RUN echo '#!/bin/sh' > /app/start.sh
 RUN echo 'echo "🚀 Starting Presale Contribution System..."' >> /app/start.sh
 RUN echo 'echo "🔍 Environment: $NODE_ENV"' >> /app/start.sh
+RUN echo 'echo "🔍 Railway Environment: $RAILWAY_ENVIRONMENT"' >> /app/start.sh
 RUN echo 'echo "🔍 Database URL: ${DATABASE_URL:+Set}"' >> /app/start.sh
+RUN echo 'export NODE_ENV=${NODE_ENV:-production}' >> /app/start.sh
 RUN echo 'if [ "$DATABASE_URL" ]; then' >> /app/start.sh
 RUN echo '  echo "🐘 Using PostgreSQL database"' >> /app/start.sh
 RUN echo '  echo "🔄 Running database migration..."' >> /app/start.sh

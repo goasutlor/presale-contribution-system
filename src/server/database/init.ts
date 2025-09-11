@@ -2,7 +2,17 @@
 import { User, Contribution } from '../types';
 
 // Check if we should use PostgreSQL or SQLite
-const usePostgreSQL = process.env.DATABASE_URL && process.env.NODE_ENV === 'production';
+const hasDatabaseUrl = !!process.env.DATABASE_URL;
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
+const usePostgreSQL = hasDatabaseUrl && isProduction;
+
+console.log('🔍 Database selection debug:', {
+  hasDatabaseUrl,
+  NODE_ENV: process.env.NODE_ENV,
+  RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+  isProduction,
+  usePostgreSQL
+});
 
 let databaseModule: any;
 

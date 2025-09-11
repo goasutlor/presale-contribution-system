@@ -15,6 +15,11 @@ import { initializeDatabase } from './database/init';
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Ensure NODE_ENV is set for Railway
+if (!process.env.NODE_ENV && process.env.RAILWAY_ENVIRONMENT === 'production') {
+  process.env.NODE_ENV = 'production';
+}
+
 // Force HTTPS in production (Railway handles this automatically)
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
