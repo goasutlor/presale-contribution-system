@@ -195,14 +195,45 @@ const UserManagement: React.FC = () => {
     if (!editingUser) return;
     
     try {
-      const response = await apiService.updateUser(editingUser.id, data);
-      if (response.success) {
-        await loadUsers(); // Reload users from API
-        setEditingUser(null);
-        setShowForm(false);
-        toast.success('User updated successfully');
+      // If admin is editing and password is provided, use admin reset password
+      if (user?.role === 'admin' && data.password && data.password.trim() !== '') {
+        const response = await apiService.adminResetPassword({
+          userId: editingUser.id,
+          newPassword: data.password
+        });
+        
+        if (response.success) {
+          // Update other user data
+          const updateData = { ...data };
+          delete updateData.password;
+          delete updateData.confirmPassword;
+          
+          if (Object.keys(updateData).length > 0) {
+            await apiService.updateUser(editingUser.id, updateData);
+          }
+          
+          await loadUsers();
+          setEditingUser(null);
+          setShowForm(false);
+          toast.success('User updated successfully (Password overwritten)');
+        } else {
+          toast.error(response.message || 'Failed to reset password');
+        }
       } else {
-        toast.error(response.message || 'Failed to update user');
+        // Regular update without password change
+        const updateData = { ...data };
+        delete updateData.password;
+        delete updateData.confirmPassword;
+        
+        const response = await apiService.updateUser(editingUser.id, updateData);
+        if (response.success) {
+          await loadUsers();
+          setEditingUser(null);
+          setShowForm(false);
+          toast.success('User updated successfully');
+        } else {
+          toast.error(response.message || 'Failed to update user');
+        }
       }
     } catch (error: any) {
       console.error('Error updating user:', error);
@@ -824,6 +855,7 @@ const UserManagement: React.FC = () => {
                 initialData={editingUser || undefined}
                 isEditing={!!editingUser}
                 existingEmails={users.map(u => u.email).filter(email => email !== editingUser?.email)}
+                isAdmin={user?.role === 'admin'}
               />
             </div>
           </div>
