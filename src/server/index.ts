@@ -128,6 +128,31 @@ const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWA
 
 // Serve React app for production
 if (isProduction) {
+  // Handle static files explicitly
+  app.get('/static/css/*', (req, res) => {
+    const filePath = path.join(__dirname, '../../client/build', req.path);
+    console.log('🔍 Serving CSS file:', filePath);
+    res.setHeader('Content-Type', 'text/css');
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('❌ Error serving CSS file:', err);
+        res.status(404).send('CSS file not found');
+      }
+    });
+  });
+  
+  app.get('/static/js/*', (req, res) => {
+    const filePath = path.join(__dirname, '../../client/build', req.path);
+    console.log('🔍 Serving JS file:', filePath);
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('❌ Error serving JS file:', err);
+        res.status(404).send('JS file not found');
+      }
+    });
+  });
+  
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../../client/build/index.html'));
   });
