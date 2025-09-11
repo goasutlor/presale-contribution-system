@@ -48,7 +48,12 @@ RUN echo '  echo "Please ensure PostgreSQL service is connected to your Railway 
 RUN echo '  exit 1' >> /app/start.sh
 RUN echo 'fi' >> /app/start.sh
 RUN echo 'echo "✅ Starting server..."' >> /app/start.sh
-RUN echo 'npm start' >> /app/start.sh
+RUN echo 'echo "🔄 Starting full application..."' >> /app/start.sh
+RUN echo 'npm start &' >> /app/start.sh
+RUN echo 'sleep 5' >> /app/start.sh
+RUN echo 'echo "🔄 Testing healthcheck..."' >> /app/start.sh
+RUN echo 'node test-healthcheck.js' >> /app/start.sh
+RUN echo 'echo "✅ Healthcheck test completed"' >> /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Start the application

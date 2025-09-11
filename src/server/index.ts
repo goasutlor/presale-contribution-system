@@ -207,11 +207,11 @@ if (isProduction) {
 app.use(errorHandler);
 
 // Start server immediately for health checks
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/`);
-  console.log(`🔗 API Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🔗 Health check: http://0.0.0.0:${PORT}/`);
+  console.log(`🔗 API Health check: http://0.0.0.0:${PORT}/api/health`);
   console.log(`🔐 Railway will handle HTTPS automatically`);
 });
 
