@@ -13,11 +13,8 @@ COPY . .
 
 # Install client dependencies
 WORKDIR /app/client
-COPY client/package.json client/package-lock.json ./
-RUN npm install
-
-# Copy client source code
 COPY client/ ./
+RUN npm install
 
 # Go back to root directory
 WORKDIR /app
