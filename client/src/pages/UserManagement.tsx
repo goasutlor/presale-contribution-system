@@ -579,7 +579,7 @@ const UserManagement: React.FC = () => {
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-primary-500 flex items-center justify-center">
                             <span className="text-sm font-medium text-white">
-                              {userItem.fullName.charAt(0)}
+                              {(userItem.fullName?.charAt(0)) || (userItem.email?.charAt(0)) || 'U'}
                             </span>
                           </div>
                         </div>
@@ -594,11 +594,11 @@ const UserManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {userItem.involvedAccountNames.length} account(s)
+                        {(userItem.involvedAccountNames?.length || 0)} account(s)
                       </div>
                       <div className="text-sm text-gray-500">
-                        {userItem.involvedAccountNames.slice(0, 2).join(', ')}
-                        {userItem.involvedAccountNames.length > 2 && '...'}
+                        {(userItem.involvedAccountNames?.slice(0, 2).join(', ') || '')}
+                        {userItem.involvedAccountNames && userItem.involvedAccountNames.length > 2 && '...'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
