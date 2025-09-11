@@ -2,7 +2,15 @@ import sqlite3 from 'sqlite3';
 import path from 'path';
 import { User, Contribution } from '../types';
 
-const dbPath = process.env.DB_PATH || path.join(__dirname, '../../../dist/data/presale_contributions.db');
+// Create data directory if it doesn't exist
+import fs from 'fs';
+
+const dataDir = process.env.DB_PATH ? path.dirname(process.env.DB_PATH) : path.join(__dirname, '../../../dist/data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+const dbPath = process.env.DB_PATH || path.join(dataDir, 'presale_contributions.db');
 
 export function getDatabase(): sqlite3.Database {
   const db = new sqlite3.Database(dbPath);

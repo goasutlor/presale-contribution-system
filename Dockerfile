@@ -16,6 +16,9 @@ RUN echo 'favicon' > client/public/favicon.ico
 RUN npm ci --legacy-peer-deps
 RUN cd client && npm ci --legacy-peer-deps
 
+# Create data directory for database
+RUN mkdir -p /app/data
+
 # Build the application
 RUN npm run build
 

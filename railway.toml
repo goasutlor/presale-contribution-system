@@ -11,3 +11,5 @@ restartPolicyMaxRetries = 10
 [env]
 NODE_ENV = "production"
 PORT = "5001"
+DB_PATH = "/app/data/presale_contributions.db"
+JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
