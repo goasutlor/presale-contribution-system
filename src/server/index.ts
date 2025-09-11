@@ -56,6 +56,9 @@ app.use(compression());
 // Logging middleware
 app.use(morgan('combined'));
 
+// Force production mode for Railway
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -122,9 +125,6 @@ app.get('/api/health', (req, res) => {
     app: 'Presale Contribution System'
   });
 });
-
-// Force production mode for Railway
-const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
 
 // Serve React app for production
 if (isProduction) {
