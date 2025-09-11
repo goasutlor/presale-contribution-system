@@ -13,7 +13,7 @@ import { testRoutes } from './routes/functionalTest';
 import { initializeDatabase } from './database/init';
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = parseInt(process.env.PORT || '5001', 10);
 
 // Ensure NODE_ENV is set for Railway
 if (!process.env.NODE_ENV && process.env.RAILWAY_ENVIRONMENT === 'production') {
