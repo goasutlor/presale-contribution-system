@@ -69,12 +69,45 @@ if (isProduction) {
   console.log('🔍 Static files path:', buildPath);
   console.log('🔍 Build directory exists:', require('fs').existsSync(buildPath));
   
+  // Debug middleware for static files
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/static/')) {
+      console.log('🔍 Static file request:', req.path);
+    }
+    next();
+  });
+  
+  // Serve static files with explicit MIME types
+  app.use('/static', express.static(path.join(buildPath, 'static'), {
+    setHeaders: (res, path) => {
+      console.log('🔍 Serving static file:', path);
+      if (path.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      } else if (path.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (path.endsWith('.png')) {
+        res.setHeader('Content-Type', 'image/png');
+      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.setHeader('Content-Type', 'image/jpeg');
+      } else if (path.endsWith('.ico')) {
+        res.setHeader('Content-Type', 'image/x-icon');
+      }
+    }
+  }));
+  
+  // Serve other static files
   app.use(express.static(buildPath, {
     setHeaders: (res, path) => {
       if (path.endsWith('.css')) {
         res.setHeader('Content-Type', 'text/css');
       } else if (path.endsWith('.js')) {
         res.setHeader('Content-Type', 'application/javascript');
+      } else if (path.endsWith('.png')) {
+        res.setHeader('Content-Type', 'image/png');
+      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.setHeader('Content-Type', 'image/jpeg');
+      } else if (path.endsWith('.ico')) {
+        res.setHeader('Content-Type', 'image/x-icon');
       }
     }
   }));
