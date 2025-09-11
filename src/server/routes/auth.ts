@@ -380,6 +380,7 @@ router.get('/profile', authenticateToken, asyncHandler(async (req: Request, res:
 
 // Admin reset user password (Admin only - no current password required)
 router.post('/admin-reset-password', [
+  authenticateToken,
   requireAdmin,
   body('userId').isLength({ min: 1 }).withMessage('User ID is required'),
   body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
