@@ -2,12 +2,17 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy minimal files
-COPY server.js .
-COPY package-minimal.json package.json
+# Copy package files
+COPY package.json package-lock.json ./
 
 # Install dependencies
 RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build React app
+RUN npm run build
 
 # Expose port
 EXPOSE 8080
