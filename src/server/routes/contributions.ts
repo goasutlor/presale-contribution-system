@@ -65,7 +65,7 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
   
   query += ' ORDER BY c.createdAt DESC';
   
-  db.all(query, params, (err, rows: any[]) => {
+  db.all(query, params, (err: any, rows: any[]) => {
     if (err) {
       console.error('Database error fetching contributions:', err);
       throw createError('Failed to fetch contributions', 500);
@@ -115,7 +115,7 @@ router.get('/admin', requireUser, asyncHandler(async (req: AuthRequest, res: Res
     FROM contributions c 
     JOIN users u ON c.userId = u.id 
     ORDER BY c.createdAt DESC
-  `, (err, rows: any[]) => {
+  `, (err: any, rows: any[]) => {
     if (err) {
       console.error('Database error fetching all contributions:', err);
       throw createError('Failed to fetch contributions', 500);
@@ -163,7 +163,7 @@ router.get('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Respo
     FROM contributions c 
     JOIN users u ON c.userId = u.id 
     WHERE c.id = ?
-  `, [id], (err, row: any) => {
+  `, [id], (err: any, row: any) => {
     if (err) {
       console.error('Database error fetching contribution:', err);
       throw createError('Failed to fetch contribution', 500);
@@ -292,7 +292,7 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
     finalStatus,
     JSON.stringify(contributionData.tags),
     JSON.stringify([])
-  ], function(err) {
+  ], function(this: any, err: any) {
     if (err) {
       console.error('Database error creating contribution:', err);
       throw createError('Failed to create contribution', 500);
@@ -319,7 +319,7 @@ router.put('/:id', requireUser, updateContributionValidation, asyncHandler(async
   const userId = req.user!.id;
 
   // Check if contribution exists and user can edit it
-  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err, row: any) => {
+  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err: any, row: any) => {
     if (err) {
       console.error('Database error checking contribution:', err);
       throw createError('Failed to update contribution', 500);
@@ -406,7 +406,7 @@ router.put('/:id', requireUser, updateContributionValidation, asyncHandler(async
 
     const updateQuery = `UPDATE contributions SET ${updateFields.join(', ')} WHERE id = ?`;
 
-    db.run(updateQuery, updateValues, function(err) {
+    db.run(updateQuery, updateValues, function(this: any, err: any) {
       if (err) {
         console.error('Database error updating contribution:', err);
         throw createError('Failed to update contribution', 500);
@@ -427,7 +427,7 @@ router.delete('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Re
   const userId = req.user!.id;
 
   // Check if contribution exists and user can delete it
-  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err, row: any) => {
+  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err: any, row: any) => {
     if (err) {
       console.error('Database error checking contribution:', err);
       throw createError('Failed to delete contribution', 500);
@@ -446,7 +446,7 @@ router.delete('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Re
       throw createError('Only draft contributions can be deleted', 400);
     }
 
-    db.run('DELETE FROM contributions WHERE id = ?', [id], function(err) {
+    db.run('DELETE FROM contributions WHERE id = ?', [id], function(this: any, err: any) {
       if (err) {
         console.error('Database error deleting contribution:', err);
         throw createError('Failed to delete contribution', 500);
@@ -467,7 +467,7 @@ router.post('/:id/submit', requireUser, asyncHandler(async (req: AuthRequest, re
   const userId = req.user!.id;
 
   // Check if contribution exists and user can submit it
-  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err, row: any) => {
+  db.get('SELECT * FROM contributions WHERE id = ?', [id], (err: any, row: any) => {
     if (err) {
       console.error('Database error checking contribution:', err);
       throw createError('Failed to submit contribution', 500);
@@ -488,7 +488,7 @@ router.post('/:id/submit', requireUser, asyncHandler(async (req: AuthRequest, re
     db.run(
       'UPDATE contributions SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
       ['submitted', id],
-      function(err) {
+      function(this: any, err: any) {
         if (err) {
           console.error('Database error submitting contribution:', err);
           throw createError('Failed to submit contribution', 500);

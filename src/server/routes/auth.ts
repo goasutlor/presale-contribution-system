@@ -76,7 +76,7 @@ router.post('/login', loginValidation, asyncHandler(async (req: Request, res: Re
     db.get(
       'SELECT * FROM users WHERE email = ?',
       [email],
-      async (err, user: any): Promise<any> => {
+      async (err: any, user: any): Promise<any> => {
         if (err) {
           console.error('❌ Database error during login:', err);
           return res.status(500).json({
@@ -213,7 +213,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
     db.get(
       'SELECT id FROM users WHERE email = ? OR staffId = ?',
       [email, staffId],
-      async (err, existingUser: any): Promise<any> => {
+      async (err: any, existingUser: any): Promise<any> => {
         if (err) {
           console.error('❌ Database error during signup check:', err);
           return res.status(500).json({
@@ -278,7 +278,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
               'pending', // Set status to pending for admin approval
               false
             ],
-            function(err): any {
+            function(this: any, err: any): any {
               if (err) {
                 console.error('❌ Database error during user creation:', err);
                 return res.status(500).json({
@@ -296,7 +296,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
               });
 
               // Verify the user was actually inserted with the correct ID
-              db.get('SELECT id FROM users WHERE email = ?', [email], (err, insertedUser: any) => {
+              db.get('SELECT id FROM users WHERE email = ?', [email], (err: any, insertedUser: any) => {
                 if (err) {
                   console.error('❌ Error verifying user insertion:', err);
                 } else {
@@ -440,7 +440,7 @@ router.post('/admin-reset-password', [
     db.get(
       'SELECT id, email, fullName FROM users WHERE id = ?',
       [userId],
-      async (err, userRow: any): Promise<any> => {
+      async (err: any, userRow: any): Promise<any> => {
         if (err) {
           console.error('Database error during admin password reset:', err);
           return res.status(500).json({
@@ -463,7 +463,7 @@ router.post('/admin-reset-password', [
         db.run(
           'UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
           [hashedPassword, userId],
-          (err) => {
+          (err: any) => {
             if (err) {
               console.error('Database error updating password:', err);
               return res.status(500).json({
@@ -521,7 +521,7 @@ router.post('/change-password', [
     db.get(
       'SELECT password FROM users WHERE id = ?',
       [user.id],
-      async (err, row: any): Promise<any> => {
+      async (err: any, row: any): Promise<any> => {
         if (err) {
           console.error('Database error during password change:', err);
           return res.status(500).json({
@@ -553,7 +553,7 @@ router.post('/change-password', [
           db.run(
             'UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
             [hashedPassword, user.id],
-            (err): any => {
+            (err: any): any => {
               if (err) {
                 console.error('Database error updating password:', err);
                 return res.status(500).json({
@@ -658,7 +658,7 @@ router.post('/approve/:userId', authenticateToken, requireAdmin, (req: Request, 
   console.log('🔍 Request user:', (req as any).user);
   
   // First check if user exists
-  db.get('SELECT id, status FROM users WHERE id = ?', [userId], (err, row) => {
+  db.get('SELECT id, status FROM users WHERE id = ?', [userId], (err: any, row: any) => {
     if (err) {
       console.error('Error checking user existence:', err);
       res.status(500).json({ success: false, message: 'Failed to check user' });
@@ -677,7 +677,7 @@ router.post('/approve/:userId', authenticateToken, requireAdmin, (req: Request, 
     db.run(
       'UPDATE users SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
       ['approved', userId],
-      function(err) {
+      function(this: any, err: any) {
         if (err) {
           console.error('Error approving user:', err);
           return res.status(500).json({ success: false, message: 'Failed to approve user' });
@@ -700,7 +700,7 @@ router.post('/reject/:userId', authenticateToken, requireAdmin, (req: Request, r
   console.log('🔍 Request user:', (req as any).user);
   
   // First check if user exists
-  db.get('SELECT id, status FROM users WHERE id = ?', [userId], (err, row) => {
+  db.get('SELECT id, status FROM users WHERE id = ?', [userId], (err: any, row: any) => {
     if (err) {
       console.error('Error checking user existence:', err);
       res.status(500).json({ success: false, message: 'Failed to check user' });
@@ -719,7 +719,7 @@ router.post('/reject/:userId', authenticateToken, requireAdmin, (req: Request, r
     db.run(
       'UPDATE users SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
       ['rejected', userId],
-      function(err) {
+      function(this: any, err: any) {
         if (err) {
           console.error('Error rejecting user:', err);
           return res.status(500).json({ success: false, message: 'Failed to reject user' });

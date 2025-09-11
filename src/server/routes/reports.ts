@@ -50,7 +50,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
     queryParams.push(userId);
   }
 
-  db.get(baseQuery, queryParams, (err, row: any) => {
+  db.get(baseQuery, queryParams, (err: any, row: any) => {
     if (err) {
       console.error('Database error fetching dashboard data:', err);
       throw createError('Failed to fetch dashboard data', 500);
@@ -104,7 +104,7 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
 
   baseQuery += ' GROUP BY contributionMonth, impact ORDER BY contributionMonth';
 
-  db.all(baseQuery, queryParams, (err, rows: any[]) => {
+  db.all(baseQuery, queryParams, (err: any, rows: any[]) => {
     if (err) {
       console.error('Database error fetching timeline data:', err);
       throw createError('Failed to fetch timeline data', 500);
@@ -223,7 +223,7 @@ router.post('/comprehensive', requireUser, reportFilterValidation, asyncHandler(
     ORDER BY c.createdAt DESC
   `;
 
-  db.all(contributionsQuery, queryParams, (err, rows: any[]) => {
+  db.all(contributionsQuery, queryParams, (err: any, rows: any[]) => {
     if (err) {
       console.error('Database error fetching report data:', err);
       throw createError('Failed to fetch report data', 500);
@@ -419,7 +419,7 @@ router.post('/export', requireUser, reportFilterValidation, asyncHandler(async (
     ORDER BY c.createdAt DESC
   `;
 
-  db.all(exportQuery, queryParams, (err, rows: any[]) => {
+  db.all(exportQuery, queryParams, (err: any, rows: any[]) => {
     if (err) {
       console.error('Database error fetching export data:', err);
       throw createError('Failed to fetch export data', 500);
@@ -461,7 +461,7 @@ router.get('/user/:userId', requireUser, asyncHandler(async (req: AuthRequest, r
     JOIN users u ON c.userId = u.id 
     WHERE c.userId = ?
     ORDER BY c.createdAt DESC
-  `, [userId], (err, rows: any[]) => {
+  `, [userId], (err: any, rows: any[]) => {
     if (err) {
       console.error('Database error fetching user report:', err);
       throw createError('Failed to fetch user report', 500);

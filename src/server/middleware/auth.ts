@@ -39,7 +39,7 @@ export const authenticateToken = async (
     db.get(
       'SELECT * FROM users WHERE id = ?',
       [decoded.userId],
-      (err, row: any) => {
+      (err: any, row: any) => {
         if (err) {
           console.error('Database error during authentication:', err);
           return next(createError('Authentication failed', 500));
@@ -152,7 +152,7 @@ export const canViewUser = (targetUserId: string) => {
       db.get(
         'SELECT * FROM users WHERE id = ?',
         [targetUserId],
-        (err, targetUser: any) => {
+        (err: any, targetUser: any) => {
           if (err) {
             console.error('Database error checking user permissions:', err);
             next(createError('Permission check failed', 500));
