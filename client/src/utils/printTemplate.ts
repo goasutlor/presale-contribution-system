@@ -28,9 +28,13 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
     criticalImpact: 0
   };
 
-  // Get unique account managers from filtered contributions
-  const accountManagers = Array.from(new Set(filteredContributions.map((contrib: any) => contrib.saleName).filter(Boolean)));
-  const primaryAccountManager = accountManagers[0] || 'Account Manager Name';
+  // Determine unique names for conditional sign-off
+  const uniqueSales = Array.from(new Set(filteredContributions.map((c: any) => c.saleName).filter(Boolean)));
+  const uniquePresales = Array.from(new Set(filteredContributions.map((c: any) => c.userName).filter(Boolean)));
+
+  const pickedSale = (filters?.saleName && uniqueSales.length === 1) ? uniqueSales[0] : '';
+  const pickedPresale = (filters?.presaleName && uniquePresales.length === 1) ? uniquePresales[0] : '';
+  const showSpecific = Boolean(pickedSale && pickedPresale);
 
   return `
     <!DOCTYPE html>
@@ -145,12 +149,12 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .summary-title {
-          font-size: 1.3rem;
+          font-size: 1.1rem;
           font-weight: 700;
           color: #365486;
-          margin-bottom: 1rem;
+          margin-bottom: 0.6rem;
           border-bottom: 2px solid #7FC7D9;
-          padding-bottom: 0.5rem;
+          padding-bottom: 0.3rem;
           position: relative;
         }
         
@@ -167,15 +171,15 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         .summary-cards {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 0.8rem;
-          margin-bottom: 1rem;
+          gap: 0.5rem;
+          margin-bottom: 0.6rem;
         }
         
         .summary-card {
           background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
           border: 1px solid #cbd5e0;
           border-radius: 6px;
-          padding: 1rem 0.8rem;
+          padding: 0.6rem 0.5rem;
           text-align: center;
           transition: all 0.3s ease;
           position: relative;
@@ -198,10 +202,10 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .summary-number {
-          font-size: 2.5rem;
+          font-size: 1.4rem;
           font-weight: 900;
           color: #365486;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.3rem;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
@@ -385,10 +389,10 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .signatures-title {
-          font-size: 1.2rem;
+          font-size: 1rem;
           font-weight: 700;
           color: #365486;
-          margin-bottom: 1rem;
+          margin-bottom: 0.6rem;
           text-align: center;
           position: relative;
         }
@@ -485,6 +489,10 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           .summary-card:hover { 
             transform: none; 
           }
+          .summary-title { font-size: 0.95rem !important; margin-bottom: 0.4rem !important; }
+          .summary-cards { gap: 0.4rem !important; margin-bottom: 0.5rem !important; }
+          .summary-card { padding: 0.5rem 0.4rem !important; }
+          .summary-number { font-size: 1.2rem !important; margin-bottom: 0.25rem !important; }
           .contributions-table tr:hover {
             background: transparent;
           }
@@ -634,16 +642,16 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
             <h2 class="signatures-title">Approval Signatures</h2>
             <div class="signatures-grid">
               <div class="signature-box">
-                <div class="signature-label">PRESALE</div>
+                <div class="signature-label">${showSpecific ? 'PRESALE' : 'ADMIN'}</div>
                 <div class="signature-line"></div>
-                <div class="signature-name">${user?.fullName || user?.name || 'Presale Name'}</div>
+                <div class="signature-name">${showSpecific ? pickedPresale : ''}</div>
                 <div class="signature-date">Date:</div>
                 <div class="date-line"></div>
               </div>
               <div class="signature-box">
-                <div class="signature-label">ACCOUNT MANAGER</div>
+                <div class="signature-label">SALE</div>
                 <div class="signature-line"></div>
-                <div class="signature-name">${primaryAccountManager}</div>
+                <div class="signature-name">${showSpecific ? pickedSale : ''}</div>
                 <div class="signature-date">Date:</div>
                 <div class="date-line"></div>
               </div>
