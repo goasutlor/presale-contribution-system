@@ -283,7 +283,6 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
             message: 'Signup failed'
           });
         }
-      }
     
   } catch (error) {
     console.error('Signup error:', error);
