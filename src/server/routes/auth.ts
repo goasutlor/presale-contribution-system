@@ -9,6 +9,20 @@ import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
+// Safe JSON parse for array-like fields stored as TEXT
+const parseJsonArraySafe = (value: any): any[] => {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value.trim().length > 0) {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
 // Login validation
 const loginValidation = [
   body('email').isEmail().withMessage('Valid email is required'),
@@ -123,9 +137,9 @@ router.post('/login', loginValidation, asyncHandler(async (req: Request, res: Re
         fullName: user.fullName,
         staffId: user.staffId,
         email: user.email,
-        involvedAccountNames: JSON.parse(user.involvedAccountNames),
-        involvedSaleNames: JSON.parse(user.involvedSaleNames),
-        involvedSaleEmails: JSON.parse(user.involvedSaleEmails),
+        involvedAccountNames: parseJsonArraySafe(user.involvedAccountNames),
+        involvedSaleNames: parseJsonArraySafe(user.involvedSaleNames),
+        involvedSaleEmails: parseJsonArraySafe(user.involvedSaleEmails),
         role: user.role,
         status: user.status || 'approved',
         canViewOthers: Boolean(user.canViewOthers),
