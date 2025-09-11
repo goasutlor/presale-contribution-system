@@ -4,18 +4,10 @@ builder = "dockerfile"
 [deploy]
 startCommand = "npm start"
 healthcheckPath = "/"
-healthcheckTimeout = 60
+healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
+restartPolicyMaxRetries = 5
 
 [env]
 NODE_ENV = "production"
 PORT = "5001"
-JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
-CORS_ORIGIN = "https://*.railway.app"
-# DATABASE_URL will be provided by Railway PostgreSQL service
-
-# PostgreSQL service configuration
-[services.postgres]
-image = "postgres:15"
-environment = { POSTGRES_DB = "presale_contributions", POSTGRES_USER = "postgres", POSTGRES_PASSWORD = "postgres" }

@@ -213,6 +213,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🔗 Health check: http://0.0.0.0:${PORT}/`);
   console.log(`🔗 API Health check: http://0.0.0.0:${PORT}/api/health`);
   console.log(`🔐 Railway will handle HTTPS automatically`);
+  console.log(`✅ Server is ready for health checks`);
 });
 
 // Handle server errors
@@ -257,7 +258,7 @@ async function initializeDatabaseAsync() {
   }
 }
 
-// Start database initialization in background
-initializeDatabaseAsync();
+// Start database initialization in background (disabled for now)
+// initializeDatabaseAsync();
 
 export default app;
