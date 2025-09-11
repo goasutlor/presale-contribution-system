@@ -23,7 +23,7 @@ RUN mkdir -p /app/data
 RUN npm run build
 
 # Expose port
-EXPOSE 5001
+EXPOSE 8080
 
 # Start the application directly
 CMD ["npm", "start"]

@@ -13,7 +13,7 @@ import { testRoutes } from './routes/functionalTest';
 import { initializeDatabase } from './database/init';
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '5001', 10);
+const PORT = parseInt(process.env.PORT || '8080', 10);
 
 // Ensure NODE_ENV is set for Railway
 if (!process.env.NODE_ENV && process.env.RAILWAY_ENVIRONMENT === 'production') {
@@ -207,9 +207,12 @@ if (isProduction) {
 app.use(errorHandler);
 
 // Start server immediately for health checks
+console.log(`🚀 Starting server on port ${PORT}...`);
+console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🔍 Railway Environment: ${process.env.RAILWAY_ENVIRONMENT}`);
+
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`✅ Server running on port ${PORT}`);
   console.log(`🔗 Health check: http://0.0.0.0:${PORT}/`);
   console.log(`🔗 API Health check: http://0.0.0.0:${PORT}/api/health`);
   console.log(`🔐 Railway will handle HTTPS automatically`);
@@ -222,6 +225,17 @@ server.on('error', (error: any) => {
   if (error.code === 'EADDRINUSE') {
     console.error(`❌ Port ${PORT} is already in use`);
   }
+  process.exit(1);
+});
+
+// Process error handling
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
 
