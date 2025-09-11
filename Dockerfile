@@ -28,14 +28,24 @@ EXPOSE 5001
 # Create startup script
 RUN echo '#!/bin/sh' > /app/start.sh
 RUN echo 'echo "🚀 Starting Presale Contribution System..."' >> /app/start.sh
+RUN echo 'echo "🔍 Environment: $NODE_ENV"' >> /app/start.sh
+RUN echo 'echo "🔍 Database URL: ${DATABASE_URL:+Set}"' >> /app/start.sh
 RUN echo 'if [ "$DATABASE_URL" ]; then' >> /app/start.sh
 RUN echo '  echo "🐘 Using PostgreSQL database"' >> /app/start.sh
 RUN echo '  echo "🔄 Running database migration..."' >> /app/start.sh
 RUN echo '  node scripts/migrate-to-postgres.js' >> /app/start.sh
+RUN echo '  if [ $? -ne 0 ]; then' >> /app/start.sh
+RUN echo '    echo "❌ Database migration failed"' >> /app/start.sh
+RUN echo '    exit 1' >> /app/start.sh
+RUN echo '  fi' >> /app/start.sh
 RUN echo 'else' >> /app/start.sh
 RUN echo '  echo "🗃️ Using SQLite database"' >> /app/start.sh
 RUN echo '  echo "📊 Creating admin user if not exists..."' >> /app/start.sh
 RUN echo '  node scripts/create-admin-user.js' >> /app/start.sh
+RUN echo '  if [ $? -ne 0 ]; then' >> /app/start.sh
+RUN echo '    echo "❌ Admin user creation failed"' >> /app/start.sh
+RUN echo '    exit 1' >> /app/start.sh
+RUN echo '  fi' >> /app/start.sh
 RUN echo 'fi' >> /app/start.sh
 RUN echo 'echo "✅ Starting server..."' >> /app/start.sh
 RUN echo 'npm start' >> /app/start.sh

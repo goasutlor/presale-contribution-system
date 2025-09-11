@@ -118,7 +118,7 @@ if (isProduction) {
   }));
 }
 
-// Health check endpoints
+// Health check endpoints - MUST be before static file serving
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -128,7 +128,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root health check for Railway
+// Root health check for Railway - MUST be before static file serving
 app.get('/', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -195,13 +195,37 @@ if (isProduction) {
 // Error handling middleware
 app.use(errorHandler);
 
-// Initialize database and start server
-async function startServer() {
+// Start server immediately for health checks
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/`);
+  console.log(`🔗 API Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🔐 Railway will handle HTTPS automatically`);
+});
+
+// Handle server errors
+server.on('error', (error: any) => {
+  console.error('❌ Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use`);
+  }
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+// Initialize database in background
+async function initializeDatabaseAsync() {
   try {
-    console.log('🚀 Starting server initialization...');
-    
-    await initializeDatabase();
-    console.log('✅ Database initialized successfully');
+    console.log('🚀 Starting database initialization...');
     
     // Debug environment variables
     console.log('🔍 Environment Debug:', {
@@ -212,39 +236,15 @@ async function startServer() {
       DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set'
     });
     
-    // Railway handles HTTPS automatically, just start HTTP server
-    const server = app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/`);
-      console.log(`🔗 API Health check: http://localhost:${PORT}/api/health`);
-      console.log(`🔐 Railway will handle HTTPS automatically`);
-    });
-
-    // Handle server errors
-    server.on('error', (error: any) => {
-      console.error('❌ Server error:', error);
-      if (error.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${PORT} is already in use`);
-      }
-      process.exit(1);
-    });
-
-    // Graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('🛑 SIGTERM received, shutting down gracefully');
-      server.close(() => {
-        console.log('✅ Server closed');
-        process.exit(0);
-      });
-    });
-
+    await initializeDatabase();
+    console.log('✅ Database initialized successfully');
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
+    console.error('❌ Database initialization failed:', error);
+    // Don't exit - let the server continue running for health checks
   }
 }
 
-startServer();
+// Start database initialization in background
+initializeDatabaseAsync();
 
 export default app;
