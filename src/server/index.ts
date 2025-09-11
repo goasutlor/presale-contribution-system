@@ -30,7 +30,7 @@ app.use(helmet({
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+    ? true // Allow all origins in production for Railway
     : ['http://localhost:3000'],
   credentials: true
 }));
@@ -66,23 +66,33 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Root health check for Railway
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    message: 'Presale Contribution System API is running'
+  });
+});
+
 // Serve React app for production
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../../client/build/index.html'));
   });
+} else {
+  // 404 handler for development
+  app.use('*', (req, res) => {
+    res.status(404).json({ 
+      error: 'Route not found',
+      path: req.originalUrl 
+    });
+  });
 }
 
 // Error handling middleware
 app.use(errorHandler);
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Route not found',
-    path: req.originalUrl 
-  });
-});
 
 // Initialize database and start server
 async function startServer() {
