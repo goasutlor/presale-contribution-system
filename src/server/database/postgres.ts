@@ -40,6 +40,56 @@ export async function initializeDatabase(): Promise<void> {
   }
 }
 
+// Map of known lowercased column names to the camelCase names expected by the app
+const COLUMN_NAME_MAP: Record<string, string> = {
+  // users
+  id: 'id',
+  fullname: 'fullName',
+  staffid: 'staffId',
+  email: 'email',
+  password: 'password',
+  involvedaccountnames: 'involvedAccountNames',
+  involvedsalenames: 'involvedSaleNames',
+  involvedsaleemails: 'involvedSaleEmails',
+  role: 'role',
+  status: 'status',
+  canviewothers: 'canViewOthers',
+  createdat: 'createdAt',
+  updatedat: 'updatedAt',
+
+  // contributions
+  userid: 'userId',
+  accountname: 'accountName',
+  salename: 'saleName',
+  saleemail: 'saleEmail',
+  contributiontype: 'contributionType',
+  title: 'title',
+  description: 'description',
+  impact: 'impact',
+  effort: 'effort',
+  estimatedimpactvalue: 'estimatedImpactValue',
+  contributionmonth: 'contributionMonth',
+  tags: 'tags',
+  attachments: 'attachments',
+  saleapproval: 'saleApproval',
+  saleapprovaldate: 'saleApprovalDate',
+  saleapprovalnotes: 'saleApprovalNotes',
+
+  // aliases used in JOINs
+  username: 'userName',
+};
+
+function normalizeRowKeys<T extends Record<string, any>>(row: T): T {
+  if (!row || typeof row !== 'object') return row;
+  const normalized: Record<string, any> = {};
+  for (const key of Object.keys(row)) {
+    const lower = key.toLowerCase();
+    const mapped = COLUMN_NAME_MAP[lower] || key;
+    normalized[mapped] = (row as any)[key];
+  }
+  return normalized as T;
+}
+
 async function createTables(): Promise<void> {
   const db = getDatabase();
   
@@ -151,7 +201,7 @@ export async function dbQuery(query: string, params: any[] = []): Promise<any> {
   
   try {
     const result = await db.query(convertedQuery, convertedParams);
-    return result.rows;
+    return result.rows.map(normalizeRowKeys);
   } catch (error) {
     console.error('❌ Database query error:', error);
     throw error;
