@@ -30,5 +30,5 @@ RUN npm run build
 # Expose port
 EXPOSE 8080
 
-# Start server
-CMD ["node", "server.js"]
+# Start server (full API server)
+CMD ["node", "dist/server/index.js"]
