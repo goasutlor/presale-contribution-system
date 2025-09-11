@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getDatabase } from '../database/init';
+import { dbQuery, dbQueryOne, dbExecute } from '../database/init';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
@@ -20,14 +20,8 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
 
   // Test 1: Database Connection
   try {
-    const db = getDatabase();
-    await new Promise<void>((resolve, reject) => {
-      db.get('SELECT 1 as test', (err, row: any) => {
-        if (err) reject(err);
-        else if (row?.test === 1) resolve();
-        else reject(new Error('Database test query failed'));
-      });
-    });
+    const row = await dbQueryOne('SELECT 1 as test');
+    if (!row || row.test !== 1) throw new Error('Database test query failed');
     
     testResults.push({
       testName: 'Database Connection',
@@ -49,15 +43,12 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
     console.log('❌ Database Connection: FAIL');
   }
 
-  // Test 2: Users Table Structure
+  // Test 2: Users Table Structure (Postgres information_schema)
   try {
-    const db = getDatabase();
-    await new Promise<void>((resolve, reject) => {
-      db.get("PRAGMA table_info(users)", (err, rows) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    const row = await dbQueryOne(
+      `SELECT COUNT(*) AS cnt FROM information_schema.columns WHERE table_name = 'users'`
+    );
+    if (!row || Number(row.cnt) === 0) throw new Error('Users table missing');
     
     testResults.push({
       testName: 'Users Table Structure',
@@ -79,15 +70,12 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
     console.log('❌ Users Table Structure: FAIL');
   }
 
-  // Test 3: Contributions Table Structure
+  // Test 3: Contributions Table Structure (Postgres information_schema)
   try {
-    const db = getDatabase();
-    await new Promise<void>((resolve, reject) => {
-      db.get("PRAGMA table_info(contributions)", (err, rows) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    const row = await dbQueryOne(
+      `SELECT COUNT(*) AS cnt FROM information_schema.columns WHERE table_name = 'contributions'`
+    );
+    if (!row || Number(row.cnt) === 0) throw new Error('Contributions table missing');
     
     testResults.push({
       testName: 'Contributions Table Structure',
@@ -111,14 +99,8 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
 
   // Test 4: Admin User Exists
   try {
-    const db = getDatabase();
-    await new Promise<void>((resolve, reject) => {
-      db.get('SELECT id FROM users WHERE role = ?', ['admin'], (err, row) => {
-        if (err) reject(err);
-        else if (row) resolve();
-        else reject(new Error('No admin user found'));
-      });
-    });
+    const row = await dbQueryOne('SELECT id FROM users WHERE role = ?', ['admin']);
+    if (!row) throw new Error('No admin user found');
     
     testResults.push({
       testName: 'Admin User Exists',
@@ -140,16 +122,12 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
     console.log('❌ Admin User Exists: FAIL');
   }
 
-  // Test 5: Database Indexes
+  // Test 5: Database Indexes (pg_indexes)
   try {
-    const db = getDatabase();
-    await new Promise<void>((resolve, reject) => {
-      db.all("PRAGMA index_list(contributions)", (err, rows) => {
-        if (err) reject(err);
-        else if (rows && rows.length > 0) resolve();
-        else reject(new Error('No indexes found on contributions table'));
-      });
-    });
+    const row = await dbQueryOne(
+      `SELECT COUNT(*) AS cnt FROM pg_indexes WHERE tablename = 'contributions'`
+    );
+    if (!row || Number(row.cnt) === 0) throw new Error('No indexes found on contributions table');
     
     testResults.push({
       testName: 'Database Indexes',
@@ -171,26 +149,15 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
     console.log('❌ Database Indexes: FAIL');
   }
 
-  // Test 6: Foreign Key Constraints
+  // Test 6: Foreign Key Constraints (pg_constraint)
   try {
-    const db = getDatabase();
-    
-    // Enable foreign key constraints
-    await new Promise<void>((resolve, reject) => {
-      db.run("PRAGMA foreign_keys = ON", (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
-    
-    // Verify foreign key constraints are enabled
-    await new Promise<void>((resolve, reject) => {
-      db.get("PRAGMA foreign_keys", (err, row: any) => {
-        if (err) reject(err);
-        else if (row && row.foreign_keys === 1) resolve();
-        else reject(new Error('Foreign key constraints not enabled'));
-      });
-    });
+    const fkRow = await dbQueryOne(
+      `SELECT COUNT(*) AS cnt
+       FROM pg_constraint c
+       JOIN pg_class tc ON c.conrelid = tc.oid
+       WHERE c.contype = 'f' AND tc.relname = 'contributions'`
+    );
+    if (!fkRow || Number(fkRow.cnt) === 0) throw new Error('No FK constraints on contributions');
     
     testResults.push({
       testName: 'Foreign Key Constraints',
@@ -214,24 +181,16 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
 
   // Test 7: Data Validation (Sample Data Insert)
   try {
-    const db = getDatabase();
     const testUserId = 'test-user-' + Date.now();
     const testContributionId = 'test-contribution-' + Date.now();
     
-    // Check if test user already exists and clean up first
-    await new Promise<void>((resolve, reject) => {
-      db.run('DELETE FROM users WHERE staffId = ?', ['TEST001'], (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    await dbExecute('DELETE FROM users WHERE staffId = ?', ['TEST001']);
     
     // Insert test user
-    await new Promise<void>((resolve, reject) => {
-      db.run(`
-        INSERT INTO users (id, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, status, canViewOthers)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
+    await dbExecute(
+      `INSERT INTO users (id, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, status, canViewOthers)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
         testUserId,
         'Test User',
         'TEST001',
@@ -243,18 +202,14 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
         'user',
         'approved',
         false
-      ], function(err) {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+      ]
+    );
 
     // Insert test contribution
-    await new Promise<void>((resolve, reject) => {
-      db.run(`
-        INSERT INTO contributions (id, userId, accountName, saleName, saleEmail, contributionType, title, description, impact, effort, estimatedImpactValue, contributionMonth, status, tags, attachments)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
+    await dbExecute(
+      `INSERT INTO contributions (id, userId, accountName, saleName, saleEmail, contributionType, title, description, impact, effort, estimatedImpactValue, contributionMonth, status, tags, attachments)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
         testContributionId,
         testUserId,
         'Test Account',
@@ -270,26 +225,12 @@ router.post('/run-full-test', requireAdmin, asyncHandler(async (req: Request, re
         'draft',
         JSON.stringify(['test', 'functional']),
         JSON.stringify([])
-      ], function(err) {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+      ]
+    );
 
     // Clean up test data
-    await new Promise<void>((resolve, reject) => {
-      db.run('DELETE FROM contributions WHERE id = ?', [testContributionId], (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
-
-    await new Promise<void>((resolve, reject) => {
-      db.run('DELETE FROM users WHERE id = ?', [testUserId], (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    await dbExecute('DELETE FROM contributions WHERE id = ?', [testContributionId]);
+    await dbExecute('DELETE FROM users WHERE id = ?', [testUserId]);
     
     testResults.push({
       testName: 'Data Validation',
