@@ -1,8 +1,9 @@
 [build]
 builder = "dockerfile"
+dockerfilePath = "Dockerfile.simple"
 
 [deploy]
-startCommand = "node server.js"
+startCommand = "node simple-server.js"
 healthcheckPath = "/"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
@@ -10,4 +11,4 @@ restartPolicyMaxRetries = 5
 
 [env]
 NODE_ENV = "production"
-PORT = "8080"
+PORT = "5001"
