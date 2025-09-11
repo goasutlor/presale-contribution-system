@@ -17,12 +17,16 @@ RUN cd client && npm ci --only=production --legacy-peer-deps && npm cache clean 
 FROM base AS builder
 WORKDIR /app
 
-# Copy source code
-COPY . .
+# Copy package files first
+COPY package*.json ./
+COPY client/package*.json ./client/
 
 # Install all dependencies (including dev dependencies)
 RUN npm ci --legacy-peer-deps
 RUN cd client && npm ci --legacy-peer-deps
+
+# Copy source code
+COPY . .
 
 # Build the application
 RUN npm run build
