@@ -1,0 +1,30 @@
+{
+  "ServiceName": "presale-contribution-system",
+  "SourceConfiguration": {
+    "CodeRepository": {
+      "RepositoryUrl": "https://github.com/goasutlor/presale-contribution-system",
+      "SourceCodeVersion": {
+        "Type": "BRANCH",
+        "Value": "main"
+      },
+      "CodeConfiguration": {
+        "ConfigurationSource": "REPOSITORY",
+        "CodeConfigurationValues": {
+          "Runtime": "NODEJS_18",
+          "BuildCommand": "npm cache clean --force && npm install --legacy-peer-deps --force && cd client && npm install --legacy-peer-deps --force && npm run build",
+          "StartCommand": "npm start",
+          "RuntimeEnvironmentVariables": {
+            "NODE_ENV": "production",
+            "PORT": "5001",
+            "JWT_SECRET": "your-super-secret-jwt-key-change-in-production",
+            "DB_PATH": "/tmp/data/presale_contributions.db"
+          }
+        }
+      }
+    }
+  },
+  "InstanceConfiguration": {
+    "Cpu": "0.25 vCPU",
+    "Memory": "0.5 GB"
+  }
+}

@@ -8,10 +8,10 @@ param(
     [string]$Branch = "main"
 )
 
-Write-Host "🚀 Starting AWS App Runner Deployment..." -ForegroundColor Blue
+Write-Host "Starting AWS App Runner Deployment..." -ForegroundColor Blue
 
 # Configuration
-Write-Host "📋 Deployment Configuration:" -ForegroundColor Cyan
+Write-Host "Deployment Configuration:" -ForegroundColor Cyan
 Write-Host "  App Name: $AppName" -ForegroundColor White
 Write-Host "  Region: $Region" -ForegroundColor White
 Write-Host "  GitHub Repo: $GitHubRepo" -ForegroundColor White
@@ -23,12 +23,12 @@ try {
     $awsPath = "C:\Program Files\Amazon\AWSCLIV2\aws.exe"
     if (Test-Path $awsPath) {
         $awsVersion = & $awsPath --version 2>$null
-        Write-Host "✅ AWS CLI is installed: $awsVersion" -ForegroundColor Green
+        Write-Host "AWS CLI is installed: $awsVersion" -ForegroundColor Green
     } else {
         throw "AWS CLI not found"
     }
 } catch {
-    Write-Host "❌ AWS CLI is not installed. Please install it first." -ForegroundColor Red
+    Write-Host "AWS CLI is not installed. Please install it first." -ForegroundColor Red
     Write-Host "  Install: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" -ForegroundColor Yellow
     exit 1
 }
@@ -40,14 +40,14 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "AWS CLI not configured"
     }
-    Write-Host "✅ AWS CLI is configured" -ForegroundColor Green
+    Write-Host "AWS CLI is configured" -ForegroundColor Green
 } catch {
-    Write-Host "❌ AWS CLI is not configured. Please run 'aws configure' first." -ForegroundColor Red
+    Write-Host "AWS CLI is not configured. Please run 'aws configure' first." -ForegroundColor Red
     exit 1
 }
 
 # Create IAM role for App Runner
-Write-Host "🔧 Creating IAM role for App Runner..." -ForegroundColor Blue
+Write-Host "Creating IAM role for App Runner..." -ForegroundColor Blue
 
 # Create trust policy
 $trustPolicy = @"
@@ -85,7 +85,7 @@ if ($LASTEXITCODE -ne 0) {
 $accountId = & $awsPath sts get-caller-identity --query Account --output text
 
 # Create App Runner service
-Write-Host "🚀 Creating App Runner service..." -ForegroundColor Blue
+Write-Host "Creating App Runner service..." -ForegroundColor Blue
 
 # Create service configuration
 $serviceConfig = @"
@@ -118,8 +118,7 @@ $serviceConfig = @"
     "Cpu": "0.25 vCPU",
     "Memory": "0.5 GB",
     "InstanceRoleArn": "arn:aws:iam::${accountId}:role/AppRunnerServiceRole"
-  },
-  "AutoScalingConfigurationArn": "arn:aws:apprunner:${Region}:${accountId}:autoscalingconfiguration/DefaultConfiguration/1/00000000000000000000000000000001"
+  }
 }
 "@
 
@@ -130,20 +129,20 @@ Write-Host "  Creating service..." -ForegroundColor Yellow
 & $awsPath apprunner create-service --cli-input-json file://apprunner-service.json --region $Region
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ App Runner service created successfully!" -ForegroundColor Green
+    Write-Host "App Runner service created successfully!" -ForegroundColor Green
     
     # Get service URL
-    Write-Host "🔍 Getting service URL..." -ForegroundColor Blue
+    Write-Host "Getting service URL..." -ForegroundColor Blue
     Start-Sleep -Seconds 10  # Wait for service to be created
     
     $serviceArn = "arn:aws:apprunner:${Region}:${accountId}:service/${AppName}"
     $serviceUrl = & $awsPath apprunner describe-service --service-arn $serviceArn --region $Region --query 'Service.ServiceUrl' --output text
     
-    Write-Host "🎉 Deployment completed successfully!" -ForegroundColor Green
-    Write-Host "📱 Service URL: https://$serviceUrl" -ForegroundColor Cyan
-    Write-Host "🔗 AWS Console: https://console.aws.amazon.com/apprunner/home?region=$Region#/services" -ForegroundColor Cyan
+    Write-Host "Deployment completed successfully!" -ForegroundColor Green
+    Write-Host "Service URL: https://$serviceUrl" -ForegroundColor Cyan
+    Write-Host "AWS Console: https://console.aws.amazon.com/apprunner/home?region=$Region#/services" -ForegroundColor Cyan
 } else {
-    Write-Host "❌ Failed to create App Runner service" -ForegroundColor Red
+    Write-Host "Failed to create App Runner service" -ForegroundColor Red
     Write-Host "  Check AWS Console for details" -ForegroundColor Yellow
 }
 
@@ -151,4 +150,4 @@ if ($LASTEXITCODE -eq 0) {
 Remove-Item -Path "trust-policy.json" -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "apprunner-service.json" -Force -ErrorAction SilentlyContinue
 
-Write-Host "✨ Deployment script completed!" -ForegroundColor Green
+Write-Host "Deployment script completed!" -ForegroundColor Green

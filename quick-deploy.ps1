@@ -6,11 +6,13 @@ Write-Host "==========================================" -ForegroundColor Blue
 
 # Check if AWS CLI is installed
 try {
-    $awsVersion = aws --version 2>$null
-    if ($LASTEXITCODE -ne 0) {
+    $awsPath = "C:\Program Files\Amazon\AWSCLIV2\aws.exe"
+    if (Test-Path $awsPath) {
+        $awsVersion = & $awsPath --version 2>$null
+        Write-Host "✅ AWS CLI is installed: $awsVersion" -ForegroundColor Green
+    } else {
         throw "AWS CLI not found"
     }
-    Write-Host "✅ AWS CLI is installed: $awsVersion" -ForegroundColor Green
 } catch {
     Write-Host "❌ AWS CLI is not installed. Please install it first." -ForegroundColor Red
     Write-Host "  Install: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" -ForegroundColor Yellow
@@ -26,7 +28,8 @@ try {
 
 # Check if AWS CLI is configured
 try {
-    $callerIdentity = aws sts get-caller-identity 2>$null
+    $awsPath = "C:\Program Files\Amazon\AWSCLIV2\aws.exe"
+    $callerIdentity = & $awsPath sts get-caller-identity 2>$null
     if ($LASTEXITCODE -ne 0) {
         throw "AWS CLI not configured"
     }
