@@ -16,11 +16,62 @@ console.log('🔄 Starting migration from SQLite to PostgreSQL...');
 console.log('📁 SQLite path:', sqlitePath);
 console.log('🔗 PostgreSQL URL:', postgresUrl.replace(/\/\/.*@/, '//***:***@'));
 
+// Debug environment variables
+console.log('🔍 Environment Debug:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- RAILWAY_ENVIRONMENT:', process.env.RAILWAY_ENVIRONMENT);
+console.log('- DATABASE_URL length:', postgresUrl ? postgresUrl.length : 0);
+
+// Parse DATABASE_URL for debugging
+try {
+  const url = new URL(postgresUrl);
+  console.log('🔍 Database URL Details:');
+  console.log('- Protocol:', url.protocol);
+  console.log('- Host:', url.hostname);
+  console.log('- Port:', url.port);
+  console.log('- Database:', url.pathname.substring(1));
+  console.log('- Username:', url.username);
+  console.log('- Password:', url.password ? '***' : 'Not set');
+} catch (error) {
+  console.error('❌ Invalid DATABASE_URL format:', error.message);
+  process.exit(1);
+}
+
 // PostgreSQL connection
 const pgPool = new Pool({
   connectionString: postgresUrl,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.RAILWAY_ENVIRONMENT === 'production' ? { rejectUnauthorized: false } : false,
+  max: 1,
+  idleTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
 });
+
+// Test connection first
+async function testConnection() {
+  try {
+    console.log('🔄 Testing PostgreSQL connection...');
+    const client = await pgPool.connect();
+    console.log('✅ Successfully connected to PostgreSQL!');
+    
+    // Test basic query
+    const result = await client.query('SELECT version()');
+    console.log('📊 PostgreSQL Version:', result.rows[0].version);
+    
+    // Test database name
+    const dbResult = await client.query('SELECT current_database()');
+    console.log('📊 Current Database:', dbResult.rows[0].current_database);
+    
+    client.release();
+    return true;
+  } catch (error) {
+    console.error('❌ PostgreSQL connection test failed:');
+    console.error('Error Code:', error.code);
+    console.error('Error Message:', error.message);
+    console.error('Error Detail:', error.detail);
+    console.error('Error Hint:', error.hint);
+    return false;
+  }
+}
 
 // SQLite connection
 const sqliteDb = new sqlite3.Database(sqlitePath);
@@ -211,10 +262,13 @@ async function migrateContributions() {
 
 async function migrate() {
   try {
-    // Test PostgreSQL connection
-    const client = await pgPool.connect();
-    console.log('✅ Connected to PostgreSQL');
-    client.release();
+    // Test PostgreSQL connection first
+    console.log('🔄 Testing PostgreSQL connection before migration...');
+    const connectionTest = await testConnection();
+    if (!connectionTest) {
+      console.error('❌ Cannot proceed with migration - PostgreSQL connection failed');
+      process.exit(1);
+    }
 
     // Check if SQLite database exists
     if (!fs.existsSync(sqlitePath)) {

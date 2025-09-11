@@ -4,7 +4,8 @@ import { User, Contribution } from '../types';
 // Check if we should use PostgreSQL or SQLite
 const hasDatabaseUrl = !!process.env.DATABASE_URL;
 const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
-const usePostgreSQL = hasDatabaseUrl && isProduction;
+// Use PostgreSQL if DATABASE_URL is available (Railway always provides this)
+const usePostgreSQL = hasDatabaseUrl;
 
 console.log('🔍 Database selection debug:', {
   hasDatabaseUrl,
