@@ -73,17 +73,8 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Root health check for Railway
-app.get('/', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    message: 'Presale Contribution System API is running'
+    app: 'Presale Contribution System'
   });
 });
 
@@ -93,6 +84,18 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, '../../client/build/index.html'));
   });
 } else {
+  // Root health check for development
+  app.get('/', (req, res) => {
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      message: 'Presale Contribution System API is running',
+      version: '1.0.0',
+      https: req.header('x-forwarded-proto') === 'https'
+    });
+  });
+  
   // 404 handler for development
   app.use('*', (req, res) => {
     res.status(404).json({ 
