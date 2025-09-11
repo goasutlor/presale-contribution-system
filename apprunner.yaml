@@ -3,8 +3,8 @@ runtime: nodejs18
 build:
   commands:
     build:
-      - npm ci
-      - cd client && npm ci
+      - npm ci --legacy-peer-deps
+      - cd client && npm ci --legacy-peer-deps
       - npm run build
 run:
   runtime-version: 18
