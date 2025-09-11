@@ -79,11 +79,21 @@ async function createTables(): Promise<void> {
       contributionMonth VARCHAR(20) NOT NULL,
       status VARCHAR(50) NOT NULL DEFAULT 'draft',
       tags TEXT,
+      attachments TEXT,
+      saleApproval BOOLEAN DEFAULT false,
+      saleApprovalDate TIMESTAMP,
+      saleApprovalNotes TEXT,
       createdAt TIMESTAMP DEFAULT NOW(),
       updatedAt TIMESTAMP DEFAULT NOW(),
       FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
+
+  // Ensure columns exist for previously created tables
+  await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS attachments TEXT`);
+  await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApproval BOOLEAN DEFAULT false`);
+  await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalDate TIMESTAMP`);
+  await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalNotes TEXT`);
 
   console.log('✅ Database tables created/verified');
 }
