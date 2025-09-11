@@ -63,8 +63,8 @@ router.get('/', requireAdmin, asyncHandler(async (req: Request, res: Response) =
       role: row.role,
       status: row.status || 'approved', // Include status field
       canViewOthers: Boolean(row.canViewOthers),
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt
+      createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : null,
+      updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
   }));
 
   console.log('🔍 Processed users:', users.length);
@@ -97,8 +97,8 @@ router.get('/:id', canViewUser(':id'), asyncHandler(async (req: AuthRequest, res
     role: row.role,
     status: row.status || 'approved',
     canViewOthers: Boolean(row.canViewOthers),
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt
+    createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : null,
+    updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
   };
 
   res.json({ success: true, data: user });
