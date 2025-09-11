@@ -15,6 +15,17 @@ import { initializeDatabase } from './database/init';
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Force HTTPS in production (Railway handles this automatically)
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -100,75 +111,13 @@ async function startServer() {
     await initializeDatabase();
     console.log('✅ Database initialized successfully');
     
-    // Check if HTTPS is enabled
-    const isHttps = process.env.NODE_ENV === 'production' && process.env.HTTPS_PORT;
-    const httpsPort = process.env.HTTPS_PORT || 5443;
-    
-    console.log('🔍 Debug HTTPS:', {
-      NODE_ENV: process.env.NODE_ENV,
-      HTTPS_PORT: process.env.HTTPS_PORT,
-      isHttps: isHttps,
-      httpsPort: httpsPort
+    // Railway handles HTTPS automatically, just start HTTP server
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🔐 Railway will handle HTTPS automatically`);
     });
-    
-    // Force HTTPS if HTTPS_PORT is set
-    if (process.env.HTTPS_PORT) {
-      console.log('🔐 Forcing HTTPS mode...');
-      const https = require('https');
-      const fs = require('fs');
-      
-      try {
-        const privateKey = fs.readFileSync(process.env.SSL_KEY_PATH || './ssl/private-key.pem', 'utf8');
-        const certificate = fs.readFileSync(process.env.SSL_CERT_PATH || './ssl/certificate.pem', 'utf8');
-        
-        const credentials = { key: privateKey, cert: certificate };
-        const httpsServer = https.createServer(credentials, app);
-        
-        httpsServer.listen(httpsPort, () => {
-          console.log(`🔐 HTTPS Server running on port ${httpsPort}`);
-          console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-          console.log(`🔗 Health check: https://localhost:${httpsPort}/api/health`);
-        });
-        return; // Exit early to prevent HTTP server
-      } catch (sslError) {
-        console.error('❌ SSL Error:', (sslError as Error).message);
-        console.warn('⚠️ Falling back to HTTP');
-      }
-    }
-    
-    if (isHttps) {
-      // HTTPS Server
-      const https = require('https');
-      const fs = require('fs');
-      
-      try {
-        const privateKey = fs.readFileSync(process.env.SSL_KEY_PATH || './ssl/private-key.pem', 'utf8');
-        const certificate = fs.readFileSync(process.env.SSL_CERT_PATH || './ssl/certificate.pem', 'utf8');
-        
-        const credentials = { key: privateKey, cert: certificate };
-        const httpsServer = https.createServer(credentials, app);
-        
-        httpsServer.listen(httpsPort, () => {
-          console.log(`🔐 HTTPS Server running on port ${httpsPort}`);
-          console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-          console.log(`🔗 Health check: https://localhost:${httpsPort}/api/health`);
-        });
-      } catch (sslError) {
-        console.warn('⚠️ SSL certificates not found, falling back to HTTP');
-        app.listen(PORT, () => {
-          console.log(`🚀 HTTP Server running on port ${PORT}`);
-          console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-          console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-        });
-      }
-    } else {
-      // HTTP Server
-      app.listen(PORT, () => {
-        console.log(`🚀 HTTP Server running on port ${PORT}`);
-        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-        console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-      });
-    }
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
