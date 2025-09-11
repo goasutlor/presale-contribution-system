@@ -1,0 +1,1034 @@
+/* Global Theme and Language Styles */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Blue-Gray Theme Variables */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Blue-Gray Brand Colors */
+  --primary-blue: #365486;
+  --primary-blue-light: #7FC7D9;
+  --primary-blue-lighter: #D2E0FB;
+  --primary-cream: #F9F7F7;
+  --primary-gray: #64748b;
+  --primary-gray-light: #94a3b8;
+  --primary-gray-dark: #475569;
+  --accent-blue: #7FC7D9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+/* Dark Theme Variables */
+.dark {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --border-color: #374151;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Global Theme Application */
+html {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Dark Mode Text Clarity Improvements */
+.dark {
+  /* Improve text contrast and readability */
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --text-muted: #9ca3af;
+  
+  /* Enhanced font weights for better visibility */
+  font-weight: 500;
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.dark p, .dark span, .dark div {
+  font-weight: 500;
+}
+
+.dark .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.dark .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+.dark .text-gray-300 {
+  color: #d1d5db !important;
+}
+
+.dark .text-gray-200 {
+  color: #e5e7eb !important;
+}
+
+.dark .text-slate-600 {
+  color: #d1d5db !important;
+}
+
+.dark .text-slate-400 {
+  color: #9ca3af !important;
+}
+
+.dark .text-slate-300 {
+  color: #d1d5db !important;
+}
+
+.dark .text-slate-200 {
+  color: #e5e7eb !important;
+}
+
+/* Language-specific styles */
+.lang-th {
+  font-family: 'Sarabun', 'Noto Sans Thai', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.lang-en {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Theme-aware scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: #6b7280;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Theme-aware selection */
+::selection {
+  background-color: var(--text-secondary);
+  color: var(--bg-primary);
+}
+
+/* Force theme on all elements */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Override any hardcoded colors with theme variables */
+.bg-white {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-gray-50 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.border-gray-200 {
+  border-color: var(--border-color) !important;
+}
+
+/* Dark mode specific overrides */
+.dark .bg-white {
+  background-color: var(--bg-primary) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .border-gray-200 {
+  border-color: var(--border-color) !important;
+}
+
+/* Ensure all text elements use theme colors */
+h1, h2, h3, h4, h5, h6, p, span, div, a, button {
+  color: inherit;
+}
+
+/* Form controls must always be readable */
+input, textarea, select {
+  color: var(--text-primary) !important;
+  background: var(--bg-primary);
+}
+
+/* Theme-aware focus states */
+button:focus, input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--text-secondary);
+  outline-offset: 2px;
+}
+
+/* Animation for theme switching */
+.theme-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Language-specific text alignment */
+.lang-th {
+  text-align: left;
+}
+
+.lang-en {
+  text-align: left;
+}
+
+/* RTL support for future languages */
+.lang-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Notification animations */
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.notification-error {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Enhanced notification styles */
+.notification-enter {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.notification-exit {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Persistent notification styles - prevent auto-close */
+.persistent-notification {
+  position: fixed !important;
+  z-index: 9999 !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+.persistent-notification * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Force error notifications to stay visible - NO EXCEPTIONS */
+.notification-error {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  transform: translateX(0) !important;
+  position: fixed !important;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+  user-select: text !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Block any auto-close attempts */
+.notification-error * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Force error notifications to stay visible */
+.notification-error.persistent-notification {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  transform: translateX(0) !important;
+}
+
+/* Blue-Gray Theme Styles */
+.blue-gradient {
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+}
+
+.blue-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.blue-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.blue-button {
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.blue-button:hover {
+  background: var(--primary-blue-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.blue-button-secondary {
+  background: transparent;
+  color: var(--primary-blue);
+  border: 2px solid var(--primary-blue);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.blue-button-secondary:hover {
+  background: var(--primary-blue);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.blue-text-primary {
+  color: var(--primary-blue);
+}
+
+.blue-text-secondary {
+  color: var(--primary-gray);
+}
+
+.blue-border {
+  border-color: var(--primary-blue);
+}
+
+/* G-Able Logo Styles */
+.gable-logo {
+  height: 40px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+}
+
+.gable-logo-large {
+  height: 80px;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+}
+
+/* G-Able Navigation Styles */
+.gable-nav {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+.gable-nav-item {
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.gable-nav-item:hover {
+  background: var(--gable-blue);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.gable-nav-item.active {
+  background: var(--gable-blue);
+  color: white;
+}
+
+/* G-Able Form Styles */
+.gable-input {
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.gable-input:focus {
+  border-color: var(--gable-blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.gable-select {
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.gable-select:focus {
+  border-color: var(--gable-blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+/* G-Able Table Styles */
+.gable-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.gable-table th {
+  background: var(--gable-blue);
+  color: white;
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.gable-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.gable-table tr:hover {
+  background: var(--bg-secondary);
+}
+
+/* G-Able Status Badges */
+.gable-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gable-badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--gable-success);
+}
+
+.gable-badge-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--gable-warning);
+}
+
+.gable-badge-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--gable-danger);
+}
+
+.gable-badge-info {
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--gable-accent);
+}
+
+/* Modern Login Page Animations */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+.animate-gradient {
+  animation: gradientShift 15s ease infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* Print Styles */
+@media print {
+  /* Use Google Sans for print */
+  * {
+    font-family: 'Google Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  }
+  
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 0.5in;
+  }
+  
+  /* Hide non-printable elements */
+  .no-print,
+  .print\\:hidden {
+    display: none !important;
+  }
+  
+  /* Optimize for single page */
+  body {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  
+  /* Reduce margins and padding */
+  .container,
+  .max-w-7xl,
+  .mx-auto {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Optimize headers */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    margin-top: 0.5em !important;
+    margin-bottom: 0.3em !important;
+  }
+  
+  h1 { font-size: 18px !important; }
+  h2 { font-size: 16px !important; }
+  h3 { font-size: 14px !important; }
+  h4 { font-size: 13px !important; }
+  h5, h6 { font-size: 12px !important; }
+  
+  /* Optimize tables */
+  table {
+    page-break-inside: avoid;
+    font-size: 11px !important;
+  }
+  
+  th, td {
+    padding: 4px 6px !important;
+    border: 1px solid #000 !important;
+  }
+  
+  th {
+    background: #f0f0f0 !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Optimize signature sections */
+  .signature-section {
+    page-break-inside: avoid;
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .signature-block {
+    display: inline-block;
+    width: 45% !important;
+    margin: 5px 2% !important;
+    vertical-align: top;
+  }
+  
+  .signature-line {
+    border-bottom: 1px solid #000 !important;
+    height: 20px !important;
+    margin: 5px 0 !important;
+  }
+  
+  .signature-label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    margin-bottom: 5px !important;
+  }
+  
+  .signature-name {
+    font-size: 10px !important;
+    margin-top: 5px !important;
+  }
+  
+  /* Optimize date fields */
+  .date-field {
+    display: inline-block;
+    width: 45% !important;
+    margin: 5px 2% !important;
+  }
+  
+  .date-label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    margin-bottom: 5px !important;
+  }
+  
+  .date-line {
+    border-bottom: 1px solid #000 !important;
+    height: 15px !important;
+    margin: 5px 0 !important;
+  }
+  
+  /* Remove shadows and effects */
+  .shadow,
+  .shadow-lg,
+  .shadow-sm {
+    box-shadow: none !important;
+  }
+  
+  /* Optimize spacing */
+  .py-8, .py-6, .py-4 {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+  
+  .px-4, .px-6, .px-8 {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+  
+  .mb-8, .mb-6, .mb-4 {
+    margin-bottom: 10px !important;
+  }
+  
+  .mt-8, .mt-6, .mt-4 {
+    margin-top: 10px !important;
+  }
+  
+  /* Optimize cards */
+  .bg-white {
+    background: #fff !important;
+    border: 1px solid #000 !important;
+  }
+  
+  .rounded-lg, .rounded-md {
+    border-radius: 0 !important;
+  }
+  
+  /* Force single page layout */
+  .print-single-page {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Optimize text */
+  p {
+    margin: 0.3em 0 !important;
+    font-size: 11px !important;
+  }
+  
+  .text-sm {
+    font-size: 10px !important;
+  }
+  
+  .text-xs {
+    font-size: 9px !important;
+  }
+}
+
+/* Checkbox styles for better visibility */
+input[type="checkbox"]:checked {
+  accent-color: #3B82F6 !important;
+  background-color: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+}
+
+/* Force checkmark color in light mode */
+.light input[type="checkbox"]:checked {
+  accent-color: #3B82F6 !important;
+  background-color: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+}
+
+/* Force checkmark color in dark mode */
+.dark input[type="checkbox"]:checked {
+  accent-color: #3B82F6 !important;
+  background-color: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+}
+
+/* Custom checkbox styling for better control */
+input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid #d1d5db !important;
+  border-radius: 4px !important;
+  background-color: white !important;
+  cursor: pointer !important;
+  position: relative !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: black !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+}
+
+/* Dark mode checkbox */
+.dark input[type="checkbox"] {
+  background-color: #374151 !important;
+  border-color: #6b7280 !important;
+}
+
+.dark input[type="checkbox"]:checked {
+  background-color: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+}
+
+.dark input[type="checkbox"]:checked::after {
+  color: white !important;
+}
+
+/* Force checkbox styling in Reports page */
+.reports-page input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid #d1d5db !important;
+  border-radius: 4px !important;
+  background-color: white !important;
+  cursor: pointer !important;
+  position: relative !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+.reports-page input[type="checkbox"]:checked {
+  background-color: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+}
+
+.reports-page input[type="checkbox"]:checked::after {
+  content: "✓" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: black !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+}
+
+/* Force Login page input fields to be white and visible - ULTRA SPECIFIC */
+.login-page input[type="email"],
+.login-page input[type="password"],
+.login-page input[type="text"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.login-page input[type="email"]:focus,
+.login-page input[type="password"]:focus,
+.login-page input[type="text"]:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #7FC7D9 !important;
+  border: 1px solid #7FC7D9 !important;
+}
+
+.login-page input[type="email"]::placeholder,
+.login-page input[type="password"]::placeholder,
+.login-page input[type="text"]::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Dark mode - still force white inputs on login page */
+.dark .login-page input[type="email"],
+.dark .login-page input[type="password"],
+.dark .login-page input[type="text"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.dark .login-page input[type="email"]:focus,
+.dark .login-page input[type="password"]:focus,
+.dark .login-page input[type="text"]:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #7FC7D9 !important;
+  border: 1px solid #7FC7D9 !important;
+}
+
+.dark .login-page input[type="email"]::placeholder,
+.dark .login-page input[type="password"]::placeholder,
+.dark .login-page input[type="text"]::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Override any theme variables for login page */
+.login-page input {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+.dark .login-page input {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* NUCLEAR OPTION - Override everything for login inputs */
+#email, #password {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+#email:focus, #password:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #7FC7D9 !important;
+}
+
+#email::placeholder, #password::placeholder {
+  color: #6b7280 !important;
+}
+
+.dark #email, .dark #password {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.dark #email:focus, .dark #password:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #7FC7D9 !important;
+}
+
+.dark #email::placeholder, .dark #password::placeholder {
+  color: #6b7280 !important;
+}
+
+/* ULTIMATE NUCLEAR OPTION - Override everything with maximum specificity */
+html body div.login-page div input#email,
+html body div.login-page div input#password {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+html body div.login-page div input#email:focus,
+html body div.login-page div input#password:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #7FC7D9 !important;
+}
+
+html body div.login-page div input#email::placeholder,
+html body div.login-page div input#password::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Dark mode override */
+html.dark body div.login-page div input#email,
+html.dark body div.login-page div input#password {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+html.dark body div.login-page div input#email:focus,
+html.dark body div.login-page div input#password:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #7FC7D9 !important;
+}
+
+html.dark body div.login-page div input#email::placeholder,
+html.dark body div.login-page div input#password::placeholder {
+  color: #6b7280 !important;
+}
+
+/* FINAL NUCLEAR OPTION - Override everything with maximum force */
+* input#email,
+* input#password {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+* input#email:focus,
+* input#password:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #7FC7D9 !important;
+}
+
+* input#email::placeholder,
+* input#password::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Force white background on all input elements in login page */
+.login-page * input {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+.dark .login-page * input {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* LOGIN: force clearly visible typing (light scheme, chromium autofill, etc.) */
+.login-page { color-scheme: light; }
+
+.login-page input,
+.login-page textarea,
+.login-page select {
+  -webkit-text-fill-color: #111827 !important; /* chromium text color */
+  color: #111827 !important;                   /* slate-900 */
+  caret-color: #111827 !important;
+}
+
+.login-page input::placeholder {
+  color: #6b7280 !important; /* slate-500 */
+}
+
+/* Chromium autofill keeps its own paint layer; force it light & readable */
+.login-page input:-webkit-autofill,
+.login-page input:-webkit-autofill:hover,
+.login-page input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111827 !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  border: 1px solid #7FC7D9 !important;
+}

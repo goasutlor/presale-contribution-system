@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  presale-contribution:
+    build: .
+    container_name: presale-contribution-app
+    ports:
+      - "3000:3000"  # Frontend
+      - "5443:5443"  # Backend HTTPS
+    environment:
+      - NODE_ENV=production
+      - PORT=5001
+      - HTTPS_PORT=5443
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - DB_PATH=/app/data/presale_contributions.db
+      - SSL_KEY_PATH=/app/ssl/private-key.pem
+      - SSL_CERT_PATH=/app/ssl/certificate.pem
+    volumes:
+      - ./data:/app/data
+      - ./ssl:/app/ssl
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5443/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  data:
+    driver: local
