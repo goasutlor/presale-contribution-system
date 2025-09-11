@@ -21,7 +21,11 @@
     "test:client": "cd client && npm test",
     "docker:build": "docker build -t presale-contribution-system .",
     "docker:run": "docker run -p 3000:3000 -p 5001:5001 presale-contribution-system",
-    "docker:run:https": "docker run -p 3000:3000 -p 5443:5443 -e NODE_ENV=production presale-contribution-system"
+    "docker:run:https": "docker run -p 3000:3000 -p 5443:5443 -e NODE_ENV=production presale-contribution-system",
+    "backup:create": "node scripts/backup-database.js create",
+    "backup:list": "node scripts/backup-database.js list",
+    "backup:restore": "node scripts/backup-database.js restore",
+    "admin:create": "node scripts/create-admin-user.js"
   },
   "keywords": [
     "presale",
