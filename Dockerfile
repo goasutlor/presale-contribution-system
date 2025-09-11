@@ -13,8 +13,8 @@ COPY . .
 
 # Verify client files exist
 RUN ls -la client/
-RUN ls -la client/public/
 RUN find client/ -name "*.html" -type f
+RUN find client/ -type d -name "public"
 
 # Install client dependencies
 WORKDIR /app/client
