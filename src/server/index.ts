@@ -78,8 +78,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Force production mode for Railway
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
+
 // Serve React app for production
-if (process.env.NODE_ENV === 'production') {
+if (isProduction) {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../../client/build/index.html'));
   });
@@ -113,6 +116,14 @@ async function startServer() {
   try {
     await initializeDatabase();
     console.log('✅ Database initialized successfully');
+    
+    // Debug environment variables
+    console.log('🔍 Environment Debug:', {
+      NODE_ENV: process.env.NODE_ENV,
+      RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+      isProduction: process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production',
+      PORT: process.env.PORT
+    });
     
     // Railway handles HTTPS automatically, just start HTTP server
     app.listen(PORT, () => {
