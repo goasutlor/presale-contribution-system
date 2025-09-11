@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
-  // Backend API URL - Use HTTP for production
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:5001',
+  // Backend API URL - Use relative URL for production
+  BASE_URL: process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001'),
   
   // API Endpoints
   ENDPOINTS: {
