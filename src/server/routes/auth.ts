@@ -537,14 +537,10 @@ router.post('/update-password', authenticateToken, [
     const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
     // Update password in database
-    const db = getDatabase();
-    const updateQuery = `
-      UPDATE users 
-      SET password = ?, updatedAt = CURRENT_TIMESTAMP 
-      WHERE id = ?
-    `;
-    
-    await db.run(updateQuery, [hashedNewPassword, user.id]);
+    await dbExecute(
+      `UPDATE users SET password = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+      [hashedNewPassword, user.id]
+    );
 
     console.log('✅ Password updated successfully for user:', user.email);
 
@@ -562,87 +558,39 @@ router.post('/update-password', authenticateToken, [
 }));
 
 // Approve pending user
-router.post('/approve/:userId', authenticateToken, requireAdmin, (req: Request, res: Response): void => {
+router.post('/approve/:userId', authenticateToken, requireAdmin, async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.params;
-  const db = getDatabase();
-  
   console.log('🔍 Approve user request - userId:', userId);
   console.log('🔍 Request user:', (req as any).user);
-  
-  // First check if user exists
-  db.get('SELECT id, status FROM users WHERE id = ?', [userId], (err: any, row: any) => {
-    if (err) {
-      console.error('Error checking user existence:', err);
-      res.status(500).json({ success: false, message: 'Failed to check user' });
-      return;
-    }
-    
-    if (!row) {
-      console.log('❌ User not found with ID:', userId);
-      res.status(404).json({ success: false, message: 'User not found' });
-      return;
-    }
-    
-    console.log('✅ User found:', row);
-    
-    // Update user status
-    db.run(
-      'UPDATE users SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-      ['approved', userId],
-      function(this: any, err: any) {
-        if (err) {
-          console.error('Error approving user:', err);
-          return res.status(500).json({ success: false, message: 'Failed to approve user' });
-        }
-        
-        console.log('✅ User approved successfully, changes:', this.changes);
-        res.json({ success: true, message: 'User approved successfully' });
-        return;
-      }
-    );
-  });
+
+  const row: any = await dbQueryOne('SELECT id, status FROM users WHERE id = ?', [userId]);
+  if (!row) {
+    console.log('❌ User not found with ID:', userId);
+    res.status(404).json({ success: false, message: 'User not found' });
+    return;
+  }
+
+  await dbExecute('UPDATE users SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?', ['approved', userId]);
+  console.log('✅ User approved successfully');
+  res.json({ success: true, message: 'User approved successfully' });
 });
 
 // Reject pending user
-router.post('/reject/:userId', authenticateToken, requireAdmin, (req: Request, res: Response): void => {
+router.post('/reject/:userId', authenticateToken, requireAdmin, async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.params;
-  const db = getDatabase();
-  
   console.log('🔍 Reject user request - userId:', userId);
   console.log('🔍 Request user:', (req as any).user);
-  
-  // First check if user exists
-  db.get('SELECT id, status FROM users WHERE id = ?', [userId], (err: any, row: any) => {
-    if (err) {
-      console.error('Error checking user existence:', err);
-      res.status(500).json({ success: false, message: 'Failed to check user' });
-      return;
-    }
-    
-    if (!row) {
-      console.log('❌ User not found with ID:', userId);
-      res.status(404).json({ success: false, message: 'User not found' });
-      return;
-    }
-    
-    console.log('✅ User found:', row);
-    
-    // Update user status
-    db.run(
-      'UPDATE users SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-      ['rejected', userId],
-      function(this: any, err: any) {
-        if (err) {
-          console.error('Error rejecting user:', err);
-          return res.status(500).json({ success: false, message: 'Failed to reject user' });
-        }
-        
-        console.log('✅ User rejected successfully, changes:', this.changes);
-        res.json({ success: true, message: 'User rejected successfully' });
-        return;
-      }
-    );
-  });
+
+  const row: any = await dbQueryOne('SELECT id, status FROM users WHERE id = ?', [userId]);
+  if (!row) {
+    console.log('❌ User not found with ID:', userId);
+    res.status(404).json({ success: false, message: 'User not found' });
+    return;
+  }
+
+  await dbExecute('UPDATE users SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?', ['rejected', userId]);
+  console.log('✅ User rejected successfully');
+  res.json({ success: true, message: 'User rejected successfully' });
 });
 
 export { router as authRoutes };
