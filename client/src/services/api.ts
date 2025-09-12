@@ -155,6 +155,17 @@ class ApiService {
     return this.request<ApiResponse<UserProfile>>('/api/auth/profile');
   }
 
+  async updateMyProfile(profile: Partial<UserProfile> & {
+    involvedAccountNames?: string[];
+    involvedSaleNames?: string[];
+    involvedSaleEmails?: string[];
+  }): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/api/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profile),
+    });
+  }
+
   async logout(): Promise<ApiResponse<void>> {
     return this.request<ApiResponse<void>>('/api/auth/logout', {
       method: 'POST',

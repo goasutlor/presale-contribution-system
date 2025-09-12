@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { body, validationResult } from 'express-validator';
 import { dbQueryOne, dbExecute } from '../database/init';
-import { generateToken, authenticateToken, requireAdmin } from '../middleware/auth';
+import { generateToken, authenticateToken, requireAdmin, requireUser } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 
@@ -377,6 +377,63 @@ router.get('/profile', authenticateToken, asyncHandler(async (req: Request, res:
     });
   }
 }));
+
+// Update current user's profile (self-service). Users can edit their own
+// name, staffId, email and assignment lists. Role/status/permissions are not editable here.
+router.put(
+  '/profile',
+  [
+    authenticateToken,
+    requireUser,
+    body('fullName').isLength({ min: 1 }).withMessage('Full name is required'),
+    body('staffId').isLength({ min: 1 }).withMessage('Staff ID is required'),
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('involvedAccountNames').isArray().withMessage('involvedAccountNames must be an array'),
+    body('involvedSaleNames').isArray().withMessage('involvedSaleNames must be an array'),
+    body('involvedSaleEmails').isArray().withMessage('involvedSaleEmails must be an array'),
+  ],
+  asyncHandler(async (req: Request, res: Response): Promise<any> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
+
+    const currentUser: any = (req as any).user;
+    const {
+      fullName,
+      staffId,
+      email,
+      involvedAccountNames = [],
+      involvedSaleNames = [],
+      involvedSaleEmails = [],
+    } = req.body;
+
+    // Uniqueness checks for email and staffId (excluding current user)
+    const existingEmail = await dbQueryOne('SELECT id FROM users WHERE email = ? AND id <> ?', [email, currentUser.id]);
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: 'Email already in use' });
+    }
+    const existingStaff = await dbQueryOne('SELECT id FROM users WHERE staffId = ? AND id <> ?', [staffId, currentUser.id]);
+    if (existingStaff) {
+      return res.status(400).json({ success: false, message: 'Staff ID already in use' });
+    }
+
+    await dbExecute(
+      `UPDATE users SET fullName = ?, staffId = ?, email = ?, involvedAccountNames = ?, involvedSaleNames = ?, involvedSaleEmails = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+      [
+        fullName,
+        staffId,
+        email,
+        JSON.stringify(involvedAccountNames),
+        JSON.stringify(involvedSaleNames),
+        JSON.stringify(involvedSaleEmails),
+        currentUser.id,
+      ]
+    );
+
+    return res.json({ success: true, message: 'Profile updated successfully' });
+  })
+);
 
 // Admin reset user password (Admin only - no current password required)
 router.post('/admin-reset-password', [

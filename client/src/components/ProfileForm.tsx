@@ -74,8 +74,16 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
   const handleProfileUpdate = async (data: ProfileFormData) => {
     setIsSubmitting(true);
     try {
-      // Update user profile
-      const response = await apiService.updateUser(user.id, data);
+      // Self-service update via auth route
+      const response = await apiService.updateMyProfile({
+        id: user.id,
+        fullName: data.fullName,
+        staffId: data.staffId,
+        email: data.email,
+        involvedAccountNames: data.involvedAccountNames,
+        involvedSaleNames: data.involvedSaleNames,
+        involvedSaleEmails: data.involvedSaleEmails,
+      });
       if (response.success) {
         // Update all contributions with new account names and sale names
         await updateContributionsWithNewData(data);
@@ -278,34 +286,122 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
             </div>
           </div>
 
-          {/* Account Names */}
+          {/* Account Names - editable */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assigned Accounts
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {user.involvedAccountNames?.map((account, index) => (
-                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
-                  {account}
-                </span>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-gray-500">Account assignments cannot be changed here</p>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Accounts</label>
+            <Controller
+              name="involvedAccountNames"
+              control={profileControl}
+              rules={{ required: 'At least one account is required' }}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  {field.value.map((account, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={account}
+                        onChange={(e) => {
+                          const next = [...field.value];
+                          next[index] = e.target.value;
+                          field.onChange(next);
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(field.value.filter((_: any, i: number) => i !== index))}
+                        className="px-2 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => field.onChange([...(field.value || []), ''])}
+                    className="inline-flex items-center px-3 py-1 border text-sm font-medium rounded-md text-primary-600 bg-primary-100 hover:bg-primary-200"
+                  >
+                    + Add Account
+                  </button>
+                </div>
+              )}
+            />
+            {profileErrors.involvedAccountNames && (
+              <p className="mt-1 text-sm text-red-600">{(profileErrors as any).involvedAccountNames.message}</p>
+            )}
           </div>
 
-          {/* Sale Names */}
+          {/* Sale Names & Emails - editable */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assigned Sales
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {user.involvedSaleNames?.map((sale, index) => (
-                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-success-100 text-success-800">
-                  {sale}
-                </span>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-gray-500">Sale assignments cannot be changed here</p>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Sales</label>
+            <Controller
+              name="involvedSaleNames"
+              control={profileControl}
+              rules={{ required: 'At least one sale is required' }}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  {field.value.map((sale, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={sale}
+                        onChange={(e) => {
+                          const next = [...field.value];
+                          next[index] = e.target.value;
+                          field.onChange(next);
+                        }}
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                      <Controller
+                        name="involvedSaleEmails"
+                        control={profileControl}
+                        render={({ field: emailField }) => (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="email"
+                              value={emailField.value[index] || ''}
+                              onChange={(e) => {
+                                const next = [...emailField.value];
+                                next[index] = e.target.value;
+                                emailField.onChange(next);
+                              }}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextNames = field.value.filter((_: any, i: number) => i !== index);
+                                const nextEmails = emailField.value.filter((_: any, i: number) => i !== index);
+                                field.onChange(nextNames);
+                                emailField.onChange(nextEmails);
+                              }}
+                              className="px-2 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      />
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const names = [...(field.value || []), ''];
+                      const emailsField = (profileControl as any)._formValues.involvedSaleEmails || [];
+                      (profileControl as any)._formValues.involvedSaleEmails = [...emailsField, ''];
+                      field.onChange(names);
+                    }}
+                    className="inline-flex items-center px-3 py-1 border text-sm font-medium rounded-md text-success-700 bg-success-100 hover:bg-success-200"
+                  >
+                    + Add Sale
+                  </button>
+                </div>
+              )}
+            />
+            {profileErrors.involvedSaleNames && (
+              <p className="mt-1 text-sm text-red-600">{(profileErrors as any).involvedSaleNames.message}</p>
+            )}
           </div>
 
           {/* Action Buttons */}
