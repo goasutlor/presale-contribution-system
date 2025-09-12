@@ -77,6 +77,16 @@ const COLUMN_NAME_MAP: Record<string, string> = {
 
   // aliases used in JOINs
   username: 'userName',
+
+  // aggregate aliases used in dashboard queries
+  totalcontributions: 'totalContributions',
+  approvedcontributions: 'approvedContributions',
+  submittedcontributions: 'submittedContributions',
+  draftcontributions: 'draftContributions',
+  criticalimpact: 'criticalImpact',
+  highimpact: 'highImpact',
+  mediumimpact: 'mediumImpact',
+  lowimpact: 'lowImpact',
 };
 
 function normalizeRowKeys<T extends Record<string, any>>(row: T): T {
