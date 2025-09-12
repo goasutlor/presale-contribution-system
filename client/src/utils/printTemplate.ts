@@ -32,8 +32,11 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
   const uniqueSales = Array.from(new Set(filteredContributions.map((c: any) => c.saleName).filter(Boolean)));
   const uniquePresales = Array.from(new Set(filteredContributions.map((c: any) => c.userName).filter(Boolean)));
 
-  const pickedSale = (filters?.saleName && uniqueSales.length === 1) ? uniqueSales[0] : '';
-  const pickedPresale = (filters?.presaleName && uniquePresales.length === 1) ? uniquePresales[0] : '';
+  // Prefer explicitly selected filters; fall back to unique-single detection
+  const selectedSale = (filters?.saleName || '').trim();
+  const selectedPresale = (filters?.presaleName || '').trim();
+  const pickedSale = selectedSale || (uniqueSales.length === 1 ? uniqueSales[0] : '');
+  const pickedPresale = selectedPresale || (uniquePresales.length === 1 ? uniquePresales[0] : '');
   const showSpecific = Boolean(pickedSale && pickedPresale);
 
   return `

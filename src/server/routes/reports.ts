@@ -347,3 +347,24 @@ router.get('/user/:userId', requireUser, asyncHandler(async (req: AuthRequest, r
 }));
 
 export { router as reportRoutes };
+
+// Export all data as JSON (admin only via requireUser + role check)
+router.get('/export-data', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') {
+    throw createError('Admin access required', 403);
+  }
+
+  const users = await dbQuery('SELECT * FROM users ORDER BY createdAt DESC');
+  const contributions = await dbQuery('SELECT * FROM contributions ORDER BY createdAt DESC');
+
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    users,
+    contributions
+  };
+
+  const json = JSON.stringify(payload, null, 2);
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', 'attachment; filename="asc3_export.json"');
+  res.send(json);
+}));

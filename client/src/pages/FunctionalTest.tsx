@@ -86,6 +86,28 @@ const FunctionalTest: React.FC = () => {
     }
   };
 
+  const exportData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/reports/export-data', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `asc3_export_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Export error', e);
+      alert('Export failed.');
+    }
+  };
+
   if (user?.role !== 'admin') {
     return (
       <div className="text-center py-12">
@@ -104,23 +126,31 @@ const FunctionalTest: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Functional Testing</h1>
           <p className="text-gray-600">Run comprehensive tests to verify system functionality</p>
         </div>
-        <button
-          onClick={runFullTest}
-          disabled={loading}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Running Tests...
-            </>
-          ) : (
-            <>
-              <ArrowPathIcon className="h-5 w-5 mr-2" />
-              Run Full Test Suite
-            </>
-          )}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={exportData}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+          >
+            Export Data
+          </button>
+          <button
+            onClick={runFullTest}
+            disabled={loading}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Running Tests...
+              </>
+            ) : (
+              <>
+                <ArrowPathIcon className="h-5 w-5 mr-2" />
+                Run Full Test Suite
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Test Status Overview */}
