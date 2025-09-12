@@ -203,13 +203,9 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                     type="text"
                     placeholder="เช่น สมชาย ใจดี"
                     onChange={(e) => {
-                      // Clean special characters for full name
+                      // Allow normal spaces and Thai characters; strip only control characters
                       const cleanedValue = e.target.value
-                        .replace(/[\u0E47-\u0E4E]/g, '') // Remove Thai diacritical marks
-                        .replace(/[\u0E30-\u0E39]/g, '') // Remove Thai vowels
-                        .replace(/[\u0E40-\u0E44]/g, '') // Remove Thai consonants
-                        .replace(/[^\u0020-\u007E\u0E01-\u0E5B]/g, '') // Keep only ASCII and Thai characters
-                        .trim();
+                        .replace(/[\u0000-\u001F\u007F]/g, '');
                       field.onChange(cleanedValue);
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -236,13 +232,10 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                     type="text"
                     placeholder="เช่น EMP001"
                     onChange={(e) => {
-                      // Clean special characters for staff ID
                       const cleanedValue = e.target.value
-                        .replace(/[\u0E47-\u0E4E]/g, '') // Remove Thai diacritical marks
-                        .replace(/[\u0E30-\u0E39]/g, '') // Remove Thai vowels
-                        .replace(/[\u0E40-\u0E44]/g, '') // Remove Thai consonants
-                        .replace(/[^\u0020-\u007E\u0E01-\u0E5B]/g, '') // Keep only ASCII and Thai characters
-                        .trim();
+                        .replace(/[\u0000-\u001F\u007F]/g, '')
+                        .replace(/\s{2,}/g, ' ')
+                        .trimStart();
                       field.onChange(cleanedValue);
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -331,18 +324,18 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
             </div>
 
             {/* Confirm Password */}
-            {(!isEditing || (isEditing && isAdmin)) && (
+            {(!isEditing || (isEditing && isAdmin && (watchedPassword?.length || 0) > 0)) && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ยืนยันรหัสผ่าน <span className="text-red-500">*</span>
-                  {isEditing && isAdmin && <span className="text-red-500 text-xs"> (Admin: ยืนยันรหัสผ่านใหม่)</span>}
+                  ยืนยันรหัสผ่าน {(!isEditing || (isEditing && isAdmin && (watchedPassword?.length || 0) > 0)) && (<span className="text-red-500">*</span>)}
+                  {isEditing && isAdmin && (watchedPassword?.length || 0) > 0 && <span className="text-red-500 text-xs"> (Admin: ยืนยันรหัสผ่านใหม่)</span>}
                 </label>
                 <div className="relative">
                   <Controller
                     name="confirmPassword"
                     control={control}
                     rules={{ 
-                      required: isEditing && isAdmin ? 'กรุณายืนยันรหัสผ่านใหม่' : 'กรุณายืนยันรหัสผ่าน',
+                      required: !isEditing ? 'กรุณายืนยันรหัสผ่าน' : ((isEditing && isAdmin && (watchedPassword?.length || 0) > 0) ? 'กรุณายืนยันรหัสผ่านใหม่' : false),
                       validate: validateConfirmPassword
                     }}
                     render={({ field }) => (
