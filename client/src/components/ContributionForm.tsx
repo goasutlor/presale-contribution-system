@@ -56,6 +56,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   onCancel
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tagsInput, setTagsInput] = useState('');
 
 
   const {
@@ -120,10 +121,14 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const onFormSubmit = async (data: ContributionFormData, action: 'draft' | 'submit') => {
     setIsSubmitting(true);
     try {
+      const parsedTags = (tagsInput || '')
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
       // Ensure all required fields are present
       const submitData = {
         ...data,
-        tags: data.tags || [],
+        tags: parsedTags,
         estimatedImpactValue: data.estimatedImpactValue || 0,
         status: action === 'draft' ? 'draft' : 'submitted'
       };
@@ -546,22 +551,12 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tags (คั่นด้วยจุลภาค)
             </label>
-            <Controller
-              name="tags"
-              control={control}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  placeholder="เช่น technical, architecture, cloud, database"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  onChange={(e) => {
-                    const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-                    field.onChange(tags);
-                  }}
-                  value={field.value?.join(', ') || ''}
-                />
-              )}
+            <input
+              type="text"
+              placeholder="เช่น technical, architecture, cloud, database"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
             />
             <p className="mt-1 text-xs text-gray-500">
               ใส่ tags คั่นด้วยจุลภาค เช่น technical, architecture, cloud
