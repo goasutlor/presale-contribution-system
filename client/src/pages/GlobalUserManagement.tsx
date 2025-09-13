@@ -397,64 +397,75 @@ const GlobalUserManagement: React.FC = () => {
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
+                      <div className="flex flex-wrap gap-2">
+                        {/* Approve/Reject buttons for pending users */}
                         {user.status === 'pending' && (
                           <>
                             <button
                               onClick={() => handleApproveUser(user.id)}
-                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                              className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                               title="Approve User"
                             >
-                              <CheckCircleIcon className="h-5 w-5" />
+                              <CheckCircleIcon className="h-3 w-3 mr-1" />
+                              Approve
                             </button>
                             <button
                               onClick={() => handleRejectUser(user.id)}
-                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                              className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                               title="Reject User"
                             >
-                              <XCircleIcon className="h-5 w-5" />
+                              <XCircleIcon className="h-3 w-3 mr-1" />
+                              Reject
                             </button>
                           </>
                         )}
                         
+                        {/* Edit User button */}
                         <button
                           onClick={() => {
                             setEditingUser(user);
                             setShowUserForm(true);
                           }}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="inline-flex items-center px-2 py-1 border border-gray-300 dark:border-gray-600 text-xs font-medium rounded text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                           title="Edit User"
                         >
-                          <PencilIcon className="h-5 w-5" />
+                          <PencilIcon className="h-3 w-3 mr-1" />
+                          Edit
                         </button>
 
+                        {/* Reset Password button */}
                         <button
                           onClick={() => {
                             setSelectedUserId(user.id);
                             setShowPasswordReset(true);
                           }}
-                          className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                          className="inline-flex items-center px-2 py-1 border border-gray-300 dark:border-gray-600 text-xs font-medium rounded text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                           title="Reset Password"
                         >
-                          🔑
+                          🔑 Reset
                         </button>
-
+                      </div>
+                      
+                      {/* Role and Tenant dropdowns */}
+                      <div className="mt-2 flex gap-2">
                         <select
                           value={user.role}
                           onChange={(e) => handleChangeRole(user.id, e.target.value as 'user' | 'admin')}
-                          className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          title="Change Role"
                         >
-                          <option value="user">User</option>
-                          <option value="admin">Admin</option>
+                          <option value="user">👤 User</option>
+                          <option value="admin">👑 Admin</option>
                         </select>
 
                         <select
                           value={user.tenantPrefix}
                           onChange={(e) => handleChangeTenant(user.id, e.target.value)}
-                          className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                          title="Move to Tenant"
                         >
                           {uniqueTenants.map(tenant => (
-                            <option key={tenant} value={tenant}>{tenant}</option>
+                            <option key={tenant} value={tenant}>🏢 {tenant}</option>
                           ))}
                         </select>
                       </div>

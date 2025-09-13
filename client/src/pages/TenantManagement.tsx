@@ -56,6 +56,7 @@ const TenantManagement: React.FC = () => {
         
         const combined = (tenantsRes.data || []).map((t: any) => ({
           ...t,
+          adminEmails: t.adminEmails || [],
           stats: statsByPrefix[t.tenantPrefix] || { 
             users: 0, 
             contributions: 0, 
@@ -291,7 +292,7 @@ const TenantManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {tenant.adminEmails.length > 0 && (
+                {tenant.adminEmails && tenant.adminEmails.length > 0 && (
                   <div className="mt-3">
                     <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Admin Emails:
