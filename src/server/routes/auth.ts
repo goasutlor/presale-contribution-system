@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { body, validationResult } from 'express-validator';
@@ -84,9 +85,10 @@ router.post('/login', loginValidation, asyncHandler(async (req: Request, res: Re
     }
 
     const { email, password } = req.body;
+    const tenantId = (req as any).tenantId || 'tenant-default';
     console.log('📧 Looking for user with email:', email);
 
-    const user: any = await dbQueryOne('SELECT * FROM users WHERE email = ?', [email]);
+    const user: any = await dbQueryOne('SELECT * FROM users WHERE email = ? AND tenantId = ?', [email, tenantId]);
 
     console.log('👤 User found:', user ? { id: user.id, email: user.email, role: user.role } : 'No user found');
 
@@ -129,7 +131,7 @@ router.post('/login', loginValidation, asyncHandler(async (req: Request, res: Re
       }
 
       // Generate tenant-aware JWT token (aud: tenant)
-      const token = jwt.sign({ userId: user.id, tenantId: (req as any).tenantId || 'tenant-default', tenantPrefix: (req as any).tenantPrefix, aud: 'tenant' }, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production', { expiresIn: '24h' });
+      const token = jwt.sign({ userId: user.id, tenantId, tenantPrefix: (req as any).tenantPrefix, aud: 'tenant' }, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production', { expiresIn: '24h' });
 
       // Parse JSON fields for response
       const userResponse = {
@@ -213,8 +215,8 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
 
     // Check if user already exists (within tenant by email/staffId globally for simplicity)
     const existingUser: any = await dbQueryOne(
-      'SELECT id FROM users WHERE email = ? OR staffId = ?',
-      [email, staffId]
+      'SELECT id FROM users WHERE (email = ? OR staffId = ?) AND tenantId = ?',
+      [email, staffId, tenantId]
     );
 
     if (existingUser) {
