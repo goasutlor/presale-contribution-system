@@ -16,6 +16,7 @@ import AllContributions from './pages/AllContributions';
 import MyContributions from './pages/MyContributions';
 import FunctionalTest from './pages/FunctionalTest';
 import GlobalAdmin from './pages/GlobalAdmin';
+import GlobalLayout from './components/GlobalLayout';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -47,8 +48,15 @@ const AppRoutes: React.FC = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/t/:tenantPrefix/login" element={<TenantBinder><Login /></TenantBinder>} />
         <Route path="/t/:tenantPrefix/signup" element={<TenantBinder><Signup /></TenantBinder>} />
-        {/* Allow access to Global Admin without tenant auth; it uses its own token */}
-        <Route path="/global-admin" element={<GlobalAdmin />} />
+        {/* Global Admin suite */}
+        <Route path="/global-admin" element={<GlobalLayout />}>
+          <Route index element={<GlobalAdmin />} />
+          <Route path="dashboard" element={<GlobalAdmin />} />
+          <Route path="contributions" element={<GlobalAdmin />} />
+          <Route path="reports" element={<GlobalAdmin />} />
+          <Route path="users" element={<GlobalAdmin />} />
+          <Route path="tenants" element={<GlobalAdmin />} />
+        </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
