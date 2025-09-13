@@ -53,7 +53,11 @@ const Login: React.FC = () => {
           return;
         }
       } catch (e: any) {
-        // If global route missing (404) or credentials invalid (401), proceed to tenant login
+        // If global route missing (404), surface clear message; otherwise fall back to tenant login
+        if (e && (e.status === 404 || /Cannot POST \/api\/global\/login/i.test(e.message || ''))) {
+          setLoginError({ message: 'Global Admin is not enabled on this server build (404). Please redeploy backend with /api/global routes.', response: { status: 404 } });
+          return;
+        }
       }
 
       await login(email, password);
