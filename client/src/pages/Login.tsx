@@ -15,7 +15,10 @@ const Login: React.FC = () => {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const [debugPause, setDebugPause] = useState<boolean>((localStorage.getItem('loginDebugPause') || '0') === '1');
+  const isProd = process.env.NODE_ENV === 'production';
+  const [debugPause, setDebugPause] = useState<boolean>(
+    isProd ? false : (localStorage.getItem('loginDebugPause') || '0') === '1'
+  );
   const pushLog = (msg: string) => {
     setDebugLogs(prev => {
       const next = [...prev, `${new Date().toISOString()} ${msg}`];
@@ -70,7 +73,7 @@ const Login: React.FC = () => {
           localStorage.setItem('globalToken', (res as any).data.token);
           setLoginSuccess(true);
           setLoginError(null);
-          if (debugPause) {
+          if (!isProd && debugPause) {
             pushLog('Debug pause enabled → redirect is paused. Click Continue to proceed.');
           } else {
             window.location.href = '/global-admin';
@@ -91,7 +94,7 @@ const Login: React.FC = () => {
       pushLog('Tenant login success');
       setLoginSuccess(true);
       setLoginError(null);
-      if (debugPause) {
+      if (!isProd && debugPause) {
         pushLog('Debug pause enabled → token cleared to prevent route change.');
         try { localStorage.removeItem('token'); } catch {}
       }
@@ -362,6 +365,7 @@ const Login: React.FC = () => {
             </div>
 
             {/* Debug panel (temporary) */}
+            {!isProd && (
             <div className="mt-6 p-3 border rounded-lg text-xs bg-gray-50 text-gray-700">
               <div className="font-semibold mb-1">Debug (temporary)</div>
               <div>tenantPrefix: {localStorage.getItem('tenantPrefix') || 'default'}</div>
@@ -385,6 +389,7 @@ const Login: React.FC = () => {
               </div>
               <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap">{debugLogs.join('\n')}</pre>
             </div>
+            )}
         </div>
 
         {/* Footer */}

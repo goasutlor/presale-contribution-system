@@ -36,6 +36,8 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        {/* Allow access to Global Admin without tenant auth; it uses its own token */}
+        <Route path="/global-admin" element={<GlobalAdmin />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
