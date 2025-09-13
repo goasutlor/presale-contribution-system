@@ -90,6 +90,15 @@ const GlobalAdmin: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Hero header to match Admin look */}
+      <div className="rounded-2xl overflow-hidden shadow bg-gradient-to-r from-slate-800 to-sky-700 text-white">
+        <div className="px-6 py-6">
+          <div className="text-sm opacity-80">Control Center</div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Global Admin Dashboard</h1>
+          <p className="opacity-90 mt-1">Manage all tenants, users, and system-wide configuration from one place.</p>
+        </div>
+      </div>
+
       {/* Header and filters */}
       <div className="bg-white rounded-xl shadow p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
