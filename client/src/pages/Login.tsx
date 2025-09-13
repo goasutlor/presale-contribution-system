@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -15,7 +15,21 @@ const Login: React.FC = () => {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const pushLog = (msg: string) => setDebugLogs(prev => [...prev, `${new Date().toISOString()} ${msg}`]);
+  const [debugPause, setDebugPause] = useState<boolean>((localStorage.getItem('loginDebugPause') || '0') === '1');
+  const pushLog = (msg: string) => {
+    setDebugLogs(prev => {
+      const next = [...prev, `${new Date().toISOString()} ${msg}`];
+      try { localStorage.setItem('loginDebugLogs', JSON.stringify(next.slice(-200))); } catch {}
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('loginDebugLogs');
+      if (saved) setDebugLogs(JSON.parse(saved));
+    } catch {}
+  }, []);
   const { login, loading } = useAuth();
   const { t } = useLanguage();
 
@@ -56,7 +70,11 @@ const Login: React.FC = () => {
           localStorage.setItem('globalToken', (res as any).data.token);
           setLoginSuccess(true);
           setLoginError(null);
-          window.location.href = '/global-admin';
+          if (debugPause) {
+            pushLog('Debug pause enabled → redirect is paused. Click Continue to proceed.');
+          } else {
+            window.location.href = '/global-admin';
+          }
           return;
         }
       } catch (e: any) {
@@ -73,6 +91,10 @@ const Login: React.FC = () => {
       pushLog('Tenant login success');
       setLoginSuccess(true);
       setLoginError(null);
+      if (debugPause) {
+        pushLog('Debug pause enabled → token cleared to prevent route change.');
+        try { localStorage.removeItem('token'); } catch {}
+      }
     } catch (error: any) {
       console.error('🔴 Login Error:', error);
       pushLog(`Login error: ${error?.message || 'unknown'} status=${error?.status ?? 'n/a'}`);
@@ -344,6 +366,23 @@ const Login: React.FC = () => {
               <div className="font-semibold mb-1">Debug (temporary)</div>
               <div>tenantPrefix: {localStorage.getItem('tenantPrefix') || 'default'}</div>
               <div>has token: {String(!!localStorage.getItem('token'))}, has globalToken: {String(!!localStorage.getItem('globalToken'))}</div>
+              <div className="mt-2 flex items-center gap-3">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={debugPause}
+                    onChange={(e) => { setDebugPause(e.target.checked); localStorage.setItem('loginDebugPause', e.target.checked ? '1' : '0'); }}
+                  />
+                  Pause redirect after global login
+                </label>
+                {debugPause && (
+                  <button
+                    type="button"
+                    className="px-2 py-1 border rounded"
+                    onClick={() => { window.location.href = '/global-admin'; }}
+                  >Continue → /global-admin</button>
+                )}
+              </div>
               <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap">{debugLogs.join('\n')}</pre>
             </div>
         </div>
