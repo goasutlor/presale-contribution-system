@@ -104,6 +104,41 @@ router.get('/tenants/stats', [
   res.json({ success: true, data: rows });
 }));
 
+// Global contributions list (cross-tenant)
+router.get('/contributions', [
+  authenticateGlobalAdmin,
+  query('tenantPrefix').optional().isString(),
+  query('status').optional().isString(),
+  query('limit').optional().isInt({ min: 1, max: 500 }),
+  query('offset').optional().isInt({ min: 0 })
+], asyncHandler(async (req: Request, res: Response) => {
+  const { tenantPrefix, status } = req.query as any;
+  const limit = Math.min(parseInt((req.query.limit as string) || '100', 10), 500);
+  const offset = parseInt((req.query.offset as string) || '0', 10);
+
+  const where: string[] = [];
+  const params: any[] = [];
+  if (tenantPrefix) { where.push('t.tenantPrefix = ?'); params.push(tenantPrefix); }
+  if (status) { where.push('c.status = ?'); params.push(status); }
+
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+  const rows = await dbQuery(`
+    SELECT c.id, c.title, c.status, c.impact, c.effort, c.accountName, c.saleName, c.contributionMonth,
+           c.createdAt, c.updatedAt,
+           u.fullName as userName, u.email as userEmail,
+           t.tenantPrefix, t.name as tenantName
+    FROM contributions c
+    LEFT JOIN users u ON c.userId = u.id
+    LEFT JOIN tenants t ON c.tenantId = t.id
+    ${whereSql}
+    ORDER BY c.updatedAt DESC
+    LIMIT ? OFFSET ?
+  `, [...params, limit, offset]);
+
+  return res.json({ success: true, data: rows });
+}));
+
 // Global users list (cross-tenant)
 router.get('/users', [authenticateGlobalAdmin, query('search').optional().isString()], asyncHandler(async (req: Request, res: Response) => {
   const search = (req.query.search as string || '').trim();
