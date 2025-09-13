@@ -269,10 +269,10 @@ const GlobalDashboard: React.FC = () => {
   ];
 
   const impactStats = [
-    { name: 'Strategic (Critical Impact)', value: dashboardData?.impactBreakdown.critical || 0, color: 'bg-purple-500' },
-    { name: 'Department (High Impact)', value: dashboardData?.impactBreakdown.high || 0, color: 'bg-red-500' },
-    { name: 'Team-Level (Medium Impact)', value: dashboardData?.impactBreakdown.medium || 0, color: 'bg-yellow-500' },
-    { name: 'Routine (Low Impact)', value: dashboardData?.impactBreakdown.low || 0, color: 'bg-green-500' },
+    { name: 'Strategic (Critical Impact)', value: dashboardData?.impactBreakdown?.critical || 0, color: 'bg-purple-500' },
+    { name: 'Department (High Impact)', value: dashboardData?.impactBreakdown?.high || 0, color: 'bg-red-500' },
+    { name: 'Team-Level (Medium Impact)', value: dashboardData?.impactBreakdown?.medium || 0, color: 'bg-yellow-500' },
+    { name: 'Routine (Low Impact)', value: dashboardData?.impactBreakdown?.low || 0, color: 'bg-green-500' },
   ];
 
   return (
