@@ -202,14 +202,9 @@ const Signup: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo Section */}
+        {/* Brand text only: ASC */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 dark:bg-gray-700/50 rounded-2xl backdrop-blur-sm border border-white/20 dark:border-gray-600 mb-4">
-            <svg className="w-12 h-12 text-white dark:text-gray-100" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white dark:text-gray-100 mb-2">ASC3 Contribution</h1>
+          <h1 className="text-3xl font-bold text-white dark:text-gray-100 mb-2">ASC</h1>
           <p className="text-white/70 dark:text-gray-300">{t('signup.subtitle')}</p>
         </div>
 
