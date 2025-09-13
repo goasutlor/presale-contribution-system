@@ -1,26 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import api, { ApiResponse } from '../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import api from '../services/api';
 
 const GlobalAdmin: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [token, setToken] = useState<string | null>(localStorage.getItem('globalToken'));
   const [tenants, setTenants] = useState<any[]>([]);
+  const [overview, setOverview] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({});
   const [form, setForm] = useState({ tenantPrefix: '', name: '', adminEmails: '' });
   const [error, setError] = useState<string | null>(null);
 
   const loadTenants = async () => {
     try {
-      const res = await api.getTenants();
-      setTenants(res.data || []);
+      const [tenantsRes, statsRes, overviewRes] = await Promise.all([
+        api.getTenants(),
+        api.getTenantStats(dateRange),
+        api.getGlobalOverview(dateRange)
+      ]);
+      const statsByPrefix: Record<string, any> = {};
+      (statsRes.data || []).forEach((s: any) => { statsByPrefix[s.tenantPrefix] = s; });
+      const combined = (tenantsRes.data || []).map((t: any) => ({
+        ...t,
+        stats: statsByPrefix[t.tenantPrefix] || { users: 0, contributions: 0, approved: 0, lastActivity: null }
+      }));
+      setTenants(combined);
+      setOverview(overviewRes.data || null);
     } catch (e: any) {
       setError(e.message || 'Failed to load tenants');
     }
   };
 
   useEffect(() => {
-    if (token) loadTenants();
-  }, [token]);
+    if (!token) return;
+    setLoading(true);
+    loadTenants().finally(() => setLoading(false));
+  }, [token, dateRange.start, dateRange.end]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +79,35 @@ const GlobalAdmin: React.FC = () => {
     );
   }
 
+  const totalContrib = overview?.totals?.contributions ?? 0;
+  const approved = overview?.byStatus?.find((s: any) => s.status === 'approved')?.count ?? 0;
+  const submitted = overview?.byStatus?.find((s: any) => s.status === 'submitted')?.count ?? 0;
+  const draft = overview?.byStatus?.find((s: any) => s.status === 'draft')?.count ?? 0;
+
   return (
     <div className="space-y-6">
+      {/* Header and filters */}
+      <div className="bg-white rounded-xl shadow p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <h2 className="text-xl font-semibold">Global Overview</h2>
+          <div className="flex gap-2 items-center">
+            <input type="date" className="border rounded px-2 py-1" value={dateRange.start || ''} onChange={e => setDateRange(r => ({ ...r, start: e.target.value }))} />
+            <span>to</span>
+            <input type="date" className="border rounded px-2 py-1" value={dateRange.end || ''} onChange={e => setDateRange(r => ({ ...r, end: e.target.value }))} />
+            <button className="px-3 py-1 border rounded" onClick={() => setDateRange({})}>Clear</button>
+          </div>
+        </div>
+
+        {/* KPI cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+          <KPI title="Tenants" value={overview?.totals?.tenants ?? 0} />
+          <KPI title="Users" value={overview?.totals?.users ?? 0} />
+          <KPI title="Contributions" value={totalContrib} />
+          <KPI title="Approved" value={approved} sub={`${submitted} submitted • ${draft} draft`} />
+        </div>
+      </div>
+
+      {/* Create tenant */}
       <div className="bg-white rounded-xl shadow p-6">
         <h2 className="text-lg font-semibold mb-4">Create Tenant</h2>
         {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
@@ -78,15 +121,22 @@ const GlobalAdmin: React.FC = () => {
         </form>
       </div>
 
+      {/* Tenants table */}
       <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Tenants</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Tenants</h2>
+          {loading && <span className="text-sm text-gray-500">Loading…</span>}
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="text-left">
                 <th className="px-3 py-2">Prefix</th>
                 <th className="px-3 py-2">Name</th>
-                <th className="px-3 py-2">Admins</th>
+                <th className="px-3 py-2">Users</th>
+                <th className="px-3 py-2">Contributions</th>
+                <th className="px-3 py-2">Approved</th>
+                <th className="px-3 py-2">Last Activity</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
@@ -95,7 +145,10 @@ const GlobalAdmin: React.FC = () => {
                 <tr key={t.id} className="border-t">
                   <td className="px-3 py-2 font-mono">{t.tenantPrefix}</td>
                   <td className="px-3 py-2">{t.name}</td>
-                  <td className="px-3 py-2">{Array.isArray(t.adminEmails) ? t.adminEmails.join(', ') : t.adminEmails}</td>
+                  <td className="px-3 py-2">{t.stats?.users ?? '-'}</td>
+                  <td className="px-3 py-2">{t.stats?.contributions ?? '-'}</td>
+                  <td className="px-3 py-2">{t.stats?.approved ?? '-'}</td>
+                  <td className="px-3 py-2">{t.stats?.lastActivity ? new Date(t.stats.lastActivity).toLocaleString() : '-'}</td>
                   <td className="px-3 py-2">
                     <button
                       className="text-blue-600 hover:underline mr-3"
@@ -108,10 +161,52 @@ const GlobalAdmin: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Recent Activity */}
+      <div className="bg-white rounded-xl shadow p-6">
+        <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-left">
+                <th className="px-3 py-2">When</th>
+                <th className="px-3 py-2">Tenant</th>
+                <th className="px-3 py-2">Title</th>
+                <th className="px-3 py-2">By</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Impact</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(overview?.recent || []).map((r: any) => (
+                <tr key={r.id} className="border-t">
+                  <td className="px-3 py-2">{new Date(r.updatedAt).toLocaleString()}</td>
+                  <td className="px-3 py-2 font-mono">{r.tenantPrefix || '-'}</td>
+                  <td className="px-3 py-2">{r.title}</td>
+                  <td className="px-3 py-2">{r.userName}</td>
+                  <td className="px-3 py-2">{r.status}</td>
+                  <td className="px-3 py-2">{r.impact}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default GlobalAdmin;
+
+// Simple KPI component
+function KPI({ title, value, sub }: { title: string; value: number | string; sub?: string }) {
+  return (
+    <div className="rounded-xl border p-4">
+      <div className="text-sm text-gray-500">{title}</div>
+      <div className="text-2xl font-bold">{value}</div>
+      {sub && <div className="text-xs text-gray-500 mt-1">{sub}</div>}
+    </div>
+  );
+}
 
 

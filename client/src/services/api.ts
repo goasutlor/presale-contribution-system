@@ -189,6 +189,14 @@ class ApiService {
       body: JSON.stringify({ email, password })
     });
   }
+  async getGlobalOverview(params?: { start?: string; end?: string }): Promise<ApiResponse<any>> {
+    const qs = params?.start && params?.end ? `?start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}` : '';
+    return this.requestGlobal<ApiResponse<any>>(`/api/global/overview${qs}`);
+  }
+  async getTenantStats(params?: { start?: string; end?: string }): Promise<ApiResponse<any[]>> {
+    const qs = params?.start && params?.end ? `?start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}` : '';
+    return this.requestGlobal<ApiResponse<any[]>>(`/api/global/tenants/stats${qs}`);
+  }
   async getTenants(): Promise<ApiResponse<any[]>> {
     return this.requestGlobal<ApiResponse<any[]>>('/api/global/tenants');
   }

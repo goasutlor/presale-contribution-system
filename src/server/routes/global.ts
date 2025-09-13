@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, validationResult, query } from 'express-validator';
 import { dbQuery, dbQueryOne, dbExecute } from '../database/init';
 import { authenticateGlobalAdmin, verifyGlobalAdminCredentials, issueGlobalAdminToken } from '../middleware/globalAdmin';
 import { asyncHandler, createError } from '../middleware/errorHandler';
@@ -21,6 +21,87 @@ router.post('/login', [
   }
   const token = issueGlobalAdminToken(email);
   return res.json({ success: true, data: { token } });
+}));
+
+// Global overview metrics
+router.get('/overview', [
+  authenticateGlobalAdmin,
+  query('start').optional().isISO8601(),
+  query('end').optional().isISO8601()
+], asyncHandler(async (req: Request, res: Response) => {
+  const start = (req.query.start as string) || '';
+  const end = (req.query.end as string) || '';
+
+  // Optional date filters using createdAt
+  const whereUsers = start && end ? 'WHERE createdAt BETWEEN ? AND ?' : '';
+  const whereContrib = start && end ? 'WHERE createdAt BETWEEN ? AND ?' : '';
+  const dateParams = start && end ? [start, end] : [];
+
+  const [{ count: totalTenants = 0 } = { count: 0 }] = await dbQuery('SELECT COUNT(*) as count FROM tenants');
+  const [{ count: totalUsers = 0 } = { count: 0 }] = await dbQuery(`SELECT COUNT(*) as count FROM users ${whereUsers}`, dateParams);
+  const [{ count: totalContributions = 0 } = { count: 0 }] = await dbQuery(`SELECT COUNT(*) as count FROM contributions ${whereContrib}`, dateParams);
+
+  const byStatus = await dbQuery('SELECT status, COUNT(*) as count FROM contributions GROUP BY status');
+  const byImpact = await dbQuery('SELECT impact, COUNT(*) as count FROM contributions GROUP BY impact');
+
+  const topTenants = await dbQuery(`
+    SELECT t.tenantPrefix, t.name, COUNT(c.id) as contributions
+    FROM contributions c
+    LEFT JOIN tenants t ON c.tenantId = t.id
+    GROUP BY t.tenantPrefix, t.name
+    ORDER BY contributions DESC
+    LIMIT 10
+  `);
+
+  const recent = await dbQuery(`
+    SELECT c.id, c.title, c.status, c.impact, c.updatedAt, u.fullName as userName, t.tenantPrefix
+    FROM contributions c
+    LEFT JOIN users u ON c.userId = u.id
+    LEFT JOIN tenants t ON c.tenantId = t.id
+    ORDER BY c.updatedAt DESC
+    LIMIT 20
+  `);
+
+  const year = new Date().getFullYear();
+  const monthly = await dbQuery(
+    'SELECT contributionMonth as month, COUNT(*) as count FROM contributions WHERE contributionMonth LIKE ? GROUP BY contributionMonth ORDER BY contributionMonth',
+    [`${year}-%`]
+  );
+
+  res.json({ success: true, data: {
+    totals: { tenants: Number(totalTenants), users: Number(totalUsers), contributions: Number(totalContributions) },
+    byStatus, byImpact, topTenants, recent, monthly: { year, data: monthly }
+  }});
+}));
+
+// Per-tenant stats
+router.get('/tenants/stats', [
+  authenticateGlobalAdmin,
+  query('start').optional().isISO8601(),
+  query('end').optional().isISO8601()
+], asyncHandler(async (req: Request, res: Response) => {
+  const start = (req.query.start as string) || '';
+  const end = (req.query.end as string) || '';
+  const whereContrib = start && end ? 'AND c.createdAt BETWEEN ? AND ?' : '';
+  const dateParams = start && end ? [start, end] : [];
+
+  const rows = await dbQuery(`
+    SELECT 
+      t.id as tenantId,
+      t.tenantPrefix,
+      t.name,
+      COUNT(DISTINCT u.id) as users,
+      COUNT(DISTINCT c.id) as contributions,
+      SUM(CASE WHEN c.status = 'approved' THEN 1 ELSE 0 END) as approved,
+      MAX(c.updatedAt) as lastActivity
+    FROM tenants t
+    LEFT JOIN users u ON u.tenantId = t.id
+    LEFT JOIN contributions c ON c.tenantId = t.id ${whereContrib}
+    GROUP BY t.id, t.tenantPrefix, t.name
+    ORDER BY contributions DESC
+  `, dateParams);
+
+  res.json({ success: true, data: rows });
 }));
 
 // Create tenant
