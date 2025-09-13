@@ -43,6 +43,21 @@ router.get('/overview', [
 
   const byStatus = await dbQuery('SELECT status, COUNT(*) as count FROM contributions GROUP BY status');
   const byImpact = await dbQuery('SELECT impact, COUNT(*) as count FROM contributions GROUP BY impact');
+  
+  // Process impact breakdown for frontend
+  const impactBreakdown = {
+    low: 0,
+    medium: 0,
+    high: 0,
+    critical: 0
+  };
+  
+  byImpact.forEach((item: any) => {
+    if (item.impact === 'low') impactBreakdown.low = Number(item.count);
+    else if (item.impact === 'medium') impactBreakdown.medium = Number(item.count);
+    else if (item.impact === 'high') impactBreakdown.high = Number(item.count);
+    else if (item.impact === 'critical') impactBreakdown.critical = Number(item.count);
+  });
 
   const topTenants = await dbQuery(`
     SELECT t.tenantPrefix, t.name, COUNT(c.id) as contributions
@@ -70,6 +85,7 @@ router.get('/overview', [
 
   res.json({ success: true, data: {
     totals: { tenants: Number(totalTenants), users: Number(totalUsers), contributions: Number(totalContributions) },
+    impactBreakdown,
     byStatus, byImpact, topTenants, recent, monthly: { year, data: monthly }
   }});
 }));
@@ -78,34 +94,64 @@ router.get('/overview', [
 router.get('/timeline', [
   authenticateGlobalAdmin
 ], asyncHandler(async (req: Request, res: Response) => {
-  const currentYear = new Date().getFullYear();
-  const monthlyData: any[] = [];
-  
-  for (let month = 1; month <= 12; month++) {
-    const monthStr = month.toString().padStart(2, '0');
-    const monthName = new Date(currentYear, month - 1).toLocaleDateString('en-US', { month: 'short' });
+  try {
+    const currentYear = new Date().getFullYear();
+    const monthlyData: any[] = [];
     
-    const contributions = await dbQuery(`
-      SELECT impact FROM contributions 
-      WHERE strftime('%Y', createdAt) = ? AND strftime('%m', createdAt) = ?
-    `, [currentYear.toString(), monthStr]);
+    // Check if we're using PostgreSQL or SQLite
+    const isPostgreSQL = !!process.env.DATABASE_URL;
+    console.log('🔍 Timeline endpoint - Database type:', isPostgreSQL ? 'PostgreSQL' : 'SQLite');
     
-    const impactBreakdown = {
-      low: contributions.filter((c: any) => c.impact === 'low').length,
-      medium: contributions.filter((c: any) => c.impact === 'medium').length,
-      high: contributions.filter((c: any) => c.impact === 'high').length,
-      critical: contributions.filter((c: any) => c.impact === 'critical').length,
-      total: contributions.length
-    };
+    for (let month = 1; month <= 12; month++) {
+      const monthStr = month.toString().padStart(2, '0');
+      const monthName = new Date(currentYear, month - 1).toLocaleDateString('en-US', { month: 'short' });
+      
+      let contributions: any[] = [];
+      
+      try {
+        if (isPostgreSQL) {
+          // PostgreSQL query
+          contributions = await dbQuery(`
+            SELECT impact FROM contributions 
+            WHERE EXTRACT(YEAR FROM "createdAt") = $1 AND EXTRACT(MONTH FROM "createdAt") = $2
+          `, [currentYear, month]);
+        } else {
+          // SQLite query
+          contributions = await dbQuery(`
+            SELECT impact FROM contributions 
+            WHERE strftime('%Y', createdAt) = ? AND strftime('%m', createdAt) = ?
+          `, [currentYear.toString(), monthStr]);
+        }
+      } catch (dbError) {
+        console.error(`❌ Database error for month ${month}:`, dbError);
+        // Continue with empty contributions for this month
+        contributions = [];
+      }
+      
+      const impactBreakdown = {
+        low: contributions.filter((c: any) => c.impact === 'low').length,
+        medium: contributions.filter((c: any) => c.impact === 'medium').length,
+        high: contributions.filter((c: any) => c.impact === 'high').length,
+        critical: contributions.filter((c: any) => c.impact === 'critical').length,
+        total: contributions.length
+      };
+      
+      monthlyData.push({
+        month: monthStr,
+        monthName,
+        contributions: impactBreakdown
+      });
+    }
     
-    monthlyData.push({
-      month: monthStr,
-      monthName,
-      contributions: impactBreakdown
+    return res.json({ success: true, data: { year: currentYear, monthlyData } });
+  } catch (error) {
+    console.error('❌ Timeline endpoint error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch timeline data',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
-  
-  return res.json({ success: true, data: { year: currentYear, monthlyData } });
 }));
 
 // Per-tenant stats

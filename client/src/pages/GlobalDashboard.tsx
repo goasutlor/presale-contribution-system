@@ -12,15 +12,24 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface GlobalDashboardData {
-  totalContributions: number;
-  totalUsers: number;
-  totalTenants: number;
-  totalAccounts: number;
+  totals: {
+    tenants: number;
+    users: number;
+    contributions: number;
+  };
   impactBreakdown: {
     critical: number;
     high: number;
     medium: number;
     low: number;
+  };
+  byStatus: any[];
+  byImpact: any[];
+  topTenants: any[];
+  recent: any[];
+  monthly: {
+    year: number;
+    data: any[];
   };
 }
 
@@ -91,11 +100,30 @@ const GlobalDashboard: React.FC = () => {
       if (response.success) {
         setDashboardData(response.data);
       } else {
-        toast.error('Failed to load dashboard data');
+        console.warn('Dashboard data fetch failed:', response.message);
+        // Set fallback data
+        setDashboardData({
+          totals: { tenants: 0, users: 0, contributions: 0 },
+          impactBreakdown: { low: 0, medium: 0, high: 0, critical: 0 },
+          byStatus: [],
+          byImpact: [],
+          topTenants: [],
+          recent: [],
+          monthly: { year: new Date().getFullYear(), data: [] }
+        });
       }
     } catch (error) {
       console.error('Error fetching global dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      // Set fallback data
+      setDashboardData({
+        totals: { tenants: 0, users: 0, contributions: 0 },
+        impactBreakdown: { low: 0, medium: 0, high: 0, critical: 0 },
+        byStatus: [],
+        byImpact: [],
+        topTenants: [],
+        recent: [],
+        monthly: { year: new Date().getFullYear(), data: [] }
+      });
     } finally {
       setLoading(false);
     }
@@ -106,9 +134,15 @@ const GlobalDashboard: React.FC = () => {
       const response = await apiService.getGlobalTimelineData();
       if (response.success) {
         setTimelineData(response.data);
+      } else {
+        console.warn('Timeline data fetch failed:', response.message);
+        // Set empty timeline data as fallback
+        setTimelineData({ year: new Date().getFullYear(), monthlyData: [] });
       }
     } catch (error) {
       console.error('Error fetching global timeline data:', error);
+      // Set empty timeline data as fallback
+      setTimelineData({ year: new Date().getFullYear(), monthlyData: [] });
     }
   };
 
@@ -240,28 +274,21 @@ const GlobalDashboard: React.FC = () => {
   const stats = [
     {
       name: 'Total Tenants',
-      value: dashboardData?.totalTenants || 0,
+      value: dashboardData?.totals?.tenants || 0,
       icon: UserGroupIcon,
       color: 'text-primary-600',
       bgColor: 'bg-primary-100',
     },
     {
       name: 'Total Users',
-      value: dashboardData?.totalUsers || 0,
+      value: dashboardData?.totals?.users || 0,
       icon: UserGroupIcon,
       color: 'text-success-600',
       bgColor: 'bg-success-100',
     },
     {
-      name: 'Total Accounts',
-      value: dashboardData?.totalAccounts || 0,
-      icon: DocumentTextIcon,
-      color: 'text-warning-600',
-      bgColor: 'bg-warning-100',
-    },
-    {
       name: 'Total Contributions',
-      value: dashboardData?.totalContributions || 0,
+      value: dashboardData?.totals?.contributions || 0,
       icon: ChartBarIcon,
       color: 'text-info-600',
       bgColor: 'bg-info-100',
@@ -380,10 +407,10 @@ const GlobalDashboard: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Impact Summary</p>
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                <span className="font-semibold text-purple-600">Strategic</span>: {dashboardData?.impactBreakdown.critical || 0} •
-                <span className="font-semibold text-red-600"> Department</span>: {dashboardData?.impactBreakdown.high || 0} •
-                <span className="font-semibold text-yellow-600"> Team-Level</span>: {dashboardData?.impactBreakdown.medium || 0} •
-                <span className="font-semibold text-green-600"> Routine</span>: {dashboardData?.impactBreakdown.low || 0}
+                <span className="font-semibold text-purple-600">Strategic</span>: {dashboardData?.impactBreakdown?.critical || 0} •
+                <span className="font-semibold text-red-600"> Department</span>: {dashboardData?.impactBreakdown?.high || 0} •
+                <span className="font-semibold text-yellow-600"> Team-Level</span>: {dashboardData?.impactBreakdown?.medium || 0} •
+                <span className="font-semibold text-green-600"> Routine</span>: {dashboardData?.impactBreakdown?.low || 0}
               </p>
             </div>
           </div>
