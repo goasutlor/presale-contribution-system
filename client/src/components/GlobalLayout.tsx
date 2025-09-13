@@ -23,7 +23,7 @@ const GlobalLayout: React.FC = () => {
     { name: 'Contributions', href: '/global-admin/contributions', icon: DocumentTextIcon },
     { name: 'Reports', href: '/global-admin/reports', icon: ChartBarIcon },
     { name: 'Users', href: '/global-admin/users', icon: UserGroupIcon },
-    { name: 'Tenant Configuration', href: '/global-admin/tenants', icon: Cog6ToothIcon },
+    { name: 'Tenant Management', href: '/global-admin/tenants', icon: Cog6ToothIcon },
   ];
 
   return (
