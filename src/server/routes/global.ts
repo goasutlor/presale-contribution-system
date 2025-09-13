@@ -150,7 +150,7 @@ router.put('/users/:id', [
   updates.push('updatedAt = CURRENT_TIMESTAMP');
   params.push(id);
   await dbExecute(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
-  res.json({ success: true, message: 'User updated' });
+  return res.json({ success: true, message: 'User updated' });
 }));
 
 // Delete tenant (safe) - only if no users/contributions
@@ -164,7 +164,7 @@ router.delete('/tenants/:id', authenticateGlobalAdmin, asyncHandler(async (req: 
     return res.status(400).json({ success: false, message: 'Tenant has users or contributions. Reassign or delete them first.' });
   }
   await dbExecute('DELETE FROM tenants WHERE id = ?', [id]);
-  res.json({ success: true, message: 'Tenant deleted' });
+  return res.json({ success: true, message: 'Tenant deleted' });
 }));
 
 // Create tenant
