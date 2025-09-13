@@ -204,7 +204,7 @@ class ApiService {
     const qs = search ? `?search=${encodeURIComponent(search)}` : '';
     return this.requestGlobal<ApiResponse<any[]>>(`/api/global/users${qs}`);
   }
-  async updateGlobalUser(id: string, payload: Partial<{ role: 'user' | 'admin'; status: 'pending' | 'approved' | 'rejected'; canViewOthers: boolean; tenantPrefix: string }>): Promise<ApiResponse<any>> {
+  async updateGlobalUser(id: string, payload: Partial<{ role: 'user' | 'admin'; status: 'pending' | 'approved' | 'rejected'; canViewOthers: boolean; tenantPrefix: string; password: string }>): Promise<ApiResponse<any>> {
     return this.requestGlobal<ApiResponse<any>>(`/api/global/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload)
@@ -370,6 +370,42 @@ class ApiService {
   // Health check
   async healthCheck(): Promise<ApiResponse<any>> {
     return this.request<ApiResponse<any>>('/api/health');
+  }
+
+  // Global Admin endpoints
+
+  async getGlobalContributions(): Promise<ApiResponse<any[]>> {
+    return this.request<ApiResponse<any[]>>('/api/global/contributions');
+  }
+
+
+
+  async getGlobalTimelineData(): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/api/global/timeline');
+  }
+
+  async getGlobalTenants(): Promise<ApiResponse<any[]>> {
+    return this.request<ApiResponse<any[]>>('/api/global/tenants');
+  }
+
+  async createGlobalTenant(tenantData: any): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/api/global/tenants', {
+      method: 'POST',
+      body: JSON.stringify(tenantData),
+    });
+  }
+
+  async updateGlobalTenant(tenantId: string, tenantData: any): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/global/tenants/${tenantId}`, {
+      method: 'PUT',
+      body: JSON.stringify(tenantData),
+    });
+  }
+
+  async deleteGlobalTenant(tenantId: string): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/global/tenants/${tenantId}`, {
+      method: 'DELETE',
+    });
   }
 }
 

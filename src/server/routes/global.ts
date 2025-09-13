@@ -74,6 +74,40 @@ router.get('/overview', [
   }});
 }));
 
+// Get global timeline data for matrix
+router.get('/timeline', [
+  authenticateGlobalAdmin
+], asyncHandler(async (req: Request, res: Response) => {
+  const currentYear = new Date().getFullYear();
+  const monthlyData: any[] = [];
+  
+  for (let month = 1; month <= 12; month++) {
+    const monthStr = month.toString().padStart(2, '0');
+    const monthName = new Date(currentYear, month - 1).toLocaleDateString('en-US', { month: 'short' });
+    
+    const contributions = await dbQuery(`
+      SELECT impact FROM contributions 
+      WHERE strftime('%Y', createdAt) = ? AND strftime('%m', createdAt) = ?
+    `, [currentYear.toString(), monthStr]);
+    
+    const impactBreakdown = {
+      low: contributions.filter((c: any) => c.impact === 'low').length,
+      medium: contributions.filter((c: any) => c.impact === 'medium').length,
+      high: contributions.filter((c: any) => c.impact === 'high').length,
+      critical: contributions.filter((c: any) => c.impact === 'critical').length,
+      total: contributions.length
+    };
+    
+    monthlyData.push({
+      month: monthStr,
+      monthName,
+      contributions: impactBreakdown
+    });
+  }
+  
+  return res.json({ success: true, data: { year: currentYear, monthlyData } });
+}));
+
 // Per-tenant stats
 router.get('/tenants/stats', [
   authenticateGlobalAdmin,
