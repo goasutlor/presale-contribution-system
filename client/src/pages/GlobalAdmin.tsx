@@ -152,8 +152,16 @@ const GlobalAdmin: React.FC = () => {
                   <td className="px-3 py-2">
                     <button
                       className="text-blue-600 hover:underline mr-3"
-                      onClick={() => { localStorage.setItem('tenantPrefix', t.tenantPrefix); window.location.reload(); }}
+                      onClick={() => { localStorage.setItem('tenantPrefix', t.tenantPrefix); window.location.href = `/t/${t.tenantPrefix}/login`; }}
                     >Use</button>
+                    <button
+                      className="text-blue-600 hover:underline mr-3"
+                      onClick={() => { localStorage.setItem('tenantPrefix', t.tenantPrefix); window.location.href = `/t/${t.tenantPrefix}/login`; }}
+                    >Login</button>
+                    <button
+                      className="text-blue-600 hover:underline"
+                      onClick={() => { localStorage.setItem('tenantPrefix', t.tenantPrefix); window.location.href = `/t/${t.tenantPrefix}/signup`; }}
+                    >Signup</button>
                   </td>
                 </tr>
               ))}
