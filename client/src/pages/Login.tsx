@@ -14,7 +14,6 @@ const Login: React.FC = () => {
   const [loginError, setLoginError] = useState<any>(null);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
-  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const { login, loading } = useAuth();
   const { t } = useLanguage();
 
@@ -42,21 +41,21 @@ const Login: React.FC = () => {
     }
     
     try {
-      if (isGlobalAdmin) {
-        // Global admin login
-        const res = await (await import('../services/api')).apiService.globalLogin(email, password);
+      // Auto-detect: try Global Admin first; if it fails, fall back to tenant login
+      try {
+        const { apiService } = await import('../services/api');
+        const res = await apiService.globalLogin(email, password);
         if (res.success && (res as any).data?.token) {
           localStorage.setItem('globalToken', (res as any).data.token);
           setLoginSuccess(true);
           setLoginError(null);
-          // Redirect to global admin console
           window.location.href = '/global-admin';
           return;
         }
-        throw new Error((res as any).message || 'Global admin login failed');
+      } catch (e: any) {
+        // If global route missing (404) or credentials invalid (401), proceed to tenant login
       }
 
-      // Tenant user/admin login
       await login(email, password);
       setLoginSuccess(true);
       setLoginError(null);
@@ -225,18 +224,6 @@ const Login: React.FC = () => {
             )}
           
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="flex items-center justify-between">
-              <label className="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-gray-300">
-                <input
-                  type="checkbox"
-                  className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                  checked={isGlobalAdmin}
-                  onChange={(e) => setIsGlobalAdmin(e.target.checked)}
-                />
-                Global Admin
-              </label>
-            </div>
-
             <div>
                 <label
                   htmlFor="email"
