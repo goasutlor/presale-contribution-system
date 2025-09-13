@@ -47,6 +47,7 @@ class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const token = localStorage.getItem('token');
+    const tenantPrefix = (localStorage.getItem('tenantPrefix') || 'default').trim();
     
     console.log('🔍 API Request:', { 
       endpoint, 
@@ -62,6 +63,7 @@ class ApiService {
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
+        'x-tenant-prefix': tenantPrefix || 'default',
         ...options.headers,
       },
       ...options,
@@ -143,11 +145,63 @@ class ApiService {
     }
   }
 
+  // Global admin request (separate token, no tenant header required)
+  private async requestGlobal<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const globalToken = localStorage.getItem('globalToken');
+    const config: RequestInit = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(globalToken && { Authorization: `Bearer ${globalToken}` }),
+        ...options.headers,
+      },
+      ...options,
+    };
+    const resp = await fetch(url, config);
+    if (!resp.ok) {
+      let msg = `HTTP ${resp.status}`;
+      try { const data = await resp.json(); if (data.message) msg = data.message; } catch {}
+      const err: any = new Error(msg); err.status = resp.status; throw err;
+    }
+    return resp.json();
+  }
+
+  // Tenant prefix helpers
+  setTenantPrefix(prefix: string) {
+    localStorage.setItem('tenantPrefix', (prefix || 'default').trim());
+  }
+  getTenantPrefix(): string {
+    return (localStorage.getItem('tenantPrefix') || 'default').trim();
+  }
+
   // Auth endpoints
   async login(email: string, password: string): Promise<ApiResponse<LoginResponse>> {
     return this.request<ApiResponse<LoginResponse>>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    });
+  }
+
+  // Global admin
+  async globalLogin(email: string, password: string): Promise<ApiResponse<{ token: string }>> {
+    return this.requestGlobal<ApiResponse<{ token: string }>>('/api/global/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+  }
+  async getTenants(): Promise<ApiResponse<any[]>> {
+    return this.requestGlobal<ApiResponse<any[]>>('/api/global/tenants');
+  }
+  async createTenant(payload: { tenantPrefix: string; name: string; adminEmails: string[] }): Promise<ApiResponse<any>> {
+    return this.requestGlobal<ApiResponse<any>>('/api/global/tenants', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+  async updateTenant(id: string, payload: { name?: string; adminEmails?: string[] }): Promise<ApiResponse<any>> {
+    return this.requestGlobal<ApiResponse<any>>(`/api/global/tenants/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
     });
   }
 

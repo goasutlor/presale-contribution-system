@@ -34,7 +34,8 @@ const Layout: React.FC = () => {
     { name: t('nav.reports'), href: '/reports', icon: ChartBarIcon },
     { name: t('nav.userManagement'), href: '/user-management', icon: UserGroupIcon },
     ...(user?.role === 'admin' ? [
-      { name: t('nav.functionalTest'), href: '/functional-test', icon: Cog6ToothIcon }
+      { name: t('nav.functionalTest'), href: '/functional-test', icon: Cog6ToothIcon },
+      { name: 'Global Admin', href: '/global-admin', icon: Cog6ToothIcon }
     ] : []),
   ];
 
@@ -193,6 +194,16 @@ const Layout: React.FC = () => {
               <div className="flex items-center gap-x-4">
                 <ThemeToggle />
                 <LanguageToggle />
+                {/* Tenant prefix control */}
+                <div className="hidden md:flex items-center gap-2">
+                  <span className="text-xs text-gray-500">Tenant:</span>
+                  <input
+                    defaultValue={localStorage.getItem('tenantPrefix') || 'default'}
+                    onBlur={(e) => { localStorage.setItem('tenantPrefix', e.target.value.trim() || 'default'); window.location.reload(); }}
+                    className="w-28 px-2 py-1 text-xs border rounded-md"
+                    placeholder="prefix"
+                  />
+                </div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   {t('dashboard.welcome')}, {user?.fullName}
                 </span>

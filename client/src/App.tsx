@@ -15,6 +15,7 @@ import SimpleContributions from './pages/SimpleContributions';
 import AllContributions from './pages/AllContributions';
 import MyContributions from './pages/MyContributions';
 import FunctionalTest from './pages/FunctionalTest';
+import GlobalAdmin from './pages/GlobalAdmin';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -51,6 +52,7 @@ const AppRoutes: React.FC = () => {
         <Route path="reports" element={<Reports />} />
         <Route path="user-management" element={<UserManagement />} />
         <Route path="functional-test" element={<FunctionalTest />} />
+        <Route path="global-admin" element={<GlobalAdmin />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
