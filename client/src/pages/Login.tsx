@@ -14,6 +14,8 @@ const Login: React.FC = () => {
   const [loginError, setLoginError] = useState<any>(null);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const pushLog = (msg: string) => setDebugLogs(prev => [...prev, `${new Date().toISOString()} ${msg}`]);
   const { login, loading } = useAuth();
   const { t } = useLanguage();
 
@@ -22,13 +24,16 @@ const Login: React.FC = () => {
     setLoginError(null);
     setIsRetrying(false);
     setLoginSuccess(false);
+    pushLog(`Submit clicked for ${email}`);
     
     if (!email.trim()) {
       setLoginError({ message: t('login.emailRequired'), response: { status: 400 } });
+      pushLog('Validation: email missing');
       return;
     }
     if (!password.trim()) {
       setLoginError({ message: t('login.passwordRequired'), response: { status: 400 } });
+      pushLog('Validation: password missing');
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,11 +46,13 @@ const Login: React.FC = () => {
     }
     
     try {
+      pushLog('Trying global admin login first');
       // Auto-detect: try Global Admin first; if it fails, fall back to tenant login
       try {
         const { apiService } = await import('../services/api');
         const res = await apiService.globalLogin(email, password);
         if (res.success && (res as any).data?.token) {
+          pushLog('Global admin login success');
           localStorage.setItem('globalToken', (res as any).data.token);
           setLoginSuccess(true);
           setLoginError(null);
@@ -55,16 +62,20 @@ const Login: React.FC = () => {
       } catch (e: any) {
         // If global route missing (404), surface clear message; otherwise fall back to tenant login
         if (e && (e.status === 404 || /Cannot POST \/api\/global\/login/i.test(e.message || ''))) {
+          pushLog('Global admin route 404 - backend missing /api/global routes');
           setLoginError({ message: 'Global Admin is not enabled on this server build (404). Please redeploy backend with /api/global routes.', response: { status: 404 } });
           return;
         }
+        pushLog(`Global admin login failed (status ${e?.status ?? 'n/a'}) → fallback to tenant login`);
       }
-
+      pushLog('Trying tenant /api/auth/login');
       await login(email, password);
+      pushLog('Tenant login success');
       setLoginSuccess(true);
       setLoginError(null);
     } catch (error: any) {
       console.error('🔴 Login Error:', error);
+      pushLog(`Login error: ${error?.message || 'unknown'} status=${error?.status ?? 'n/a'}`);
       
       // Determine error message based on error type (security-focused)
       let errorMessage = 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง';
@@ -326,7 +337,15 @@ const Login: React.FC = () => {
             {/* Language Toggle Only */}
             <div className="mt-6 flex justify-center">
               <LanguageToggle />
-          </div>
+            </div>
+
+            {/* Debug panel (temporary) */}
+            <div className="mt-6 p-3 border rounded-lg text-xs bg-gray-50 text-gray-700">
+              <div className="font-semibold mb-1">Debug (temporary)</div>
+              <div>tenantPrefix: {localStorage.getItem('tenantPrefix') || 'default'}</div>
+              <div>has token: {String(!!localStorage.getItem('token'))}, has globalToken: {String(!!localStorage.getItem('globalToken'))}</div>
+              <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap">{debugLogs.join('\n')}</pre>
+            </div>
         </div>
 
         {/* Footer */}
