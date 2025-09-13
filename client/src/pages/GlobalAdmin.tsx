@@ -7,6 +7,8 @@ const GlobalAdmin: React.FC = () => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('globalToken'));
   const [tenants, setTenants] = useState<any[]>([]);
   const [overview, setOverview] = useState<any | null>(null);
+  const [globalUsers, setGlobalUsers] = useState<any[]>([]);
+  const [userSearch, setUserSearch] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({});
   const [form, setForm] = useState({ tenantPrefix: '', name: '', adminEmails: '' });
@@ -27,6 +29,8 @@ const GlobalAdmin: React.FC = () => {
       }));
       setTenants(combined);
       setOverview(overviewRes.data || null);
+      const usersRes = await api.getGlobalUsers();
+      setGlobalUsers(usersRes.data || []);
     } catch (e: any) {
       setError(e.message || 'Failed to load tenants');
     }
@@ -162,6 +166,48 @@ const GlobalAdmin: React.FC = () => {
                       className="text-blue-600 hover:underline"
                       onClick={() => { localStorage.setItem('tenantPrefix', t.tenantPrefix); window.location.href = `/t/${t.tenantPrefix}/signup`; }}
                     >Signup</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Global Users */}
+      <div className="bg-white rounded-xl shadow p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Users (All Tenants)</h2>
+          <div>
+            <input value={userSearch} onChange={(e)=>setUserSearch(e.target.value)} placeholder="Search name/email/staffId" className="border rounded px-3 py-2 mr-2" />
+            <button className="px-3 py-2 border rounded" onClick={async ()=>{ const res = await api.getGlobalUsers(userSearch); setGlobalUsers(res.data||[]); }}>Search</button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-left">
+                <th className="px-3 py-2">Name</th>
+                <th className="px-3 py-2">Email</th>
+                <th className="px-3 py-2">Staff ID</th>
+                <th className="px-3 py-2">Role</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Tenant</th>
+                <th className="px-3 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {globalUsers.map((u)=> (
+                <tr key={u.id} className="border-t">
+                  <td className="px-3 py-2">{u.fullName}</td>
+                  <td className="px-3 py-2">{u.email}</td>
+                  <td className="px-3 py-2">{u.staffId}</td>
+                  <td className="px-3 py-2">{u.role}</td>
+                  <td className="px-3 py-2">{u.status}</td>
+                  <td className="px-3 py-2 font-mono">{u.tenantPrefix || '-'}</td>
+                  <td className="px-3 py-2 space-x-2">
+                    <button className="text-blue-600 hover:underline" onClick={async ()=>{ await api.updateGlobalUser(u.id, { status: 'approved' }); const res = await api.getGlobalUsers(userSearch); setGlobalUsers(res.data||[]); }}>Approve</button>
+                    <button className="text-blue-600 hover:underline" onClick={async ()=>{ await api.updateGlobalUser(u.id, { role: u.role === 'admin' ? 'user' : 'admin' }); const res = await api.getGlobalUsers(userSearch); setGlobalUsers(res.data||[]); }}>{u.role==='admin' ? 'Demote' : 'Promote'}</button>
                   </td>
                 </tr>
               ))}

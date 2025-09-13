@@ -104,6 +104,69 @@ router.get('/tenants/stats', [
   res.json({ success: true, data: rows });
 }));
 
+// Global users list (cross-tenant)
+router.get('/users', [authenticateGlobalAdmin, query('search').optional().isString()], asyncHandler(async (req: Request, res: Response) => {
+  const search = (req.query.search as string || '').trim();
+  let where = '';
+  const params: any[] = [];
+  if (search) {
+    where = 'WHERE u.email LIKE ? OR u.fullName LIKE ? OR u.staffId LIKE ?';
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+  const rows = await dbQuery(`
+    SELECT u.id, u.fullName, u.email, u.staffId, u.role, u.status, u.canViewOthers, u.createdAt, u.updatedAt,
+           u.tenantId, t.tenantPrefix, t.name as tenantName
+    FROM users u
+    LEFT JOIN tenants t ON u.tenantId = t.id
+    ${where}
+    ORDER BY u.createdAt DESC
+  `, params);
+  res.json({ success: true, data: rows });
+}));
+
+// Update global user (role/status/canViewOthers/reassign tenant)
+router.put('/users/:id', [
+  authenticateGlobalAdmin,
+  body('role').optional().isIn(['user', 'admin']),
+  body('status').optional().isIn(['pending', 'approved', 'rejected']),
+  body('canViewOthers').optional().isBoolean(),
+  body('tenantPrefix').optional().matches(/^[a-z0-9_-]{2,30}$/)
+], asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { role, status, canViewOthers, tenantPrefix } = req.body as any;
+
+  const updates: string[] = [];
+  const params: any[] = [];
+  if (role !== undefined) { updates.push('role = ?'); params.push(role); }
+  if (status !== undefined) { updates.push('status = ?'); params.push(status); }
+  if (canViewOthers !== undefined) { updates.push('canViewOthers = ?'); params.push(Boolean(canViewOthers)); }
+
+  if (tenantPrefix) {
+    const t = await dbQueryOne('SELECT id FROM tenants WHERE tenantPrefix = ?', [tenantPrefix]);
+    if (!t) throw createError('Tenant not found', 404);
+    updates.push('tenantId = ?'); params.push(t.id);
+  }
+  if (!updates.length) return res.status(400).json({ success: false, message: 'No fields to update' });
+  updates.push('updatedAt = CURRENT_TIMESTAMP');
+  params.push(id);
+  await dbExecute(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
+  res.json({ success: true, message: 'User updated' });
+}));
+
+// Delete tenant (safe) - only if no users/contributions
+router.delete('/tenants/:id', authenticateGlobalAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const t = await dbQueryOne('SELECT id, tenantPrefix FROM tenants WHERE id = ?', [id]);
+  if (!t) throw createError('Tenant not found', 404);
+  const [{ count: userCount } = { count: 0 }] = await dbQuery('SELECT COUNT(*) as count FROM users WHERE tenantId = ?', [id]);
+  const [{ count: contribCount } = { count: 0 }] = await dbQuery('SELECT COUNT(*) as count FROM contributions WHERE tenantId = ?', [id]);
+  if (Number(userCount) > 0 || Number(contribCount) > 0) {
+    return res.status(400).json({ success: false, message: 'Tenant has users or contributions. Reassign or delete them first.' });
+  }
+  await dbExecute('DELETE FROM tenants WHERE id = ?', [id]);
+  res.json({ success: true, message: 'Tenant deleted' });
+}));
+
 // Create tenant
 router.post('/tenants', [
   authenticateGlobalAdmin,

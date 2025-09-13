@@ -200,6 +200,16 @@ class ApiService {
   async getTenants(): Promise<ApiResponse<any[]>> {
     return this.requestGlobal<ApiResponse<any[]>>('/api/global/tenants');
   }
+  async getGlobalUsers(search?: string): Promise<ApiResponse<any[]>> {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.requestGlobal<ApiResponse<any[]>>(`/api/global/users${qs}`);
+  }
+  async updateGlobalUser(id: string, payload: Partial<{ role: 'user' | 'admin'; status: 'pending' | 'approved' | 'rejected'; canViewOthers: boolean; tenantPrefix: string }>): Promise<ApiResponse<any>> {
+    return this.requestGlobal<ApiResponse<any>>(`/api/global/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  }
   async createTenant(payload: { tenantPrefix: string; name: string; adminEmails: string[] }): Promise<ApiResponse<any>> {
     return this.requestGlobal<ApiResponse<any>>('/api/global/tenants', {
       method: 'POST',
