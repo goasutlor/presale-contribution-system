@@ -5,11 +5,13 @@ import compression from 'compression';
 import morgan from 'morgan';
 import path from 'path';
 import { errorHandler } from './middleware/errorHandler';
+import { tenantContext } from './middleware/tenant';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { contributionRoutes } from './routes/contributions';
 import { reportRoutes } from './routes/reports';
 import { testRoutes } from './routes/functionalTest';
+import { globalRoutes } from './routes/global';
 import { initializeDatabase } from './database/init';
 
 const app = express();
@@ -59,11 +61,15 @@ app.use(morgan('combined'));
 // Force production mode for Railway
 const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
 
+// Tenant context middleware
+app.use(tenantContext);
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/global', globalRoutes);
 app.use('/api/test', testRoutes);
 
 // Static files (for production build) - must be after API routes
