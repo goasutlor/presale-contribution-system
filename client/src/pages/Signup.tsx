@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
@@ -26,6 +26,15 @@ const Signup: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [tenants, setTenants] = useState<Array<{ tenantPrefix: string; name: string }>>([]);
+  const [selectedTenant, setSelectedTenant] = useState<string>(localStorage.getItem('tenantPrefix') || 'default');
+
+  useEffect(() => {
+    fetch('/api/public/tenant-directory')
+      .then(res => res.json())
+      .then(json => setTenants(json.data || []))
+      .catch(() => setTenants([{ tenantPrefix: 'default', name: 'Default' }]));
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -140,6 +149,7 @@ const Signup: React.FC = () => {
     }
 
     try {
+      try { localStorage.setItem('tenantPrefix', selectedTenant || 'default'); } catch {}
       // Prepare data for API call
       const signupData = {
         ...formData,
@@ -161,9 +171,9 @@ const Signup: React.FC = () => {
       if (result.success) {
         toast.success(t('signup.success'));
         
-        // Redirect to login page
+        // Redirect to tenant login page
         setTimeout(() => {
-          navigate('/login');
+          navigate(`/t/${selectedTenant}/login`);
         }, 2000);
       } else {
         toast.error(result.message || t('signup.error'));
@@ -238,6 +248,19 @@ const Signup: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Tenant Selector */}
+            <div>
+              <label className="block text-white/90 dark:text-gray-100 text-sm font-medium mb-2">Tenant / Team *</label>
+              <select
+                value={selectedTenant}
+                onChange={(e) => setSelectedTenant(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white/90 dark:bg-gray-100 border border-white/30 dark:border-gray-300 text-slate-900 dark:text-gray-900"
+              >
+                {tenants.map(t => (
+                  <option key={t.tenantPrefix} value={t.tenantPrefix}>{t.name} ({t.tenantPrefix})</option>
+                ))}
+              </select>
+            </div>
             {/* Full Name */}
             <div>
               <label className="block text-white/90 dark:text-gray-100 text-sm font-medium mb-2">

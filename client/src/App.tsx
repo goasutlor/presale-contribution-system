@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -19,6 +19,15 @@ import GlobalAdmin from './pages/GlobalAdmin';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
+const TenantBinder: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const params = useParams();
+  const prefix = params.tenantPrefix as string | undefined;
+  if (prefix) {
+    try { localStorage.setItem('tenantPrefix', prefix); } catch {}
+  }
+  return <>{children}</>;
+};
+
 const AppRoutes: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
 
@@ -36,6 +45,8 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/t/:tenantPrefix/login" element={<TenantBinder><Login /></TenantBinder>} />
+        <Route path="/t/:tenantPrefix/signup" element={<TenantBinder><Signup /></TenantBinder>} />
         {/* Allow access to Global Admin without tenant auth; it uses its own token */}
         <Route path="/global-admin" element={<GlobalAdmin />} />
         <Route path="*" element={<Navigate to="/login" replace />} />

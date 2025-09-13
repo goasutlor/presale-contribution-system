@@ -13,6 +13,8 @@ import { reportRoutes } from './routes/reports';
 import { testRoutes } from './routes/functionalTest';
 import { globalRoutes } from './routes/global';
 import { initializeDatabase } from './database/init';
+import { Router } from 'express';
+import { publicRoutes } from './routes/public';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '8080', 10);
@@ -71,6 +73,16 @@ app.use('/api/contributions', contributionRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/global', globalRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/public', publicRoutes);
+
+// Tenant-scoped API mounts: /t/:tenantPrefix/api/* (Phase 5)
+const tenantApi = Router();
+tenantApi.use('/auth', authRoutes);
+tenantApi.use('/users', userRoutes);
+tenantApi.use('/contributions', contributionRoutes);
+tenantApi.use('/reports', reportRoutes);
+tenantApi.use('/test', testRoutes);
+app.use('/t/:tenantPrefix/api', tenantApi);
 
 // Static files (for production build) - must be after API routes
 if (isProduction) {

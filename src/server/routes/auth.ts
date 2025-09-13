@@ -128,8 +128,8 @@ router.post('/login', loginValidation, asyncHandler(async (req: Request, res: Re
         });
       }
 
-      // Generate JWT token
-      const token = generateToken(user.id);
+      // Generate tenant-aware JWT token (aud: tenant)
+      const token = jwt.sign({ userId: user.id, tenantId: (req as any).tenantId || 'tenant-default', tenantPrefix: (req as any).tenantPrefix, aud: 'tenant' }, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production', { expiresIn: '24h' });
 
       // Parse JSON fields for response
       const userResponse = {

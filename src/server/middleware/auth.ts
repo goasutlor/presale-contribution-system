@@ -32,8 +32,8 @@ export const authenticateToken = async (
       throw createError('Access token required', 401);
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    console.log('🔍 Token decoded:', { userId: decoded.userId });
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; tenantId?: string; tenantPrefix?: string; aud?: string };
+    console.log('🔍 Token decoded:', { userId: decoded.userId, tenantId: decoded.tenantId, aud: decoded.aud });
     
     const row: any = await dbQueryOne('SELECT * FROM users WHERE id = ?', [decoded.userId]);
     if (!row) return next(createError('User not found', 401));
@@ -68,6 +68,13 @@ export const authenticateToken = async (
       involvedSaleNames: user.involvedSaleNames,
       involvedSaleEmails: user.involvedSaleEmails
     });
+
+    // Enforce tenant match if present
+    const requestTenantId = (req as any).tenantId;
+    if (decoded.tenantId && requestTenantId && decoded.tenantId !== requestTenantId) {
+      console.error('❌ Tenant mismatch between token and request path/header', { tokenTenantId: decoded.tenantId, requestTenantId });
+      return next(createError('Invalid tenant context', 403));
+    }
 
     req.user = user;
     next();
