@@ -202,9 +202,31 @@ const Signup: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Brand text only: ASC */}
+        {/* ASC logo with orange roof (ASC3 style without the 3) */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white dark:text-gray-100 mb-2">ASC</h1>
+          <div className="inline-flex items-center justify-center w-[300px] h-[140px]">
+            <svg width="300" height="140" viewBox="0 0 300 140" className="w-full h-full drop-shadow-2xl">
+              <defs>
+                <linearGradient id="blueLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#365486" />
+                  <stop offset="100%" stopColor="#7FC7D9" />
+                </linearGradient>
+                <linearGradient id="orangeAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FF7A1A" />
+                  <stop offset="100%" stopColor="#F7931E" />
+                </linearGradient>
+              </defs>
+              <line x1="30" y1="116" x2="270" y2="116" stroke="url(#blueLine)" strokeWidth="2" opacity="0.35" />
+              <polygon points="116,40 146,16 174,40 164,40 146,26 128,40" fill="url(#orangeAccent)" />
+              <polygon points="156,44 180,28 200,44 192,44 180,34 168,44" fill="url(#orangeAccent)" opacity="0.85" />
+              <line x1="52" y1="76" x2="96" y2="76" stroke="url(#orangeAccent)" strokeWidth="6" strokeLinecap="round" />
+              <polygon points="96,76 86,72 86,80" fill="#FF7A1A" />
+              <line x1="248" y1="76" x2="204" y2="76" stroke="url(#orangeAccent)" strokeWidth="6" strokeLinecap="round" />
+              <polygon points="204,76 214,72 214,80" fill="#FF7A1A" />
+              <text x="150" y="92" textAnchor="middle" fontFamily="Inter, Arial, sans-serif" fontWeight="900" fontSize="50" fill="#FFFFFF">ASC</text>
+              <text x="150" y="110" textAnchor="middle" fontFamily="Inter, Arial, sans-serif" fontWeight="700" fontSize="14" fill="#E5E7EB" letterSpacing="1.5">ACCOUNT CONTRIBUTION</text>
+            </svg>
+          </div>
           <p className="text-white/70 dark:text-gray-300">{t('signup.subtitle')}</p>
         </div>
 
