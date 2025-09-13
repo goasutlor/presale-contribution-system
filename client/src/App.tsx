@@ -10,6 +10,8 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/UserManagement';
+import GlobalUserManagement from './pages/GlobalUserManagement';
+import TenantManagement from './pages/TenantManagement';
 import Reports from './pages/Reports';
 import SimpleContributions from './pages/SimpleContributions';
 import AllContributions from './pages/AllContributions';
@@ -57,8 +59,8 @@ const AppRoutes: React.FC = () => {
           <Route path="dashboard" element={<GlobalDashboard />} />
           <Route path="contributions" element={<GlobalContributions />} />
           <Route path="reports" element={<GlobalReports />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="tenants" element={<GlobalAdmin />} />
+          <Route path="users" element={<GlobalUserManagement />} />
+          <Route path="tenants" element={<TenantManagement />} />
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
