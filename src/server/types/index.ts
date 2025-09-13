@@ -1,5 +1,6 @@
 export interface User {
   id: string;
+  tenantId?: string;
   fullName: string;
   staffId: string;
   email: string;
@@ -9,12 +10,16 @@ export interface User {
   involvedSaleEmails: string[];
   role: 'user' | 'admin';
   canViewOthers: boolean;
+  emailVerified?: boolean;
+  emailVerificationToken?: string | null;
+  emailVerificationExpires?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface Contribution {
   id: string;
+  tenantId?: string;
   userId: string;
   accountName: string;
   saleName: string;
@@ -29,6 +34,15 @@ export interface Contribution {
   status: 'draft' | 'submitted' | 'approved' | 'rejected'; // Updated status field
   attachments?: string[];
   tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Tenant {
+  id: string;
+  tenantPrefix: string;
+  name: string;
+  adminEmails?: string[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -27,6 +27,7 @@ const reportFilterValidation = [
 router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
+  const tenantId = (req as any).tenantId || 'tenant-default';
 
   // Build base query based on user role
   let baseQuery = `
@@ -43,11 +44,15 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   `;
 
   const queryParams: any[] = [];
+  const conditions: string[] = [];
+  conditions.push('tenantId = ?');
+  queryParams.push(tenantId);
 
   if (!isAdmin) {
-    baseQuery += ' WHERE userId = ?';
+    conditions.push('userId = ?');
     queryParams.push(userId);
   }
+  if (conditions.length) baseQuery += ' WHERE ' + conditions.join(' AND ');
 
   const row: any = await dbQueryOne(baseQuery, queryParams);
   const dashboardData = {
@@ -70,6 +75,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
 router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
+  const tenantId = (req as any).tenantId || 'tenant-default';
 
   // Get current year
   const currentYear = new Date().getFullYear();
@@ -86,6 +92,8 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
 
   const queryParams: any[] = [`${currentYear}-%`];
 
+  baseQuery += ' AND tenantId = ?';
+  queryParams.push(tenantId);
   if (!isAdmin) {
     baseQuery += ' AND userId = ?';
     queryParams.push(userId);
@@ -131,11 +139,13 @@ router.post('/comprehensive', requireUser, reportFilterValidation, asyncHandler(
   const filters: ReportFilter = req.body;
   const userId = (req as AuthRequest).user!.id;
   const isAdmin = (req as AuthRequest).user!.role === 'admin';
+  const tenantId = (req as any).tenantId || 'tenant-default';
 
   // Build WHERE clause based on filters
   const whereConditions: string[] = [];
   const queryParams: any[] = [];
 
+  whereConditions.push('c.tenantId = ?'); queryParams.push(tenantId);
   if (!isAdmin) { whereConditions.push('c.userId = ?'); queryParams.push(userId); }
   if (filters.startDate) { whereConditions.push('c.contributionMonth >= ?'); queryParams.push(filters.startDate); }
   if (filters.endDate) { whereConditions.push('c.contributionMonth <= ?'); queryParams.push(filters.endDate); }

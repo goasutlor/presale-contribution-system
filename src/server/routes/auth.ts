@@ -208,7 +208,10 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
     const cleanedAccountNames = involvedAccountNames.map((name: string) => cleanSpecialCharacters(name));
     const cleanedSaleNames = involvedSaleNames.map((name: string) => cleanSpecialCharacters(name));
 
-    // Check if user already exists
+    // Resolve tenant from middleware
+    const tenantId = (req as any).tenantId || 'tenant-default';
+
+    // Check if user already exists (within tenant by email/staffId globally for simplicity)
     const existingUser: any = await dbQueryOne(
       'SELECT id FROM users WHERE email = ? OR staffId = ?',
       [email, staffId]
@@ -233,16 +236,17 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
           // Insert new user with pending status
           const insertQuery = `
             INSERT INTO users (
-              id, fullName, staffId, email, password, 
+              id, tenantId, fullName, staffId, email, password, 
               involvedAccountNames, involvedSaleNames, involvedSaleEmails,
-              role, status, canViewOthers, createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+              role, status, canViewOthers, emailVerified, createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
           `;
 
           console.log('🔍 About to insert user with ID:', userId);
           console.log('🔍 Insert query:', insertQuery);
           console.log('🔍 Insert values:', [
             userId,
+            tenantId,
             cleanedFullName,
             cleanedStaffId,
             email,
@@ -252,6 +256,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
             JSON.stringify(involvedSaleEmails),
             'user',
             'pending',
+            false,
             false
           ]);
 
@@ -259,6 +264,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
             insertQuery,
             [
               userId,
+              tenantId,
               cleanedFullName,
               cleanedStaffId,
               email,
@@ -268,6 +274,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
               JSON.stringify(involvedSaleEmails),
               'user',
               'pending',
+              false,
               false
             ]
           );
@@ -632,6 +639,7 @@ router.post('/update-password', authenticateToken, [
 // Approve pending user
 router.post('/approve/:userId', authenticateToken, requireAdmin, async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.params;
+  const tenantId = (req as any).tenantId || 'tenant-default';
   console.log('🔍 Approve user request - userId:', userId);
   console.log('🔍 Request user:', (req as any).user);
 

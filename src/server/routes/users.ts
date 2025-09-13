@@ -40,7 +40,8 @@ const updateUserValidation = [
 // Get all users (admin only)
 router.get('/', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
   console.log('🔍 Getting all users...');
-  const rows = await dbQuery('SELECT * FROM users ORDER BY fullName');
+  const tenantId = (req as any).tenantId || 'tenant-default';
+  const rows = await dbQuery('SELECT * FROM users WHERE tenantId = ? ORDER BY fullName', [tenantId]);
 
   console.log('🔍 Raw database rows:', rows.length);
   rows.forEach((row: any, index: number) => {
@@ -118,11 +119,13 @@ router.post('/', requireAdmin, createUserValidation, asyncHandler(async (req: Re
 
   const hashedPassword = await bcrypt.hash(userData.password, 12);
   const userId = uuidv4();
+  const tenantId = (req as any).tenantId || 'tenant-default';
   await dbExecute(
-    `INSERT INTO users (id, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, canViewOthers)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO users (id, tenantId, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, canViewOthers)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
+      tenantId,
       userData.fullName,
       userData.staffId,
       userData.email,

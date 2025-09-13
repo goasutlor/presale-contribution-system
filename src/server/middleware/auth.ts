@@ -8,6 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-i
 
 export interface AuthRequest extends Request {
   user?: User;
+  tenantId?: string;
 }
 
 export const authenticateToken = async (

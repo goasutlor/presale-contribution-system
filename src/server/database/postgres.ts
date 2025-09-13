@@ -103,6 +103,18 @@ function normalizeRowKeys<T extends Record<string, any>>(row: T): T {
 async function createTables(): Promise<void> {
   const db = getDatabase();
   
+  // Tenants table (for multi-tenancy)
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS tenants (
+      id VARCHAR(255) PRIMARY KEY,
+      tenantPrefix VARCHAR(100) UNIQUE NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      adminEmails TEXT,
+      createdAt TIMESTAMP DEFAULT NOW(),
+      updatedAt TIMESTAMP DEFAULT NOW()
+    )
+  `);
+
   // Users table
   await db.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -154,6 +166,13 @@ async function createTables(): Promise<void> {
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApproval BOOLEAN DEFAULT false`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalDate TIMESTAMP`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalNotes TEXT`);
+
+  // Multi-tenant related columns (idempotent adds)
+  await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS tenantId VARCHAR(255)`);
+  await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS emailVerified BOOLEAN DEFAULT false`);
+  await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS emailVerificationToken VARCHAR(255)`);
+  await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS emailVerificationExpires TIMESTAMP`);
+  await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS tenantId VARCHAR(255)`);
 
   console.log('✅ Database tables created/verified');
 }

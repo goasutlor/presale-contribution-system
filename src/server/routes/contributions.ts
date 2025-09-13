@@ -56,6 +56,7 @@ const updateContributionValidation = [
 router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
+  const tenantId = (req as any).tenantId || 'tenant-default';
   
   // Build query based on user role
   let query = `
@@ -64,10 +65,16 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
     JOIN users u ON c.userId = u.id 
   `;
   let params: any[] = [];
+  const conditions: string[] = [];
+  conditions.push('c.tenantId = ?');
+  params.push(tenantId);
   
   if (!isAdmin) {
-    query += ' WHERE c.userId = ?';
+    conditions.push('c.userId = ?');
     params.push(userId);
+  }
+  if (conditions.length) {
+    query += ' WHERE ' + conditions.join(' AND ');
   }
   
   query += ' ORDER BY c.createdAt DESC';
@@ -106,12 +113,14 @@ router.get('/admin', requireUser, asyncHandler(async (req: AuthRequest, res: Res
     throw createError('Admin access required', 403);
   }
 
+  const tenantId = (req as any).tenantId || 'tenant-default';
   const rows = await dbQuery(`
     SELECT c.*, u.fullName as userName 
     FROM contributions c 
     JOIN users u ON c.userId = u.id 
+    WHERE c.tenantId = ?
     ORDER BY c.createdAt DESC
-  `);
+  `, [tenantId]);
 
   const contributions = rows.map((row: any) => ({
       id: row.id,
@@ -144,13 +153,14 @@ router.get('/admin', requireUser, asyncHandler(async (req: AuthRequest, res: Res
 router.get('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const userId = req.user!.id;
+  const tenantId = (req as any).tenantId || 'tenant-default';
 
   const row = await dbQueryOne(`
     SELECT c.*, u.fullName as userName 
     FROM contributions c 
     JOIN users u ON c.userId = u.id 
-    WHERE c.id = ?
-  `, [id]);
+    WHERE c.id = ? AND c.tenantId = ?
+  `, [id, tenantId]);
 
   if (!row) throw createError('Contribution not found', 404);
   if (req.user!.role !== 'admin' && row.userId !== userId) throw createError('Access denied', 403);
@@ -200,6 +210,7 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   console.log('🔍 ContributionData.status:', contributionData.status);
   
   const userId = req.user!.id;
+  const tenantId = (req as any).tenantId || 'tenant-default';
 
   // Validate contribution month format (YYYY-MM)
   if (!/^\d{4}-\d{2}$/.test(contributionData.contributionMonth)) {
@@ -244,12 +255,13 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   
   await dbExecute(`
     INSERT INTO contributions (
-      id, userId, accountName, saleName, saleEmail, contributionType, 
+      id, tenantId, userId, accountName, saleName, saleEmail, contributionType, 
       title, description, impact, effort, estimatedImpactValue, contributionMonth, 
       status, tags, attachments
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     contributionId,
+    tenantId,
     userId,
     contributionData.accountName,
     contributionData.saleName,
