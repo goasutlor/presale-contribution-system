@@ -1,5 +1,5 @@
 {
-  "ServiceName": "presale-contribution-system",
+  "ServiceName": "asc3-contribution-system",
   "SourceConfiguration": {
     "CodeRepository": {
       "RepositoryUrl": "https://github.com/goasutlor/presale-contribution-system",

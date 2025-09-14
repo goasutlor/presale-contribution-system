@@ -1,0 +1,77 @@
+name: Deploy to AWS App Runner
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm cache clean --force
+        npm install --legacy-peer-deps --force
+        cd client && npm install --legacy-peer-deps --force
+        
+    - name: Build application
+      run: npm run build
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        
+    - name: Deploy to AWS App Runner
+      run: |
+        # Check if service exists
+        if aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='asc3-contribution-system']" --output text | grep -q asc3-contribution-system; then
+          echo "Service exists, updating..."
+          SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='asc3-contribution-system'].ServiceArn" --output text)
+          aws apprunner start-deployment --service-arn $SERVICE_ARN
+        else
+          echo "Service does not exist, creating..."
+          aws apprunner create-service --cli-input-json file://create-service.json
+        fi
+        
+    - name: Wait for deployment
+      run: |
+        SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='asc3-contribution-system'].ServiceArn" --output text)
+        echo "Waiting for deployment to complete..."
+        aws apprunner wait service-running --service-arn $SERVICE_ARN
+        
+    - name: Get service URL
+      run: |
+        SERVICE_URL=$(aws apprunner describe-service --service-arn $(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='asc3-contribution-system'].ServiceArn" --output text) --query "Service.ServiceUrl" --output text)
+        echo "🎉 Deployment successful!"
+        echo "🔗 Service URL: $SERVICE_URL"
+        echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+        
+    - name: Comment deployment URL
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `🚀 **Deployment successful!**
+            
+            🔗 **Service URL**: ${{ env.SERVICE_URL }}
+            
+            Your ASC3 Contribution System is now live on AWS App Runner!`
+          })
