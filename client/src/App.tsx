@@ -12,6 +12,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/UserManagement';
 import GlobalUserManagement from './pages/GlobalUserManagement';
 import TenantManagement from './pages/TenantManagement';
+import TenantFunctionalTest from './pages/TenantFunctionalTest';
 import Reports from './pages/Reports';
 import SimpleContributions from './pages/SimpleContributions';
 import AllContributions from './pages/AllContributions';
@@ -61,6 +62,7 @@ const AppRoutes: React.FC = () => {
           <Route path="reports" element={<GlobalReports />} />
           <Route path="users" element={<GlobalUserManagement />} />
           <Route path="tenants" element={<TenantManagement />} />
+          <Route path="functional-test" element={<TenantFunctionalTest />} />
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

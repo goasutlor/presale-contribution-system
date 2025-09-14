@@ -11,6 +11,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   ArrowRightIcon,
+  PlusIcon,
 } from '@heroicons/react/24/outline';
 import UserForm from '../components/UserForm';
 
@@ -223,6 +224,18 @@ const GlobalUserManagement: React.FC = () => {
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Manage all users across all tenants
           </p>
+        </div>
+        <div className="mt-4 md:mt-0 md:ml-4">
+          <button
+            onClick={() => {
+              setEditingUser(null);
+              setShowUserForm(true);
+            }}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Create New User
+          </button>
         </div>
       </div>
 
@@ -548,13 +561,13 @@ const GlobalUserManagement: React.FC = () => {
       )}
 
       {/* User Form Modal */}
-      {showUserForm && editingUser && (
+      {showUserForm && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  Edit User
+                  {editingUser ? 'Edit User' : 'Create New User'}
                 </h3>
                 <button
                   onClick={() => {
@@ -567,7 +580,7 @@ const GlobalUserManagement: React.FC = () => {
                 </button>
               </div>
               <UserForm
-                initialData={{
+                initialData={editingUser ? {
                   fullName: editingUser.fullName,
                   staffId: editingUser.staffId,
                   email: editingUser.email,
@@ -578,23 +591,37 @@ const GlobalUserManagement: React.FC = () => {
                   involvedSaleEmails: [],
                   role: editingUser.role,
                   canViewOthers: editingUser.canViewOthers
-                }}
-                isEditing={true}
+                } : undefined}
+                isEditing={!!editingUser}
                 isAdmin={true}
                 onSubmit={async (userData) => {
                   try {
-                    const response = await apiService.updateGlobalUser(editingUser.id, userData);
-                    if (response.success) {
-                      toast.success('User updated successfully');
-                      setShowUserForm(false);
-                      setEditingUser(null);
-                      loadUsers();
+                    if (editingUser) {
+                      // Update existing user
+                      const response = await apiService.updateGlobalUser(editingUser.id, userData);
+                      if (response.success) {
+                        toast.success('User updated successfully');
+                        setShowUserForm(false);
+                        setEditingUser(null);
+                        loadUsers();
+                      } else {
+                        toast.error('Failed to update user');
+                      }
                     } else {
-                      toast.error('Failed to update user');
+                      // Create new user
+                      const response = await apiService.createGlobalUser(userData);
+                      if (response.success) {
+                        toast.success('User created successfully');
+                        setShowUserForm(false);
+                        setEditingUser(null);
+                        loadUsers();
+                      } else {
+                        toast.error('Failed to create user');
+                      }
                     }
                   } catch (error) {
-                    console.error('Error updating user:', error);
-                    toast.error('Failed to update user');
+                    console.error('Error saving user:', error);
+                    toast.error(editingUser ? 'Failed to update user' : 'Failed to create user');
                   }
                 }}
                 onCancel={() => {

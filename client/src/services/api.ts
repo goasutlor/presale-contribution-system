@@ -203,6 +203,13 @@ class ApiService {
       body: JSON.stringify(payload)
     });
   }
+
+  async createGlobalUser(userData: any): Promise<ApiResponse<any>> {
+    return this.requestGlobal<ApiResponse<any>>('/api/global/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
   async createTenant(payload: { tenantPrefix: string; name: string; adminEmails: string[] }): Promise<ApiResponse<any>> {
     return this.requestGlobal<ApiResponse<any>>('/api/global/tenants', {
       method: 'POST',

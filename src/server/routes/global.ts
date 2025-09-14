@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult, query } from 'express-validator';
+import bcrypt from 'bcryptjs';
 import { dbQuery, dbQueryOne, dbExecute } from '../database/init';
 import { authenticateGlobalAdmin, verifyGlobalAdminCredentials, issueGlobalAdminToken } from '../middleware/globalAdmin';
 import { asyncHandler, createError } from '../middleware/errorHandler';
@@ -217,6 +218,47 @@ router.get('/contributions', [
   `, [...params, limit, offset]);
 
   return res.json({ success: true, data: rows });
+}));
+
+// Create new user globally
+router.post('/users', authenticateGlobalAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const { fullName, staffId, email, password, role = 'user', canViewOthers = false, tenantPrefix, involvedAccountNames = [], involvedSaleNames = [], involvedSaleEmails = [] } = req.body;
+
+  if (!fullName || !staffId || !email || !password || !tenantPrefix) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+
+  try {
+    // Get tenant ID
+    const tenant = await dbQuery('SELECT id FROM tenants WHERE tenantPrefix = ?', [tenantPrefix]);
+    if (tenant.length === 0) {
+      return res.status(400).json({ success: false, message: 'Tenant not found' });
+    }
+    const tenantId = tenant[0].id;
+
+    // Check if user already exists
+    const existingUser = await dbQuery(
+      'SELECT id FROM users WHERE (email = ? OR staffId = ?) AND tenantId = ?',
+      [email, staffId, tenantId]
+    );
+
+    if (existingUser.length > 0) {
+      return res.status(400).json({ success: false, message: 'User already exists with this email or staff ID in this tenant' });
+    }
+
+    // Create user
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await dbQuery(
+      `INSERT INTO users (fullName, staffId, email, password, role, status, canViewOthers, tenantId, involvedAccountNames, involvedSaleNames, involvedSaleEmails, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, 'approved', ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      [fullName, staffId, email, hashedPassword, role, canViewOthers, tenantId, JSON.stringify(involvedAccountNames), JSON.stringify(involvedSaleNames), JSON.stringify(involvedSaleEmails)]
+    );
+
+    return res.json({ success: true, data: { id: result.insertId, message: 'User created successfully' } });
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return res.status(500).json({ success: false, message: 'Failed to create user' });
+  }
 }));
 
 // Global users list (cross-tenant)
