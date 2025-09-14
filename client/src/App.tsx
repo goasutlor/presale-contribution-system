@@ -12,6 +12,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/UserManagement';
 import GlobalUserManagement from './pages/GlobalUserManagement';
 import TenantManagement from './pages/TenantManagement';
+import BackupRestore from './pages/BackupRestore';
 import TenantFunctionalTest from './pages/TenantFunctionalTest';
 import Reports from './pages/Reports';
 import SimpleContributions from './pages/SimpleContributions';
@@ -60,9 +61,10 @@ const AppRoutes: React.FC = () => {
           <Route path="dashboard" element={<GlobalDashboard />} />
           <Route path="contributions" element={<GlobalContributions />} />
           <Route path="reports" element={<GlobalReports />} />
-          <Route path="users" element={<GlobalUserManagement />} />
-          <Route path="tenants" element={<TenantManagement />} />
-          <Route path="functional-test" element={<TenantFunctionalTest />} />
+              <Route path="users" element={<GlobalUserManagement />} />
+              <Route path="tenants" element={<TenantManagement />} />
+              <Route path="backup-restore" element={<BackupRestore />} />
+              <Route path="functional-test" element={<TenantFunctionalTest />} />
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

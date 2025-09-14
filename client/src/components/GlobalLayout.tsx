@@ -9,6 +9,7 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   Cog6ToothIcon,
+  CloudArrowUpIcon,
   Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -24,6 +25,7 @@ const GlobalLayout: React.FC = () => {
     { name: 'Reports', href: '/global-admin/reports', icon: ChartBarIcon },
     { name: 'Users', href: '/global-admin/users', icon: UserGroupIcon },
     { name: 'Tenant Management', href: '/global-admin/tenants', icon: Cog6ToothIcon },
+    { name: 'Backup & Restore', href: '/global-admin/backup-restore', icon: CloudArrowUpIcon },
     { name: 'Functional Test', href: '/global-admin/functional-test', icon: Cog6ToothIcon },
   ];
 
