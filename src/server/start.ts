@@ -13,7 +13,7 @@ import { testRoutes } from './routes/functionalTest';
 import { initializeDatabase } from './database/init';
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = parseInt(process.env.PORT || '5001', 10);
 
 // Security middleware
 app.use(helmet({
