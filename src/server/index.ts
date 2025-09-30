@@ -81,9 +81,32 @@ app.get('/favicon.ico', (req, res) => {
   }
 });
 
-// Health check endpoint
+// Health check endpoint - must work even if database is not ready
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  try {
+    res.status(200).json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      railway: process.env.RAILWAY_ENVIRONMENT ? 'true' : 'false',
+      uptime: process.uptime(),
+      memory: process.memoryUsage()
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(200).json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      railway: process.env.RAILWAY_ENVIRONMENT ? 'true' : 'false',
+      note: 'Server running but some services may be initializing'
+    });
+  }
+});
+
+// Root health check endpoint for Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
