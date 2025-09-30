@@ -81,36 +81,29 @@ app.get('/favicon.ico', (req, res) => {
   }
 });
 
-// Health check endpoint - must work even if database is not ready
+// Health check endpoint - must work immediately
 app.get('/api/health', (req, res) => {
-  try {
-    res.status(200).json({ 
-      status: 'OK', 
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      railway: process.env.RAILWAY_ENVIRONMENT ? 'true' : 'false',
-      uptime: process.uptime(),
-      memory: process.memoryUsage()
-    });
-  } catch (error) {
-    console.error('Health check error:', error);
-    res.status(200).json({ 
-      status: 'OK', 
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      railway: process.env.RAILWAY_ENVIRONMENT ? 'true' : 'false',
-      note: 'Server running but some services may be initializing'
-    });
-  }
-});
-
-// Root health check endpoint for Railway
-app.get('/health', (req, res) => {
+  console.log('🔍 Health check requested');
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    railway: process.env.RAILWAY_ENVIRONMENT ? 'true' : 'false'
+    railway: process.env.RAILWAY_ENVIRONMENT ? 'true' : 'false',
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    message: 'Server is running and ready'
+  });
+});
+
+// Root health check endpoint for Railway
+app.get('/health', (req, res) => {
+  console.log('🔍 Root health check requested');
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    railway: process.env.RAILWAY_ENVIRONMENT ? 'true' : 'false',
+    message: 'Server is running and ready'
   });
 });
 
