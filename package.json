@@ -11,7 +11,7 @@
     "build": "npm run build:server && npm run build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "cd client && npm run build",
-    "start": "node dist/server/index.js",
+    "start": "ts-node src/server/index.ts",
     "start:http": "node dist/server/index.js",
     "start:https": "NODE_ENV=production node dist/server/index.js",
     "start:production": "set NODE_ENV=production && node dist/server/index.js",
