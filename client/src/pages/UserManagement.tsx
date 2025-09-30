@@ -753,7 +753,7 @@ const UserManagement: React.FC = () => {
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Blog Links</label>
                   <div className="flex flex-wrap gap-2">
-                    {user?.blogLinks?.length > 0 ? (
+                    {user?.blogLinks && user.blogLinks.length > 0 ? (
                       user.blogLinks.map((link, index) => (
                         <a 
                           key={index} 
