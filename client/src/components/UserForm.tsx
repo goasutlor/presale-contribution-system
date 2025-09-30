@@ -12,8 +12,10 @@ interface UserFormData {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   canViewOthers: boolean;
+  tenantPrefix?: string;
 }
 
 interface UserSubmitData {
@@ -24,8 +26,16 @@ interface UserSubmitData {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   canViewOthers: boolean;
+  tenantPrefix?: string;
+}
+
+interface Tenant {
+  id: string;
+  name: string;
+  tenantPrefix: string;
 }
 
 interface UserFormProps {
@@ -35,9 +45,11 @@ interface UserFormProps {
   isEditing?: boolean;
   existingEmails?: string[];
   isAdmin?: boolean;
+  tenants?: Tenant[];
+  isGlobalAdmin?: boolean;
 }
 
-export default function UserForm({ onSubmit, onCancel, initialData, isEditing = false, existingEmails = [], isAdmin = false }: UserFormProps) {
+export default function UserForm({ onSubmit, onCancel, initialData, isEditing = false, existingEmails = [], isAdmin = false, tenants = [], isGlobalAdmin = false }: UserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -58,8 +70,10 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
       involvedAccountNames: [],
       involvedSaleNames: [],
       involvedSaleEmails: [],
+      blogLinks: [],
       role: 'user',
       canViewOthers: false,
+      tenantPrefix: '',
       ...initialData
     },
     mode: 'onChange'
@@ -74,7 +88,7 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
   };
 
   const validatePassword = (password: string) => {
-    if (isEditing && !password) return true; // Allow empty password when editing
+    if (isEditing && !password) return true;
     if (password.length < 6) return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
     if (!/(?=.*[a-z])/.test(password)) return 'รหัสผ่านต้องมีตัวพิมพ์เล็กอย่างน้อย 1 ตัว';
     if (!/(?=.*[A-Z])/.test(password)) return 'รหัสผ่านต้องมีตัวพิมพ์ใหญ่อย่างน้อย 1 ตัว';
@@ -90,17 +104,13 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
   const onFormSubmit = async (data: UserFormData) => {
     setIsSubmitting(true);
     try {
-      // Remove confirmPassword before submitting
       const { confirmPassword, ...submitData } = data;
-      
-      // If editing and password is empty, don't include it
       if (isEditing && !submitData.password) {
         delete (submitData as any).password;
       }
-      
       await onSubmit(submitData as UserSubmitData);
       toast.success(isEditing ? 'อัปเดตผู้ใช้สำเร็จ' : 'สร้างผู้ใช้สำเร็จ');
-    } catch (error) {
+    } catch (_error) {
       toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
     } finally {
       setIsSubmitting(false);
@@ -118,14 +128,12 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
   };
 
   const updateAccount = (index: number, value: string) => {
-    // Clean special characters for account names
     const cleanedValue = value
-      .replace(/[\u0E47-\u0E4E]/g, '') // Remove Thai diacritical marks
-      .replace(/[\u0E30-\u0E39]/g, '') // Remove Thai vowels
-      .replace(/[\u0E40-\u0E44]/g, '') // Remove Thai consonants
-      .replace(/[^\u0020-\u007E\u0E01-\u0E5B]/g, '') // Keep only ASCII and Thai characters
+      .replace(/[\u0E47-\u0E4E]/g, '')
+      .replace(/[\u0E30-\u0E39]/g, '')
+      .replace(/[\u0E40-\u0E44]/g, '')
+      .replace(/[^\u0020-\u007E\u0E01-\u0E5B]/g, '')
       .trim();
-    
     const currentAccounts = watch('involvedAccountNames');
     const newAccounts = [...currentAccounts];
     newAccounts[index] = cleanedValue;
@@ -148,14 +156,12 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
 
   const updateSale = (index: number, field: 'name' | 'email', value: string) => {
     if (field === 'name') {
-      // Clean special characters for sale names
       const cleanedValue = value
-        .replace(/[\u0E47-\u0E4E]/g, '') // Remove Thai diacritical marks
-        .replace(/[\u0E30-\u0E39]/g, '') // Remove Thai vowels
-        .replace(/[\u0E40-\u0E44]/g, '') // Remove Thai consonants
-        .replace(/[^\u0020-\u007E\u0E01-\u0E5B]/g, '') // Keep only ASCII and Thai characters
+        .replace(/[\u0E47-\u0E4E]/g, '')
+        .replace(/[\u0E30-\u0E39]/g, '')
+        .replace(/[\u0E40-\u0E44]/g, '')
+        .replace(/[^\u0020-\u007E\u0E01-\u0E5B]/g, '')
         .trim();
-      
       const currentSales = watch('involvedSaleNames');
       const newSales = [...currentSales];
       newSales[index] = cleanedValue;
@@ -166,6 +172,23 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
       newEmails[index] = value;
       setValue('involvedSaleEmails', newEmails);
     }
+  };
+
+  const addBlogLink = () => {
+    const currentLinks = watch('blogLinks');
+    setValue('blogLinks', [...currentLinks, '']);
+  };
+
+  const removeBlogLink = (index: number) => {
+    const currentLinks = watch('blogLinks');
+    setValue('blogLinks', currentLinks.filter((_, i) => i !== index));
+  };
+
+  const updateBlogLink = (index: number, value: string) => {
+    const currentLinks = watch('blogLinks');
+    const newLinks = [...currentLinks];
+    newLinks[index] = value;
+    setValue('blogLinks', newLinks);
   };
 
   return (
@@ -186,7 +209,7 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
             <UserIcon className="h-5 w-5 mr-2 text-blue-600" />
             ข้อมูลพื้นฐาน
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Full Name */}
             <div>
@@ -255,7 +278,7 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
               <Controller
                 name="email"
                 control={control}
-                rules={{ 
+                rules={{
                   required: 'กรุณากรอกอีเมล',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -288,7 +311,7 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                 <Controller
                   name="password"
                   control={control}
-                  rules={{ 
+                  rules={{
                     required: !isEditing ? 'กรุณากรอกรหัสผ่าน' : false,
                     validate: isEditing && isAdmin ? validatePassword : (isEditing ? undefined : validatePassword)
                   }}
@@ -334,7 +357,7 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                   <Controller
                     name="confirmPassword"
                     control={control}
-                    rules={{ 
+                    rules={{
                       required: !isEditing ? 'กรุณายืนยันรหัสผ่าน' : ((isEditing && isAdmin && (watchedPassword?.length || 0) > 0) ? 'กรุณายืนยันรหัสผ่านใหม่' : false),
                       validate: validateConfirmPassword
                     }}
@@ -378,7 +401,7 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
             <BuildingOfficeIcon className="h-5 w-5 mr-2 text-green-600" />
             การมอบหมาย Account และ Sale
           </h3>
-          
+
           <div className="space-y-6">
             {/* Involved Account Names */}
             <div>
@@ -397,11 +420,11 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                   เพิ่ม Account
                 </button>
               </div>
-              
+
               <Controller
                 name="involvedAccountNames"
                 control={control}
-                rules={{ 
+                rules={{
                   required: 'กรุณาระบุ Account อย่างน้อย 1 รายการ',
                   validate: (value) => value.length > 0 || 'กรุณาระบุ Account อย่างน้อย 1 รายการ'
                 }}
@@ -452,11 +475,11 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                   เพิ่ม Sale
                 </button>
               </div>
-              
+
               <Controller
                 name="involvedSaleNames"
                 control={control}
-                rules={{ 
+                rules={{
                   required: 'กรุณาระบุ Sale อย่างน้อย 1 รายการ',
                   validate: (value) => value.length > 0 || 'กรุณาระบุ Sale อย่างน้อย 1 รายการ'
                 }}
@@ -501,13 +524,76 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
           </div>
         </div>
 
+        {/* Blog Links Section */}
+        <div className="bg-gray-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <svg className="h-5 w-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            Blog Links
+          </h3>
+
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Blog Links (Optional)
+              </label>
+              <button
+                type="button"
+                onClick={addBlogLink}
+                className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-purple-600 bg-purple-100 hover:bg-purple-200"
+              >
+                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                เพิ่ม Blog Link
+              </button>
+            </div>
+
+            <Controller
+              name="blogLinks"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  {field.value.map((link, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <input
+                        type="url"
+                        value={link}
+                        onChange={(e) => updateBlogLink(index, e.target.value)}
+                        placeholder="https://example.com/blog"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeBlogLink(index)}
+                        className="px-2 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                      >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  {field.value.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No blog links added yet. Click "เพิ่ม Blog Link" to add one.</p>
+                  )}
+                </div>
+              )}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Add links to your personal or professional blogs, portfolios, or other relevant websites.
+            </p>
+          </div>
+        </div>
+
         {/* Role & Permissions Section */}
         <div className="bg-gray-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <ShieldCheckIcon className="h-5 w-5 mr-2 text-purple-600" />
             บทบาทและสิทธิ์
           </h3>
-          
+
           <div className="space-y-4">
             {/* Role */}
             <div>
@@ -538,7 +624,7 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                         <div className="text-xs text-gray-500 mt-1">ผู้ใช้ทั่วไป</div>
                       </div>
                     </label>
-                    
+
                     <label className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${
                       field.value === 'admin'
                         ? 'border-blue-500 ring-2 ring-blue-500'
@@ -564,6 +650,36 @@ export default function UserForm({ onSubmit, onCancel, initialData, isEditing = 
                 <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
               )}
             </div>
+
+            {/* Tenant Selection - Only for Global Admin creating user */}
+            {isGlobalAdmin && !isEditing && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tenant <span className="text-red-500">*</span>
+                </label>
+                <Controller
+                  name="tenantPrefix"
+                  control={control}
+                  rules={{ required: 'กรุณาเลือก Tenant' }}
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">-- เลือก Tenant --</option>
+                      {tenants.map((tenant) => (
+                        <option key={tenant.tenantPrefix} value={tenant.tenantPrefix}>
+                          {tenant.name} ({tenant.tenantPrefix})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+                {errors.tenantPrefix && (
+                  <p className="mt-1 text-sm text-red-600">{(errors.tenantPrefix as any).message}</p>
+                )}
+              </div>
+            )}
 
             {/* Can View Others Permission */}
             <div>

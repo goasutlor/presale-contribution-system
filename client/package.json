@@ -1,6 +1,6 @@
 {
   "name": "presale-contribution-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -26,7 +26,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && echo 'Build completed at:' && date",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

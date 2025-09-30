@@ -8,6 +8,7 @@ export interface User {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   canViewOthers: boolean;
   emailVerified?: boolean;

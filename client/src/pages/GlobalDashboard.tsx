@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
+import { BUILD_META } from '../buildMeta';
 import {
   ChartBarIcon,
   UserGroupIcon,
@@ -306,15 +307,34 @@ const GlobalDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Global Admin Welcome Section */}
       <div className="bg-gradient-to-r from-secondary-600 to-secondary-700 rounded-2xl p-6 text-white">
-        <div className="flex items-center space-x-4">
-          <div className="bg-white bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-60 p-3 rounded-xl border-2 border-white border-opacity-50 dark:border-gray-600 dark:border-opacity-50 shadow-xl">
-            <CogIcon className="h-8 w-8 text-gray-800 dark:text-white drop-shadow-lg" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="bg-white bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-60 p-3 rounded-xl border-2 border-white border-opacity-50 dark:border-gray-600 dark:border-opacity-50 shadow-xl">
+              <CogIcon className="h-8 w-8 text-gray-800 dark:text-white drop-shadow-lg" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Global Admin Dashboard</h1>
+              <p className="text-secondary-100">
+                System-wide overview and management across all tenants
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">Global Admin Dashboard</h1>
-            <p className="text-secondary-100">
-              System-wide overview and management across all tenants
-            </p>
+          
+          {/* Build Number and Logout Button */}
+          <div className="text-right">
+            <div className="text-xs text-white/80 mb-2">
+              Build: {BUILD_META.buildNumber}<br/>
+              Commit: {BUILD_META.commit}
+            </div>
+            <button
+              onClick={() => {
+                localStorage.clear();
+                window.location.href = '/login';
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+            >
+              🚪 Logout
+            </button>
           </div>
         </div>
       </div>

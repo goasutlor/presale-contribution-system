@@ -4,6 +4,7 @@
   "description": "Presale Team Contribution Management System",
   "main": "dist/server/index.js",
   "scripts": {
+    "bump:build": "node scripts/bumpBuildMeta.js",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "nodemon --exec ts-node src/server/start.ts",
     "dev:client": "cd client && npm start",

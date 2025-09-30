@@ -24,6 +24,7 @@ interface User {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   status: 'pending' | 'approved' | 'rejected';
   canViewOthers: boolean;
@@ -746,6 +747,30 @@ const UserManagement: React.FC = () => {
                         {sale}
                       </span>
                     ))}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Blog Links</label>
+                  <div className="flex flex-wrap gap-2">
+                    {user?.blogLinks?.length > 0 ? (
+                      user.blogLinks.map((link, index) => (
+                        <a 
+                          key={index} 
+                          href={link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors duration-200"
+                        >
+                          <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                          </svg>
+                          Blog {index + 1}
+                        </a>
+                      ))
+                    ) : (
+                      <span className="text-sm text-gray-500 italic">No blog links added yet</span>
+                    )}
                   </div>
                 </div>
               </div>

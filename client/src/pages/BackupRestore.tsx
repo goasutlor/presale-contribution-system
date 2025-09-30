@@ -265,42 +265,148 @@ const BackupRestore: React.FC = () => {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(googleCredentials.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Validate password (should be at least 8 characters for app password)
+    if (googleCredentials.password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+
     try {
-      // Simulate Google Drive authentication
-      toast.success('Connecting to Google Drive...');
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Validate credentials first
+      const isValidCredentials = await validateGoogleDriveCredentials(
+        googleCredentials.email, 
+        googleCredentials.password
+      );
       
-      // Simulate folder selection (in real implementation, this would show a folder picker)
-      const selectedFolder = {
-        id: '0Bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        name: 'ASC3-Backups'
-      };
+      if (!isValidCredentials) {
+        return; // Error already shown in validateGoogleDriveCredentials
+      }
+
+      toast.loading('Creating backup folder...', { id: 'google-drive-connect' });
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create ASC_Contributions_Backup folder
+      const backupFolder = await createBackupFolder(googleCredentials.email);
       
       setGoogleCredentials(prev => ({ 
         ...prev, 
         isConnected: true,
-        folderId: selectedFolder.id,
-        folderName: selectedFolder.name
+        folderId: backupFolder.id,
+        folderName: backupFolder.name
       }));
       setShowGoogleDriveSetup(false);
-      toast.success(`Successfully connected to Google Drive! Selected folder: ${selectedFolder.name}`);
+      toast.success(`✅ Successfully connected to Google Drive! Created folder: ${backupFolder.name}`, { id: 'google-drive-connect' });
     } catch (error) {
       console.error('Google Drive connection failed:', error);
-      toast.error('Failed to connect to Google Drive');
+      toast.error('Failed to connect to Google Drive. Please check your credentials and try again.', { id: 'google-drive-connect' });
     }
+  };
+
+  // Validate Google Drive credentials
+  const validateGoogleDriveCredentials = async (email: string, password: string): Promise<boolean> => {
+    // Show loading state
+    toast.loading('Validating Google Drive credentials...', { id: 'credential-validation' });
+    
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Basic validation checks
+      if (!email || !password) {
+        toast.error('❌ Please provide both email and password', { id: 'credential-validation' });
+        return false;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error('❌ Invalid email format', { id: 'credential-validation' });
+        return false;
+      }
+
+      // Check if it's a Gmail or Google Workspace account
+      if (!email.includes('@gmail.com') && !email.includes('@') && !email.includes('google')) {
+        toast.error('❌ Please use a Google account (Gmail or Google Workspace)', { id: 'credential-validation' });
+        return false;
+      }
+
+      // Validate password length (app passwords are usually 16 characters)
+      if (password.length < 8) {
+        toast.error('❌ Password too short. Use your App Password (16 characters)', { id: 'credential-validation' });
+        return false;
+      }
+
+      // For demo purposes, reject obviously fake credentials
+      const fakeCredentials = [
+        'test@test.com', 'demo@demo.com', 'fake@fake.com',
+        'password', '123456', 'qwerty', 'admin'
+      ];
+      
+      if (fakeCredentials.includes(email.toLowerCase()) || fakeCredentials.includes(password.toLowerCase())) {
+        toast.error('❌ Please use real Google account credentials', { id: 'credential-validation' });
+        return false;
+      }
+
+      // Simulate Google Drive API authentication
+      // In real implementation, this would make actual API calls
+      console.log('🔍 Validating Google Drive credentials:', { email, passwordLength: password.length });
+      
+      // For now, accept any realistic-looking credentials
+      // TODO: Replace with actual Google Drive API authentication
+      const isValid = email.includes('@') && password.length >= 8;
+      
+      if (!isValid) {
+        toast.error('❌ Invalid credentials. Please check your email and App Password', { id: 'credential-validation' });
+        console.error('❌ Google Drive credential validation failed:', { email, passwordLength: password.length });
+        return false;
+      }
+
+      toast.success('✅ Credentials validated successfully', { id: 'credential-validation' });
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Credential validation error:', error);
+      toast.error('❌ Validation failed. Please try again', { id: 'credential-validation' });
+      return false;
+    }
+  };
+
+  // Create backup folder in Google Drive
+  const createBackupFolder = async (email: string): Promise<{ id: string; name: string }> => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Simulate creating folder in Google Drive
+    // In real implementation, this would call Google Drive API to create folder
+    const folderId = `0B_ASC_Contributions_Backup_${Date.now()}`;
+    const folderName = 'ASC_Contributions_Backup';
+    
+    console.log('📁 Created backup folder:', { folderId, folderName, email });
+    
+    return {
+      id: folderId,
+      name: folderName
+    };
   };
 
   const browseGoogleDriveFolder = async () => {
     // In a real implementation, this would open Google Drive folder picker
     // For now, we'll simulate showing available folders
     const availableFolders = [
-      { id: '0Bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', name: 'ASC3-Backups' },
+      { id: googleCredentials.folderId || '0Bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', name: 'ASC_Contributions_Backup' },
       { id: '0Byyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', name: 'Company-Backups' },
       { id: '0Bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz', name: 'Root' }
     ];
     
     // Simulate folder selection dialog
-    const selectedFolder = availableFolders[0]; // Default to first folder
+    const selectedFolder = availableFolders[0]; // Default to ASC_Contributions_Backup
     
     setGoogleCredentials(prev => ({ 
       ...prev, 
@@ -308,7 +414,7 @@ const BackupRestore: React.FC = () => {
       folderName: selectedFolder.name
     }));
     
-    toast.success(`Selected folder: ${selectedFolder.name}`);
+    toast.success(`📁 Selected folder: ${selectedFolder.name}`);
   };
 
   const restoreFromVersion = async (version: ExportVersion) => {
@@ -546,6 +652,27 @@ const BackupRestore: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 Google Drive Setup
               </h3>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Enter your Google Drive credentials to enable automatic backup uploads.
+                </p>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium mb-1">
+                    📋 Important Setup Instructions:
+                  </p>
+                  <ul className="text-xs text-yellow-700 dark:text-yellow-300 space-y-1">
+                    <li>• Use your Gmail or Google Workspace email</li>
+                    <li>• Generate an App Password in Google Account settings</li>
+                    <li>• Enable 2-Factor Authentication first</li>
+                    <li>• App Password should be 16 characters long</li>
+                  </ul>
+                </div>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-2 mt-2">
+                  <p className="text-xs text-red-800 dark:text-red-200">
+                    ⚠️ <strong>Demo Mode:</strong> This is a simulation. Real Google Drive integration requires API setup.
+                  </p>
+                </div>
+              </div>
               
               <form onSubmit={(e) => { e.preventDefault(); connectGoogleDrive(); }}>
                 <div className="space-y-4">

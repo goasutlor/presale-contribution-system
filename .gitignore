@@ -115,3 +115,6 @@ coverage/
 # Misc
 *.tgz
 *.tar.gz
+
+# Local auto-sync temp files
+autosync-*.txt

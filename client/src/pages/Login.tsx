@@ -6,6 +6,7 @@ import LanguageToggle from '../components/LanguageToggle';
 import ProfessionalLoginHandler from '../components/ProfessionalLoginHandler';
 import ProfessionalNotification from '../components/ProfessionalNotification';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { BUILD_META } from '../buildMeta';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -394,9 +395,23 @@ const Login: React.FC = () => {
 
         {/* Footer */}
           <footer className="mt-8 text-center text-white/60">
-            <p className="font-medium">ASC3 Contribution Management System</p>
+            <p className="font-medium">ASC Contribution Management System - DEPLOYED 2025-09-14 23:59</p>
+            <p className="text-xs text-red-500">NEW VERSION TEST</p>
+            <p className="text-xs text-blue-500">FORCE REBUILD TEST</p>
+            <p className="text-xs text-green-500">STRUCTURE CHANGE TEST</p>
+            <p className="text-xs text-yellow-500">FINAL TEST</p>
+            <p className="text-xs text-purple-500">ULTIMATE TEST</p>
+            <p className="text-xs text-pink-500">SUPER ULTIMATE TEST</p>
+            <p className="text-xs text-indigo-500">MEGA ULTIMATE TEST</p>
             <p className="text-sm">© 2025 All rights reserved</p>
           </footer>
+          
+          {/* Build Number for Testing */}
+          <div className="mt-4 text-center">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Build: {BUILD_META.buildNumber} | Commit: {BUILD_META.commit}
+            </div>
+          </div>
         </div>
       </div>
 

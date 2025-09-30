@@ -33,10 +33,44 @@ export const authenticateToken = async (
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; tenantId?: string; tenantPrefix?: string; aud?: string };
-    console.log('🔍 Token decoded:', { userId: decoded.userId, tenantId: decoded.tenantId, aud: decoded.aud });
+    console.log('🔍 Token decoded:', { userId: decoded.userId, tenantId: decoded.tenantId, tenantPrefix: decoded.tenantPrefix, aud: decoded.aud });
+    
+    // Extract tenant from URL path or headers for validation
+    const urlTenantPrefix = req.path.match(/^\/t\/([^\/]+)/)?.[1];
+    const headerTenantPrefix = req.headers['x-tenant-prefix'] as string;
+    const requestTenantPrefix = urlTenantPrefix || headerTenantPrefix;
+    
+    console.log('🔍 Tenant validation:', { 
+      urlTenantPrefix, 
+      headerTenantPrefix, 
+      requestTenantPrefix, 
+      tokenTenantPrefix: decoded.tenantPrefix 
+    });
+    
+    // For tenant-scoped routes, validate tenant access
+    if (urlTenantPrefix && decoded.tenantPrefix && decoded.tenantPrefix !== urlTenantPrefix) {
+      console.error('❌ Tenant mismatch:', { 
+        tokenTenant: decoded.tenantPrefix, 
+        urlTenant: urlTenantPrefix 
+      });
+      return next(createError('Access denied: Invalid tenant', 403));
+    }
     
     const row: any = await dbQueryOne('SELECT * FROM users WHERE id = ?', [decoded.userId]);
     if (!row) return next(createError('User not found', 401));
+    
+    // Additional tenant validation: check if user belongs to the requested tenant
+    if (urlTenantPrefix && row.tenantId) {
+      const tenantRow: any = await dbQueryOne('SELECT * FROM tenants WHERE id = ? AND prefix = ?', [row.tenantId, urlTenantPrefix]);
+      if (!tenantRow) {
+        console.error('❌ User does not belong to requested tenant:', { 
+          userId: decoded.userId, 
+          userTenantId: row.tenantId, 
+          requestedPrefix: urlTenantPrefix 
+        });
+        return next(createError('Access denied: User does not belong to this tenant', 403));
+      }
+    }
 
     console.log('🔍 Database User Row:', {
       id: row.id,
@@ -77,6 +111,12 @@ export const authenticateToken = async (
     }
 
     req.user = user;
+    
+    // Add tenant context to request
+    if (urlTenantPrefix) {
+      (req as any).tenantPrefix = urlTenantPrefix;
+    }
+    
     next();
   } catch (error) {
     if (error instanceof Error) {

@@ -194,6 +194,15 @@ const Layout: React.FC = () => {
               <div className="flex items-center gap-x-4">
                 <ThemeToggle />
                 <LanguageToggle />
+                {/* Always-visible Logout button on top bar */}
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex items-center gap-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-gray-900"
+                  title={t('nav.logout')}
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5 text-gray-500" />
+                  {t('nav.logout')}
+                </button>
                 {/* Tenant prefix control */}
                 <div className="hidden md:flex items-center gap-2">
                   <span className="text-xs text-gray-500">Tenant:</span>

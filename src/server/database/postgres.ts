@@ -51,6 +51,7 @@ const COLUMN_NAME_MAP: Record<string, string> = {
   involvedaccountnames: 'involvedAccountNames',
   involvedsalenames: 'involvedSaleNames',
   involvedsaleemails: 'involvedSaleEmails',
+  bloglinks: 'blogLinks',
   role: 'role',
   status: 'status',
   canviewothers: 'canViewOthers',
@@ -126,6 +127,7 @@ async function createTables(): Promise<void> {
       involvedAccountNames TEXT,
       involvedSaleNames TEXT,
       involvedSaleEmails TEXT,
+      blogLinks TEXT,
       role VARCHAR(50) NOT NULL DEFAULT 'user',
       status VARCHAR(50) NOT NULL DEFAULT 'pending',
       canViewOthers BOOLEAN DEFAULT false,
@@ -172,6 +174,7 @@ async function createTables(): Promise<void> {
   await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS emailVerified BOOLEAN DEFAULT false`);
   await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS emailVerificationToken VARCHAR(255)`);
   await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS emailVerificationExpires TIMESTAMP`);
+  await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS blogLinks TEXT`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS tenantId VARCHAR(255)`);
 
   console.log('✅ Database tables created/verified');
@@ -190,8 +193,8 @@ async function createAdminUser(): Promise<void> {
       const hashedPassword = await bcrypt.hash('password', 10);
       
       await db.query(`
-        INSERT INTO users (id, fullName, staffId, email, password, role, status, canViewOthers, involvedAccountNames, involvedSaleNames, involvedSaleEmails)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        INSERT INTO users (id, fullName, staffId, email, password, role, status, canViewOthers, involvedAccountNames, involvedSaleNames, involvedSaleEmails, blogLinks)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       `, [
         'admin-001',
         'System Administrator',
@@ -203,7 +206,8 @@ async function createAdminUser(): Promise<void> {
         true,
         JSON.stringify(['System']),
         JSON.stringify(['Admin']),
-        JSON.stringify(['admin@presale.com'])
+        JSON.stringify(['admin@presale.com']),
+        JSON.stringify([])
       ]);
       
       console.log('✅ Admin user created');
@@ -226,7 +230,23 @@ export function convertQuery(query: string, params: any[] = []): { query: string
 // Helper function for database operations
 export async function dbQuery(query: string, params: any[] = []): Promise<any> {
   const db = getDatabase();
-  const { query: convertedQuery, params: convertedParams } = convertQuery(query, params);
+  // Normalize accidental missing spaces: e.g., "ORDER BYcreatedAt" -> "ORDER BY createdAt",
+  // and ",createdAt" -> ", createdAt". Apply case-insensitively.
+  let normalized = query
+    .replace(/\bORDER\s*BY\s*([A-Za-z_])/gi, 'ORDER BY $1')
+    .replace(/,\s*([A-Za-z_])/g, ', $1');
+
+  // Extra guard: fix any stray "BY<alpha>" sequences
+  normalized = normalized.replace(/\bBY([A-Za-z_])/g, 'BY $1');
+
+  // Temporary debug: log the normalized tenants query to verify spacing in Railway logs
+  if (normalized.includes('FROM tenants')) {
+    console.log('🔍 Executing SQL (normalized):', normalized);
+  }
+  
+  // Force rebuild trigger - this comment will force Railway to rebuild
+
+  const { query: convertedQuery, params: convertedParams } = convertQuery(normalized, params);
   
   try {
     const result = await db.query(convertedQuery, convertedParams);

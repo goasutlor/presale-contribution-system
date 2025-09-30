@@ -61,6 +61,7 @@ router.get('/', requireAdmin, asyncHandler(async (req: Request, res: Response) =
       involvedAccountNames: Array.isArray(row.involvedAccountNames) ? row.involvedAccountNames : (row.involvedAccountNames ? JSON.parse(row.involvedAccountNames) : []),
       involvedSaleNames: Array.isArray(row.involvedSaleNames) ? row.involvedSaleNames : (row.involvedSaleNames ? JSON.parse(row.involvedSaleNames) : []),
       involvedSaleEmails: Array.isArray(row.involvedSaleEmails) ? row.involvedSaleEmails : (row.involvedSaleEmails ? JSON.parse(row.involvedSaleEmails) : []),
+      blogLinks: Array.isArray(row.blogLinks) ? row.blogLinks : (row.blogLinks ? JSON.parse(row.blogLinks) : []),
       role: row.role,
       status: row.status || 'approved', // Include status field
       canViewOthers: Boolean(row.canViewOthers),
@@ -121,8 +122,8 @@ router.post('/', requireAdmin, createUserValidation, asyncHandler(async (req: Re
   const userId = uuidv4();
   const tenantId = (req as any).tenantId || 'tenant-default';
   await dbExecute(
-    `INSERT INTO users (id, tenantId, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, canViewOthers)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO users (id, tenantId, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, blogLinks, role, canViewOthers)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       tenantId,
@@ -133,6 +134,7 @@ router.post('/', requireAdmin, createUserValidation, asyncHandler(async (req: Re
       JSON.stringify(userData.involvedAccountNames),
       JSON.stringify(userData.involvedSaleNames),
       JSON.stringify(userData.involvedSaleEmails),
+      JSON.stringify(userData.blogLinks || []),
       userData.role,
       userData.canViewOthers
     ]
@@ -179,6 +181,11 @@ router.put('/:id', requireAdmin, updateUserValidation, asyncHandler(async (req: 
     if (updateData.involvedSaleEmails !== undefined) {
       updateFields.push('involvedSaleEmails = ?');
       updateValues.push(JSON.stringify(updateData.involvedSaleEmails));
+    }
+
+    if (updateData.blogLinks !== undefined) {
+      updateFields.push('blogLinks = ?');
+      updateValues.push(JSON.stringify(updateData.blogLinks));
     }
 
     if (updateData.role !== undefined) {

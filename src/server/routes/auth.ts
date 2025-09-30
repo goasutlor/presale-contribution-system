@@ -201,7 +201,8 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
       password, 
       involvedAccountNames = [], 
       involvedSaleNames = [], 
-      involvedSaleEmails = [] 
+      involvedSaleEmails = [],
+      blogLinks = []
     } = req.body;
 
     // Clean special characters from input data
@@ -239,9 +240,9 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
           const insertQuery = `
             INSERT INTO users (
               id, tenantId, fullName, staffId, email, password, 
-              involvedAccountNames, involvedSaleNames, involvedSaleEmails,
+              involvedAccountNames, involvedSaleNames, involvedSaleEmails, blogLinks,
               role, status, canViewOthers, emailVerified, createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
           `;
 
           console.log('🔍 About to insert user with ID:', userId);
@@ -274,6 +275,7 @@ router.post('/signup', signupValidation, asyncHandler(async (req: Request, res: 
               JSON.stringify(cleanedAccountNames),
               JSON.stringify(cleanedSaleNames),
               JSON.stringify(involvedSaleEmails),
+              JSON.stringify(blogLinks),
               'user',
               'pending',
               false,
@@ -355,11 +357,15 @@ router.get('/profile', authenticateToken, asyncHandler(async (req: Request, res:
     const involvedSaleEmails = typeof user.involvedSaleEmails === 'string' 
       ? JSON.parse(user.involvedSaleEmails) 
       : user.involvedSaleEmails;
+    const blogLinks = typeof user.blogLinks === 'string' 
+      ? JSON.parse(user.blogLinks) 
+      : (user.blogLinks || []);
 
     console.log('🔍 Profile Route - Parsed Data:', {
       involvedAccountNames,
       involvedSaleNames,
-      involvedSaleEmails
+      involvedSaleEmails,
+      blogLinks
     });
 
     res.json({
@@ -372,6 +378,7 @@ router.get('/profile', authenticateToken, asyncHandler(async (req: Request, res:
         involvedAccountNames: involvedAccountNames,
         involvedSaleNames: involvedSaleNames,
         involvedSaleEmails: involvedSaleEmails,
+        blogLinks: blogLinks,
         role: user.role,
         canViewOthers: user.canViewOthers,
         createdAt: user.createdAt,
@@ -400,6 +407,7 @@ router.put(
     body('involvedAccountNames').isArray().withMessage('involvedAccountNames must be an array'),
     body('involvedSaleNames').isArray().withMessage('involvedSaleNames must be an array'),
     body('involvedSaleEmails').isArray().withMessage('involvedSaleEmails must be an array'),
+    body('blogLinks').optional().isArray().withMessage('blogLinks must be an array'),
   ],
   asyncHandler(async (req: Request, res: Response): Promise<any> => {
     const errors = validationResult(req);
@@ -415,6 +423,7 @@ router.put(
       involvedAccountNames = [],
       involvedSaleNames = [],
       involvedSaleEmails = [],
+      blogLinks = [],
     } = req.body;
 
     // Uniqueness checks for email and staffId (excluding current user)
@@ -428,7 +437,7 @@ router.put(
     }
 
     await dbExecute(
-      `UPDATE users SET fullName = ?, staffId = ?, email = ?, involvedAccountNames = ?, involvedSaleNames = ?, involvedSaleEmails = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+      `UPDATE users SET fullName = ?, staffId = ?, email = ?, involvedAccountNames = ?, involvedSaleNames = ?, involvedSaleEmails = ?, blogLinks = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
       [
         fullName,
         staffId,
@@ -436,6 +445,7 @@ router.put(
         JSON.stringify(involvedAccountNames),
         JSON.stringify(involvedSaleNames),
         JSON.stringify(involvedSaleEmails),
+        JSON.stringify(blogLinks),
         currentUser.id,
       ]
     );

@@ -66,6 +66,21 @@ const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWA
 // Tenant context middleware
 app.use(tenantContext);
 
+// Explicit favicon handler to avoid proxy 502s if static middleware is not yet ready
+app.get('/favicon.ico', (req, res) => {
+  try {
+    const buildPath = path.join(__dirname, '../../client/build', 'favicon.ico');
+    res.sendFile(buildPath, (err) => {
+      if (err) {
+        // Fallback: no content
+        res.status(204).end();
+      }
+    });
+  } catch (_err) {
+    res.status(204).end();
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -190,7 +205,11 @@ if (isProduction) {
   });
   
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../client/build/index.html'));
+    const indexPath = path.join(__dirname, '../../client/build/index.html');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(indexPath);
   });
 } else {
   // Root health check for development

@@ -5,6 +5,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import './styles/global.css';
+
+// FORCE REBUILD TEST - CHANGED AT 2025-09-14 23:59
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -26,6 +28,9 @@ import GlobalContributions from './pages/GlobalContributions';
 import GlobalReports from './pages/GlobalReports';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import GlobalAdminProtectedRoute from './components/GlobalAdminProtectedRoute';
+import TenantProtectedRoute from './components/TenantProtectedRoute';
+import VersionBadge from './components/VersionBadge';
 
 const TenantBinder: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const params = useParams();
@@ -37,9 +42,8 @@ const TenantBinder: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 const AppRoutes: React.FC = () => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, isGlobalAdmin } = useAuth();
 
-  // Avoid redirecting while auth is resolving so refresh keeps the current page
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -55,26 +59,75 @@ const AppRoutes: React.FC = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/t/:tenantPrefix/login" element={<TenantBinder><Login /></TenantBinder>} />
         <Route path="/t/:tenantPrefix/signup" element={<TenantBinder><Signup /></TenantBinder>} />
-        {/* Global Admin suite */}
-        <Route path="/global-admin" element={<GlobalLayout />}>
+        {/* Tenant-scoped routes - PROTECTED */}
+        <Route path="/t/:tenantPrefix/*" element={
+          <TenantBinder>
+            <TenantProtectedRoute>
+              <Layout />
+            </TenantProtectedRoute>
+          </TenantBinder>
+        }>
+          <Route path="dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Dashboard />} />
+          <Route path="my-contributions" element={
+            user?.role === 'admin' ? <AllContributions /> : <MyContributions />
+          } />
+          <Route path="reports" element={<Reports />} />
+          <Route path="user-management" element={<UserManagement />} />
+          <Route path="functional-test" element={<FunctionalTest />} />
+        </Route>
+        {/* Global Admin suite - PROTECTED */}
+        <Route path="/global-admin" element={
+          <GlobalAdminProtectedRoute>
+            <GlobalLayout />
+          </GlobalAdminProtectedRoute>
+        }>
           <Route index element={<GlobalDashboard />} />
           <Route path="dashboard" element={<GlobalDashboard />} />
           <Route path="contributions" element={<GlobalContributions />} />
           <Route path="reports" element={<GlobalReports />} />
-              <Route path="users" element={<GlobalUserManagement />} />
-              <Route path="tenants" element={<TenantManagement />} />
-              <Route path="backup-restore" element={<BackupRestore />} />
-              <Route path="functional-test" element={<TenantFunctionalTest />} />
+          <Route path="users" element={<GlobalUserManagement />} />
+          <Route path="tenants" element={<TenantManagement />} />
+          <Route path="backup-restore" element={<BackupRestore />} />
+          <Route path="functional-test" element={<TenantFunctionalTest />} />
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
   }
 
+  const tenantPrefix = ((): string => {
+    try { return (localStorage.getItem('tenantPrefix') || 'default').trim(); } catch { return 'default'; }
+  })();
+
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+      {/* Authenticated root redirect */}
+      <Route path="/" element={<Navigate to={isGlobalAdmin ? "/global-admin/dashboard" : `/t/${tenantPrefix}/dashboard`} replace />} />
+
+      {/* Global Admin routes - PROTECTED */}
+      <Route path="/global-admin/*" element={
+        <GlobalAdminProtectedRoute>
+          <GlobalLayout />
+        </GlobalAdminProtectedRoute>
+      }>
+        <Route index element={<GlobalDashboard />} />
+        <Route path="dashboard" element={<GlobalDashboard />} />
+        <Route path="contributions" element={<GlobalContributions />} />
+        <Route path="reports" element={<GlobalReports />} />
+        <Route path="users" element={<GlobalUserManagement />} />
+        <Route path="tenants" element={<TenantManagement />} />
+        <Route path="backup-restore" element={<BackupRestore />} />
+        <Route path="functional-test" element={<TenantFunctionalTest />} />
+      </Route>
+
+      {/* Tenant routes - PROTECTED */}
+      <Route path="/t/:tenantPrefix/*" element={
+        <TenantBinder>
+          <TenantProtectedRoute>
+            <Layout />
+          </TenantProtectedRoute>
+        </TenantBinder>
+      }>
         <Route path="dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Dashboard />} />
         <Route path="my-contributions" element={
           user?.role === 'admin' ? <AllContributions /> : <MyContributions />
@@ -82,9 +135,10 @@ const AppRoutes: React.FC = () => {
         <Route path="reports" element={<Reports />} />
         <Route path="user-management" element={<UserManagement />} />
         <Route path="functional-test" element={<FunctionalTest />} />
-        <Route path="global-admin" element={<GlobalAdmin />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to={isGlobalAdmin ? "/global-admin/dashboard" : `/t/${tenantPrefix}/dashboard`} replace />} />
     </Routes>
   );
 };
@@ -122,6 +176,7 @@ const App: React.FC = () => {
                   },
                 }}
               />
+              <VersionBadge />
             </div>
           </Router>
         </LanguageProvider>

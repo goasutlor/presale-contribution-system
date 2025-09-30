@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
+import { useAuth } from '../contexts/AuthContext';
 import ASC3Logo from './ASC3Logo';
 
 import {
@@ -12,22 +13,29 @@ import {
   CloudArrowUpIcon,
   Bars3Icon,
   XMarkIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
 const GlobalLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navigation = [
     { name: 'Dashboard', href: '/global-admin/dashboard', icon: HomeIcon },
     { name: 'Contributions', href: '/global-admin/contributions', icon: DocumentTextIcon },
     { name: 'Reports', href: '/global-admin/reports', icon: ChartBarIcon },
-    { name: 'Users', href: '/global-admin/users', icon: UserGroupIcon },
+    { name: 'Global User Management', href: '/global-admin/users', icon: UserGroupIcon },
     { name: 'Tenant Management', href: '/global-admin/tenants', icon: Cog6ToothIcon },
     { name: 'Backup & Restore', href: '/global-admin/backup-restore', icon: CloudArrowUpIcon },
     { name: 'Functional Test', href: '/global-admin/functional-test', icon: Cog6ToothIcon },
   ];
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,6 +57,28 @@ const GlobalLayout: React.FC = () => {
               </Link>
             ))}
           </nav>
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex items-center px-2 py-2">
+              <div className="flex-shrink-0">
+                <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {user?.fullName?.charAt(0) || 'G'}
+                  </span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-700">{user?.fullName || 'Global Admin'}</p>
+                <p className="text-xs text-gray-500">Global Admin</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-3 w-full flex items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+            >
+              <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5 text-gray-400" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -66,6 +96,28 @@ const GlobalLayout: React.FC = () => {
               </Link>
             ))}
           </nav>
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex items-center px-2 py-2">
+              <div className="flex-shrink-0">
+                <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {user?.fullName?.charAt(0) || 'G'}
+                  </span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-700">{user?.fullName || 'Global Admin'}</p>
+                <p className="text-xs text-gray-500">Global Admin</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-3 w-full flex items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md transition-colors duration-150"
+            >
+              <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5 text-gray-400" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -77,6 +129,17 @@ const GlobalLayout: React.FC = () => {
           <div className="flex flex-1 items-center">
             <h2 className="text-lg font-semibold text-gray-900">{navigation.find(n => n.href === location.pathname)?.name || 'Global Admin'}</h2>
           </div>
+          {/* Build tag */}
+          <span className="text-[11px] text-gray-500 border border-gray-200 bg-white/80 rounded px-2 py-0.5 hidden md:inline">BUILD: stg-2025-09-14-06</span>
+          {/* Always-visible Logout button */}
+          <button
+            onClick={handleLogout}
+            className="ml-2 inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+            title="Logout"
+          >
+            <ArrowRightOnRectangleIcon className="h-5 w-5 text-gray-500" />
+            Logout
+          </button>
         </div>
         <main className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { apiService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { UserIcon, EnvelopeIcon, IdentificationIcon, BuildingOfficeIcon, UserGroupIcon, ShieldCheckIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 interface ProfileFormData {
@@ -12,6 +13,7 @@ interface ProfileFormData {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   canViewOthers: boolean;
 }
@@ -29,6 +31,7 @@ interface ProfileFormProps {
 }
 
 export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormProps) {
+  const { refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
@@ -50,6 +53,7 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
       involvedAccountNames: user.involvedAccountNames,
       involvedSaleNames: user.involvedSaleNames,
       involvedSaleEmails: user.involvedSaleEmails,
+      blogLinks: user.blogLinks || [],
       role: user.role,
       canViewOthers: user.canViewOthers
     }
@@ -83,11 +87,14 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
         involvedAccountNames: data.involvedAccountNames,
         involvedSaleNames: data.involvedSaleNames,
         involvedSaleEmails: data.involvedSaleEmails,
+        blogLinks: data.blogLinks,
       });
       if (response.success) {
         // Update all contributions with new account names and sale names
         await updateContributionsWithNewData(data);
         toast.success('Profile updated successfully. All contributions have been updated with new account and sale information.');
+        // Refresh user data in AuthContext
+        await refreshUser();
         onSuccess();
       } else {
         toast.error(response.message || 'Failed to update profile');
@@ -402,6 +409,51 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
             {profileErrors.involvedSaleNames && (
               <p className="mt-1 text-sm text-red-600">{(profileErrors as any).involvedSaleNames.message}</p>
             )}
+          </div>
+
+          {/* Blog Links - editable */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Blog Links</label>
+            <Controller
+              name="blogLinks"
+              control={profileControl}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  {field.value.map((link, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={link}
+                        onChange={(e) => {
+                          const next = [...field.value];
+                          next[index] = e.target.value;
+                          field.onChange(next);
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="https://example.com/blog"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(field.value.filter((_: any, i: number) => i !== index))}
+                        className="px-2 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => field.onChange([...(field.value || []), ''])}
+                    className="inline-flex items-center px-3 py-1 border text-sm font-medium rounded-md text-purple-600 bg-purple-100 hover:bg-purple-200"
+                  >
+                    + Add Blog Link
+                  </button>
+                </div>
+              )}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Add links to your personal or professional blogs, portfolios, or other relevant websites.
+            </p>
           </div>
 
           {/* Action Buttons */}

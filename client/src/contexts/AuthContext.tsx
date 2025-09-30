@@ -2,14 +2,15 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import toast from 'react-hot-toast';
 import apiService, { UserProfile, LoginResponse } from '../services/api';
 
-// Use the UserProfile type from API service
 type User = UserProfile;
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isGlobalAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
 }
 
@@ -32,28 +33,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
     const token = localStorage.getItem('token');
-    console.log('🔍 AuthContext useEffect - Token check:', token ? 'exists' : 'missing');
+    const globalToken = localStorage.getItem('globalToken');
     if (token) {
       fetchUserProfile(token);
     } else {
-      console.log('🔍 No token found, setting loading to false');
-      setLoading(false);
+      // If we don't have a tenant token but have a global admin token, we still consider authenticated
+      if (globalToken) {
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 
   const fetchUserProfile = async (token: string) => {
     try {
-      console.log('🔍 Fetching user profile with token:', token ? 'exists' : 'missing');
-      // Set token in localStorage first
       localStorage.setItem('token', token);
       const response: { data: UserProfile } = await apiService.getProfile();
-      console.log('🔍 User profile response:', response);
       setUser(response.data);
-    } catch (error) {
-      console.error('❌ Error fetching user profile:', error);
-      console.log('❌ Removing token due to error');
+    } catch (_error) {
       localStorage.removeItem('token');
       setUser(null);
     } finally {
@@ -65,7 +64,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       const response = await apiService.login(email, password);
-
       if (response.success) {
         const { token, user: userData } = response.data;
         localStorage.setItem('token', token);
@@ -75,40 +73,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(response.message || 'Login failed');
       }
     } catch (error: any) {
-      // Don't show toast here, let the Login component handle it
-      console.error('🔴 AuthContext Login Error:', error);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const response: { data: UserProfile } = await apiService.getProfile();
+        setUser(response.data);
+      }
+    } catch (error) {
+      console.error('Error refreshing user profile:', error);
+    }
+  };
+
   const logout = async () => {
     try {
-      // Clear user state immediately to prevent API calls
       setUser(null);
       localStorage.removeItem('token');
-      
-      // Try to call logout API (but don't wait for it)
-      apiService.logout().catch(error => {
-        console.log('Logout API call failed (expected after token removal):', error);
-      });
-      
+      localStorage.removeItem('globalToken');
+      apiService.logout().catch(() => {});
       toast.success('Logged out successfully');
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Even if there's an error, ensure we're logged out
+    } catch (_error) {
       localStorage.removeItem('token');
+      localStorage.removeItem('globalToken');
       setUser(null);
       toast.success('Logged out successfully');
     }
   };
 
+  const isGlobalAdmin = !!localStorage.getItem('globalToken') || user?.email === 'global@asc.com';
+  const isAuthenticated = !!user || isGlobalAdmin;
+
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
+    isGlobalAdmin,
     login,
     logout,
+    refreshUser,
     loading,
   };
 

@@ -33,9 +33,9 @@ router.get('/overview', [
   const start = (req.query.start as string) || '';
   const end = (req.query.end as string) || '';
 
-  // Optional date filters using createdAt
-  const whereUsers = start && end ? 'WHERE createdAt BETWEEN ? AND ?' : '';
-  const whereContrib = start && end ? 'WHERE createdAt BETWEEN ? AND ?' : '';
+  // Optional date filters using createdat
+  const whereUsers = start && end ? 'WHERE createdat BETWEEN ? AND ?' : '';
+  const whereContrib = start && end ? 'WHERE createdat BETWEEN ? AND ?' : '';
   const dateParams = start && end ? [start, end] : [];
 
   const [{ count: totalTenants = 0 } = { count: 0 }] = await dbQuery('SELECT COUNT(*) as count FROM tenants');
@@ -111,16 +111,16 @@ router.get('/timeline', [
       
       try {
         if (isPostgreSQL) {
-          // PostgreSQL query
-          contributions = await dbQuery(`
-            SELECT impact FROM contributions 
-            WHERE EXTRACT(YEAR FROM "createdAt") = $1 AND EXTRACT(MONTH FROM "createdAt") = $2
-          `, [currentYear, month]);
+          // PostgreSQL: reference lowercase identifier explicitly to avoid accidental quoting by transpilation
+          contributions = await dbQuery(
+            'SELECT impact FROM contributions WHERE EXTRACT(YEAR FROM createdat) = $1 AND EXTRACT(MONTH FROM createdat) = $2',
+            [currentYear, month]
+          );
         } else {
           // SQLite query
           contributions = await dbQuery(`
             SELECT impact FROM contributions 
-            WHERE strftime('%Y', createdAt) = ? AND strftime('%m', createdAt) = ?
+            WHERE strftime('%Y', createdat) = ? AND strftime('%m', createdat) = ?
           `, [currentYear.toString(), monthStr]);
         }
       } catch (dbError) {
@@ -163,7 +163,7 @@ router.get('/tenants/stats', [
 ], asyncHandler(async (req: Request, res: Response) => {
   const start = (req.query.start as string) || '';
   const end = (req.query.end as string) || '';
-  const whereContrib = start && end ? 'AND c.createdAt BETWEEN ? AND ?' : '';
+  const whereContrib = start && end ? 'AND c.createdat BETWEEN ? AND ?' : '';
   const dateParams = start && end ? [start, end] : [];
 
   const rows = await dbQuery(`
@@ -206,7 +206,7 @@ router.get('/contributions', [
 
   const rows = await dbQuery(`
     SELECT c.id, c.title, c.status, c.impact, c.effort, c.accountName, c.saleName, c.contributionMonth,
-           c.createdAt, c.updatedAt,
+           c.createdat, c.updatedat,
            u.fullName as userName, u.email as userEmail,
            t.tenantPrefix, t.name as tenantName
     FROM contributions c
@@ -249,8 +249,8 @@ router.post('/users', authenticateGlobalAdmin, asyncHandler(async (req: Request,
     // Create user
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await dbQuery(
-      `INSERT INTO users (fullName, staffId, email, password, role, status, canViewOthers, tenantId, involvedAccountNames, involvedSaleNames, involvedSaleEmails, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, 'approved', ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      `INSERT INTO users (fullName, staffId, email, password, role, status, canViewOthers, tenantId, involvedAccountNames, involvedSaleNames, involvedSaleEmails, createdat, updatedat)
+       VALUES (?, ?, ?, ?, ?, 'approved', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
       [fullName, staffId, email, hashedPassword, role, canViewOthers, tenantId, JSON.stringify(involvedAccountNames), JSON.stringify(involvedSaleNames), JSON.stringify(involvedSaleEmails)]
     );
 
@@ -271,12 +271,12 @@ router.get('/users', [authenticateGlobalAdmin, query('search').optional().isStri
     params.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
   const rows = await dbQuery(`
-    SELECT u.id, u.fullName, u.email, u.staffId, u.role, u.status, u.canViewOthers, u.createdAt, u.updatedAt,
+    SELECT u.id, u.fullName, u.email, u.staffId, u.role, u.status, u.canViewOthers, u.createdat, u.updatedat,
            u.tenantId, t.tenantPrefix, t.name as tenantName
     FROM users u
     LEFT JOIN tenants t ON u.tenantId = t.id
     ${where}
-    ORDER BY u.createdAt DESC
+    ORDER BY u.createdat DESC
   `, params);
   res.json({ success: true, data: rows });
 }));
@@ -341,7 +341,7 @@ router.post('/tenants', [
   if (exists) throw createError('Tenant prefix already exists', 400);
 
   await dbExecute(
-    'INSERT INTO tenants (id, tenantPrefix, name, adminEmails, createdAt, updatedAt) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
+    'INSERT INTO tenants (id, tenantPrefix, name, adminEmails, createdat, updatedat) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
     [id, tenantPrefix, name, JSON.stringify(adminEmails)]
   );
   return res.status(201).json({ success: true, data: { id, tenantPrefix, name, adminEmails } });
@@ -349,7 +349,9 @@ router.post('/tenants', [
 
 // List tenants
 router.get('/tenants', authenticateGlobalAdmin, asyncHandler(async (_req: Request, res: Response) => {
-  const rows = await dbQuery('SELECT id, tenantPrefix, name, adminEmails, createdAt, updatedAt FROM tenants ORDER BY createdAt DESC');
+  // Build query with proper spacing to prevent token concatenation
+  const queryText = 'SELECT id, tenantPrefix, name, adminEmails, createdat, updatedat FROM tenants ORDER BY createdat DESC';
+  const rows = await dbQuery(queryText);
   return res.json({ success: true, data: rows });
 }));
 
@@ -372,6 +374,12 @@ router.put('/tenants/:id', [
   params.push(id);
   await dbExecute(`UPDATE tenants SET ${updates.join(', ')} WHERE id = ?`, params);
   return res.json({ success: true, message: 'Tenant updated' });
+}));
+
+// Public tenant directory for signup page
+router.get('/public/tenant-directory', asyncHandler(async (_req: Request, res: Response) => {
+  const rows = await dbQuery('SELECT tenantPrefix, name FROM tenants ORDER BY name ASC');
+  return res.json({ success: true, data: rows });
 }));
 
 export { router as globalRoutes };

@@ -30,6 +30,12 @@ interface User {
   updatedAt: string;
 }
 
+interface TenantMeta {
+  id: string;
+  tenantPrefix: string;
+  name: string;
+}
+
 const GlobalUserManagement: React.FC = () => {
   const { t } = useLanguage();
   const [users, setUsers] = useState<User[]>([]);
@@ -46,6 +52,7 @@ const GlobalUserManagement: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [tenants, setTenants] = useState<TenantMeta[]>([]);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -64,9 +71,21 @@ const GlobalUserManagement: React.FC = () => {
     }
   }, []);
 
+  const loadTenants = useCallback(async () => {
+    try {
+      const resp = await apiService.getGlobalTenants();
+      if (resp.success) {
+        setTenants(resp.data.map((t: any) => ({ id: t.id, tenantPrefix: t.tenantPrefix, name: t.name })));
+      }
+    } catch (e) {
+      console.error('Failed to load tenants', e);
+    }
+  }, []);
+
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]);
+    loadTenants();
+  }, [loadUsers, loadTenants]);
 
   const handleApproveUser = async (userId: string) => {
     try {
@@ -477,7 +496,7 @@ const GlobalUserManagement: React.FC = () => {
                           className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                           title="Move to Tenant"
                         >
-                          {uniqueTenants.map(tenant => (
+                          {(tenants.length ? tenants.map(t => t.tenantPrefix) : uniqueTenants).map(tenant => (
                             <option key={tenant} value={tenant}>🏢 {tenant}</option>
                           ))}
                         </select>
@@ -594,10 +613,11 @@ const GlobalUserManagement: React.FC = () => {
                 } : undefined}
                 isEditing={!!editingUser}
                 isAdmin={true}
+                isGlobalAdmin={true}
+                tenants={tenants}
                 onSubmit={async (userData) => {
                   try {
                     if (editingUser) {
-                      // Update existing user
                       const response = await apiService.updateGlobalUser(editingUser.id, userData);
                       if (response.success) {
                         toast.success('User updated successfully');
@@ -608,7 +628,6 @@ const GlobalUserManagement: React.FC = () => {
                         toast.error('Failed to update user');
                       }
                     } else {
-                      // Create new user
                       const response = await apiService.createGlobalUser(userData);
                       if (response.success) {
                         toast.success('User created successfully');
