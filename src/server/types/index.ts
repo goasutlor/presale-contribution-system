@@ -93,6 +93,7 @@ export interface CreateUserRequest {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   canViewOthers: boolean;
 }
@@ -103,6 +104,7 @@ export interface UpdateUserRequest {
   involvedAccountNames?: string[];
   involvedSaleNames?: string[];
   involvedSaleEmails?: string[];
+  blogLinks?: string[];
   role?: 'user' | 'admin';
   canViewOthers?: boolean;
 }
