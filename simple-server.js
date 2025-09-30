@@ -42,7 +42,29 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🔗 Health check: http://0.0.0.0:${PORT}/health`);
   console.log(`🔗 API Health check: http://0.0.0.0:${PORT}/api/health`);
   console.log(`✅ Server is ready for health checks`);
+  console.log(`🔍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔍 Railway Environment: ${process.env.RAILWAY_ENVIRONMENT}`);
+  console.log(`🔍 PORT: ${PORT}`);
 });
+
+// Test health check immediately
+setTimeout(() => {
+  console.log('🔍 Testing health check...');
+  const http = require('http');
+  const options = {
+    hostname: '0.0.0.0',
+    port: PORT,
+    path: '/api/health',
+    method: 'GET'
+  };
+  const req = http.request(options, (res) => {
+    console.log(`✅ Health check test: ${res.statusCode}`);
+  });
+  req.on('error', (err) => {
+    console.error('❌ Health check test failed:', err);
+  });
+  req.end();
+}, 1000);
 
 // Handle server errors
 server.on('error', (error) => {
