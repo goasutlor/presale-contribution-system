@@ -89,19 +89,20 @@ async function startServer() {
   try {
     await initializeDatabase();
     console.log('✅ Database initialized successfully');
-    
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-      console.log(`🔗 Frontend: http://localhost:3000`);
-      console.log(`🔗 Backend API: http://localhost:${PORT}/api`);
-      console.log(`🔄 Server started successfully!`);
-    });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
+    console.error('❌ Database initialization failed:', error);
+    console.log('⚠️  Server will continue running without database');
   }
+  
+  // Start server regardless of database status
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Health check: http://0.0.0.0:${PORT}/api/health`);
+    console.log(`🔗 Frontend: http://localhost:3000`);
+    console.log(`🔗 Backend API: http://0.0.0.0:${PORT}/api`);
+    console.log(`🔄 Server started successfully!`);
+  });
 }
 
 startServer();

@@ -52,4 +52,4 @@ RUN ls -la build/
 EXPOSE 8080
 
 # Start server (full API server)
-CMD ["node", "start-server.js"]
+CMD ["npm", "run", "dev:server"]
