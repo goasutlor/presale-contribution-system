@@ -35,7 +35,7 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -963,9 +963,10 @@ const UserManagement: React.FC = () => {
               
               <ProfileForm
                 user={user}
-                onSuccess={() => {
+                onSuccess={async () => {
                   setShowProfileForm(false);
-                  loadUsers();
+                  await refreshUser(); // Refresh current user data
+                  loadUsers(); // Reload all users if admin
                 }}
                 onCancel={() => setShowProfileForm(false)}
               />

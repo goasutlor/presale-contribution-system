@@ -10,6 +10,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
 }
 
@@ -104,11 +105,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        console.log('🔄 Refreshing user profile...');
+        const response: { data: UserProfile } = await apiService.getProfile();
+        console.log('🔄 Refreshed user profile:', response);
+        setUser(response.data);
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing user profile:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
     login,
     logout,
+    refreshUser,
     loading,
   };
 
