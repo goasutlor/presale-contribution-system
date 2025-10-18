@@ -42,7 +42,8 @@ export const authenticateToken = async (
       email: row.email,
       involvedAccountNames: row.involvedAccountNames,
       involvedSaleNames: row.involvedSaleNames,
-      involvedSaleEmails: row.involvedSaleEmails
+      involvedSaleEmails: row.involvedSaleEmails,
+      blogLinks: row.blogLinks
     });
 
     const safeParse = (v: any) => {
@@ -56,6 +57,7 @@ export const authenticateToken = async (
       involvedAccountNames: safeParse(row.involvedAccountNames),
       involvedSaleNames: safeParse(row.involvedSaleNames),
       involvedSaleEmails: safeParse(row.involvedSaleEmails),
+      blogLinks: safeParse(row.blogLinks),
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt)
     };
@@ -65,7 +67,8 @@ export const authenticateToken = async (
       email: user.email,
       involvedAccountNames: user.involvedAccountNames,
       involvedSaleNames: user.involvedSaleNames,
-      involvedSaleEmails: user.involvedSaleEmails
+      involvedSaleEmails: user.involvedSaleEmails,
+      blogLinks: user.blogLinks
     });
 
     req.user = user;
