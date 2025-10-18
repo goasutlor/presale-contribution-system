@@ -15,6 +15,7 @@ import {
   DocumentTextIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
+  LinkIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 
@@ -34,6 +35,7 @@ const Layout: React.FC = () => {
     { name: t('nav.reports'), href: '/reports', icon: ChartBarIcon },
     { name: t('nav.userManagement'), href: '/user-management', icon: UserGroupIcon },
     ...(user?.role === 'admin' ? [
+      { name: 'Portfolio Summary', href: '/portfolio-summary', icon: LinkIcon },
       { name: t('nav.functionalTest'), href: '/functional-test', icon: Cog6ToothIcon }
     ] : []),
   ];

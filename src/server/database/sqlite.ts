@@ -40,6 +40,7 @@ export async function initializeDatabase(): Promise<void> {
           involvedAccountNames TEXT,
           involvedSaleNames TEXT,
           involvedSaleEmails TEXT,
+          blogLinks TEXT,
           role TEXT NOT NULL DEFAULT 'user',
           status TEXT NOT NULL DEFAULT 'pending',
           canViewOthers INTEGER DEFAULT 0,
@@ -107,8 +108,8 @@ async function createAdminUser(): Promise<void> {
         const hashedPassword = await bcrypt.hash('password', 10);
         
         database.run(`
-          INSERT INTO users (id, fullName, staffId, email, password, role, status, canViewOthers, involvedAccountNames, involvedSaleNames, involvedSaleEmails)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO users (id, fullName, staffId, email, password, role, status, canViewOthers, involvedAccountNames, involvedSaleNames, involvedSaleEmails, blogLinks)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           'admin-001',
           'System Administrator',
@@ -120,7 +121,8 @@ async function createAdminUser(): Promise<void> {
           1,
           JSON.stringify(['System']),
           JSON.stringify(['Admin']),
-          JSON.stringify(['admin@presale.com'])
+          JSON.stringify(['admin@presale.com']),
+          JSON.stringify([])
         ], (err) => {
           if (err) {
             reject(err);

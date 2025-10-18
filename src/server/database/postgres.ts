@@ -114,6 +114,7 @@ async function createTables(): Promise<void> {
       involvedAccountNames TEXT,
       involvedSaleNames TEXT,
       involvedSaleEmails TEXT,
+      blogLinks TEXT,
       role VARCHAR(50) NOT NULL DEFAULT 'user',
       status VARCHAR(50) NOT NULL DEFAULT 'pending',
       canViewOthers BOOLEAN DEFAULT false,
@@ -150,6 +151,7 @@ async function createTables(): Promise<void> {
   `);
 
   // Ensure columns exist for previously created tables
+  await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS blogLinks TEXT`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS attachments TEXT`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApproval BOOLEAN DEFAULT false`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalDate TIMESTAMP`);
@@ -171,8 +173,8 @@ async function createAdminUser(): Promise<void> {
       const hashedPassword = await bcrypt.hash('password', 10);
       
       await db.query(`
-        INSERT INTO users (id, fullName, staffId, email, password, role, status, canViewOthers, involvedAccountNames, involvedSaleNames, involvedSaleEmails)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        INSERT INTO users (id, fullName, staffId, email, password, role, status, canViewOthers, involvedAccountNames, involvedSaleNames, involvedSaleEmails, blogLinks)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       `, [
         'admin-001',
         'System Administrator',
@@ -184,7 +186,8 @@ async function createAdminUser(): Promise<void> {
         true,
         JSON.stringify(['System']),
         JSON.stringify(['Admin']),
-        JSON.stringify(['admin@presale.com'])
+        JSON.stringify(['admin@presale.com']),
+        JSON.stringify([])
       ]);
       
       console.log('✅ Admin user created');

@@ -20,6 +20,7 @@ export interface LoginResponse {
     involvedAccountNames: string[];
     involvedSaleNames: string[];
     involvedSaleEmails: string[];
+    blogLinks: string[];
     role: 'user' | 'admin';
     status: 'pending' | 'approved' | 'rejected';
     canViewOthers: boolean;
@@ -36,6 +37,7 @@ export interface UserProfile {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   status: 'pending' | 'approved' | 'rejected';
   canViewOthers: boolean;

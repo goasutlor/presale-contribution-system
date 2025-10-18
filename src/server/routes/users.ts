@@ -22,6 +22,7 @@ const createUserValidation = [
   body('involvedAccountNames').isArray({ min: 1 }).withMessage('At least one account is required'),
   body('involvedSaleNames').isArray({ min: 1 }).withMessage('At least one sale name is required'),
   body('involvedSaleEmails').isArray({ min: 1 }).withMessage('At least one sale email is required'),
+  body('blogLinks').isArray().withMessage('Blog links must be an array'),
   body('role').isIn(['user', 'admin']).withMessage('Role must be either user or admin'),
   body('canViewOthers').isBoolean().withMessage('canViewOthers must be a boolean')
 ];
@@ -33,6 +34,7 @@ const updateUserValidation = [
   body('involvedAccountNames').optional().isArray({ min: 1 }).withMessage('At least one account is required'),
   body('involvedSaleNames').optional().isArray({ min: 1 }).withMessage('At least one sale name is required'),
   body('involvedSaleEmails').optional().isArray({ min: 1 }).withMessage('At least one sale email is required'),
+  body('blogLinks').optional().isArray().withMessage('Blog links must be an array'),
   body('role').optional().isIn(['user', 'admin']).withMessage('Role must be either user or admin'),
   body('canViewOthers').optional().isBoolean().withMessage('canViewOthers must be a boolean')
 ];
@@ -60,6 +62,7 @@ router.get('/', requireAdmin, asyncHandler(async (req: Request, res: Response) =
       involvedAccountNames: Array.isArray(row.involvedAccountNames) ? row.involvedAccountNames : (row.involvedAccountNames ? JSON.parse(row.involvedAccountNames) : []),
       involvedSaleNames: Array.isArray(row.involvedSaleNames) ? row.involvedSaleNames : (row.involvedSaleNames ? JSON.parse(row.involvedSaleNames) : []),
       involvedSaleEmails: Array.isArray(row.involvedSaleEmails) ? row.involvedSaleEmails : (row.involvedSaleEmails ? JSON.parse(row.involvedSaleEmails) : []),
+      blogLinks: Array.isArray(row.blogLinks) ? row.blogLinks : (row.blogLinks ? JSON.parse(row.blogLinks) : []),
       role: row.role,
       status: row.status || 'approved', // Include status field
       canViewOthers: Boolean(row.canViewOthers),
@@ -94,6 +97,7 @@ router.get('/:id', canViewUser(':id'), asyncHandler(async (req: AuthRequest, res
     involvedAccountNames: Array.isArray(row.involvedAccountNames) ? row.involvedAccountNames : (row.involvedAccountNames ? JSON.parse(row.involvedAccountNames) : []),
     involvedSaleNames: Array.isArray(row.involvedSaleNames) ? row.involvedSaleNames : (row.involvedSaleNames ? JSON.parse(row.involvedSaleNames) : []),
     involvedSaleEmails: Array.isArray(row.involvedSaleEmails) ? row.involvedSaleEmails : (row.involvedSaleEmails ? JSON.parse(row.involvedSaleEmails) : []),
+    blogLinks: Array.isArray(row.blogLinks) ? row.blogLinks : (row.blogLinks ? JSON.parse(row.blogLinks) : []),
     role: row.role,
     status: row.status || 'approved',
     canViewOthers: Boolean(row.canViewOthers),
@@ -119,8 +123,8 @@ router.post('/', requireAdmin, createUserValidation, asyncHandler(async (req: Re
   const hashedPassword = await bcrypt.hash(userData.password, 12);
   const userId = uuidv4();
   await dbExecute(
-    `INSERT INTO users (id, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, role, canViewOthers)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO users (id, fullName, staffId, email, password, involvedAccountNames, involvedSaleNames, involvedSaleEmails, blogLinks, role, canViewOthers)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       userData.fullName,
@@ -130,6 +134,7 @@ router.post('/', requireAdmin, createUserValidation, asyncHandler(async (req: Re
       JSON.stringify(userData.involvedAccountNames),
       JSON.stringify(userData.involvedSaleNames),
       JSON.stringify(userData.involvedSaleEmails),
+      JSON.stringify(userData.blogLinks || []),
       userData.role,
       userData.canViewOthers
     ]
@@ -176,6 +181,11 @@ router.put('/:id', requireAdmin, updateUserValidation, asyncHandler(async (req: 
     if (updateData.involvedSaleEmails !== undefined) {
       updateFields.push('involvedSaleEmails = ?');
       updateValues.push(JSON.stringify(updateData.involvedSaleEmails));
+    }
+
+    if (updateData.blogLinks !== undefined) {
+      updateFields.push('blogLinks = ?');
+      updateValues.push(JSON.stringify(updateData.blogLinks));
     }
 
     if (updateData.role !== undefined) {
