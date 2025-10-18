@@ -51,6 +51,7 @@ const COLUMN_NAME_MAP: Record<string, string> = {
   involvedaccountnames: 'involvedAccountNames',
   involvedsalenames: 'involvedSaleNames',
   involvedsaleemails: 'involvedSaleEmails',
+  bloglinks: 'blogLinks',
   role: 'role',
   status: 'status',
   canviewothers: 'canViewOthers',
