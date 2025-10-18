@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { apiService } from '../services/api';
@@ -35,6 +36,7 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
+  const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
   const [users, setUsers] = useState<User[]>([]);
@@ -790,7 +792,10 @@ const UserManagement: React.FC = () => {
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h4>
                   <div className="space-y-3">
-                    <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200">
+                    <button 
+                      onClick={() => navigate('/my-contributions')}
+                      className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+                    >
                       <div className="flex items-center">
                         <div className="p-2 rounded-lg bg-primary-100 mr-3">
                           <UserGroupIcon className="h-5 w-5 text-primary-600" />
@@ -801,7 +806,10 @@ const UserManagement: React.FC = () => {
                         </div>
                       </div>
                     </button>
-                    <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200">
+                    <button 
+                      onClick={() => navigate('/dashboard')}
+                      className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+                    >
                       <div className="flex items-center">
                         <div className="p-2 rounded-lg bg-success-100 mr-3">
                           <EyeIcon className="h-5 w-5 text-success-600" />
