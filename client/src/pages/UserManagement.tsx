@@ -11,6 +11,8 @@ import {
   UserPlusIcon,
   UserGroupIcon,
   XMarkIcon,
+  LinkIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 import UserForm from '../components/UserForm';
 import ProfileForm from '../components/ProfileForm';
@@ -24,6 +26,7 @@ interface User {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   status: 'pending' | 'approved' | 'rejected';
   canViewOthers: boolean;
@@ -747,6 +750,34 @@ const UserManagement: React.FC = () => {
                       </span>
                     ))}
                   </div>
+                </div>
+
+                {/* Blog Links Section */}
+                <div className="mb-4">
+                  <div className="flex items-center mb-2">
+                    <LinkIcon className="h-5 w-5 text-indigo-600 mr-2" />
+                    <label className="block text-sm font-medium text-gray-700">Blog Links / Portfolio URLs</label>
+                  </div>
+                  {user?.blogLinks && user.blogLinks.length > 0 ? (
+                    <div className="space-y-2">
+                      {user.blogLinks.map((link, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
+                          <a
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline flex items-center space-x-1"
+                          >
+                            <span className="truncate">{link}</span>
+                            <ArrowTopRightOnSquareIcon className="h-3 w-3 flex-shrink-0" />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No blog links added yet</p>
+                  )}
                 </div>
               </div>
 
