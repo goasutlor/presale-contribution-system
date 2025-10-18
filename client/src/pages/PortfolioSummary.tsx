@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LinkIcon, UserIcon, ExternalLinkIcon, MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { LinkIcon, UserIcon, ArrowTopRightOnSquareIcon, MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import apiService from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -184,7 +184,7 @@ export default function PortfolioSummary() {
           
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <ExternalLinkIcon className="h-8 w-8 text-purple-600" />
+              <ArrowTopRightOnSquareIcon className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Links</p>
                 <p className="text-2xl font-bold text-gray-900">{totalLinks}</p>
@@ -344,7 +344,7 @@ export default function PortfolioSummary() {
                                 className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline flex items-center space-x-1"
                               >
                                 <span className="truncate max-w-xs">{link.domain}</span>
-                                <ExternalLinkIcon className="h-3 w-3 flex-shrink-0" />
+                                <ArrowTopRightOnSquareIcon className="h-3 w-3 flex-shrink-0" />
                               </a>
                             </div>
                           ))
