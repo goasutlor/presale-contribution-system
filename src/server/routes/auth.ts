@@ -374,6 +374,7 @@ router.get('/profile', authenticateToken, asyncHandler(async (req: Request, res:
         involvedSaleEmails: involvedSaleEmails,
         blogLinks: blogLinks,
         role: user.role,
+        status: user.status || 'approved',
         canViewOthers: user.canViewOthers,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
