@@ -46,6 +46,10 @@ const UserManagement: React.FC = () => {
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'admin' | 'user' | 'pending'>('all');
 
+  // Debug: Log user object to check blogLinks
+  console.log('🔍 UserManagement - Current user object:', user);
+  console.log('🔍 UserManagement - blogLinks:', user?.blogLinks);
+
   // Load users from API
   useEffect(() => {
     // Only load users if user is authenticated

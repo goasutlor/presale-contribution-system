@@ -51,6 +51,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('token', token);
       const response: { data: UserProfile } = await apiService.getProfile();
       console.log('🔍 User profile response:', response);
+      console.log('🔍 User profile data:', response.data);
+      console.log('🔍 blogLinks in response:', response.data?.blogLinks);
       setUser(response.data);
     } catch (error) {
       console.error('❌ Error fetching user profile:', error);
