@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { apiService } from '../services/api';
-import { UserIcon, EnvelopeIcon, IdentificationIcon, BuildingOfficeIcon, UserGroupIcon, ShieldCheckIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { UserIcon, EnvelopeIcon, IdentificationIcon, BuildingOfficeIcon, UserGroupIcon, ShieldCheckIcon, EyeIcon, EyeSlashIcon, LinkIcon } from '@heroicons/react/24/outline';
 
 interface ProfileFormData {
   id: string;
@@ -12,6 +12,7 @@ interface ProfileFormData {
   involvedAccountNames: string[];
   involvedSaleNames: string[];
   involvedSaleEmails: string[];
+  blogLinks: string[];
   role: 'user' | 'admin';
   canViewOthers: boolean;
 }
@@ -50,6 +51,7 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
       involvedAccountNames: user.involvedAccountNames,
       involvedSaleNames: user.involvedSaleNames,
       involvedSaleEmails: user.involvedSaleEmails,
+      blogLinks: user.blogLinks || [],
       role: user.role,
       canViewOthers: user.canViewOthers
     }
@@ -83,6 +85,7 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
         involvedAccountNames: data.involvedAccountNames,
         involvedSaleNames: data.involvedSaleNames,
         involvedSaleEmails: data.involvedSaleEmails,
+        blogLinks: data.blogLinks,
       });
       if (response.success) {
         // Update all contributions with new account names and sale names
@@ -402,6 +405,68 @@ export default function ProfileForm({ user, onSuccess, onCancel }: ProfileFormPr
             {profileErrors.involvedSaleNames && (
               <p className="mt-1 text-sm text-red-600">{(profileErrors as any).involvedSaleNames.message}</p>
             )}
+          </div>
+
+          {/* Blog Links Section */}
+          <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+            <div className="flex items-center mb-3">
+              <LinkIcon className="h-5 w-5 text-indigo-600 mr-2" />
+              <label className="block text-sm font-medium text-gray-700">
+                Blog Links / Portfolio URLs
+              </label>
+            </div>
+            <Controller
+              name="blogLinks"
+              control={profileControl}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  {field.value && field.value.length > 0 ? (
+                    field.value.map((link, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <input
+                          type="url"
+                          value={link}
+                          onChange={(e) => {
+                            const next = [...field.value];
+                            next[index] = e.target.value;
+                            field.onChange(next);
+                          }}
+                          placeholder="https://example.com/blog"
+                          className="flex-1 px-3 py-2 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => field.onChange(field.value.filter((_: any, i: number) => i !== index))}
+                          className="px-2 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                          title="Remove link"
+                        >
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 italic py-2">
+                      ยังไม่มี Blog Links - คลิก "+ เพิ่ม Blog Link" เพื่อเพิ่ม URL
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => field.onChange([...(field.value || []), ''])}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors"
+                  >
+                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    + เพิ่ม Blog Link
+                  </button>
+                </div>
+              )}
+            />
+            <p className="mt-2 text-xs text-gray-600">
+              เพิ่ม URL ของบทความ, Blog, Portfolio หรือเว็บไซต์ส่วนตัวของคุณ (ไม่บังคับ)
+            </p>
           </div>
 
           {/* Action Buttons */}
