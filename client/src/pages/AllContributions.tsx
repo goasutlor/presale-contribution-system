@@ -632,6 +632,7 @@ const AllContributions: React.FC = () => {
                         <Tooltip content="แก้ไขข้อมูล">
                           <button
                             onClick={() => {
+                              console.log('🔍 Edit button clicked - contribution data:', contribution);
                               setEditingContribution(contribution);
                               setShowForm(true);
                             }}

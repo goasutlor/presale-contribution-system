@@ -95,6 +95,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   // Auto-fill all fields when component mounts
   useEffect(() => {
     if (isEditing && initialData) {
+      console.log('🔍 Edit Mode - Loading initialData:', initialData);
       // Load existing data for editing
       setValue('title', initialData.title || '');
       setValue('accountName', initialData.accountName || '');
@@ -108,6 +109,11 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       setValue('contributionMonth', initialData.contributionMonth || '');
       setValue('tags', initialData.tags || []);
       setTagsInput(initialData.tags ? initialData.tags.join(', ') : '');
+      console.log('🔍 Edit Mode - Set values:', {
+        accountName: initialData.accountName,
+        saleName: initialData.saleName,
+        saleEmail: initialData.saleEmail
+      });
     } else if (user && user.involvedAccountNames && user.involvedSaleNames && user.involvedSaleEmails) {
       // Auto-fill Account Name
       if (user.involvedAccountNames.length === 1) {
@@ -264,6 +270,12 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                           {account}
                         </option>
                       ))}
+                      {/* Add initialData values if they're not in user's list */}
+                      {isEditing && initialData?.accountName && !user.involvedAccountNames?.includes(initialData.accountName) && (
+                        <option value={initialData.accountName}>
+                          {initialData.accountName} (จากข้อมูลเดิม)
+                        </option>
+                      )}
                     </select>
                   )}
                 />
@@ -306,6 +318,12 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                           {sale} {user.involvedSaleEmails[index] && `(${user.involvedSaleEmails[index]})`}
                         </option>
                       ))}
+                      {/* Add initialData values if they're not in user's list */}
+                      {isEditing && initialData?.saleName && !user.involvedSaleNames?.includes(initialData.saleName) && (
+                        <option value={initialData.saleName}>
+                          {initialData.saleName} {initialData.saleEmail && `(${initialData.saleEmail})`} (จากข้อมูลเดิม)
+                        </option>
+                      )}
                     </select>
                   )}
                 />
@@ -354,6 +372,12 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                           {email} {user.involvedSaleNames[index] && `(${user.involvedSaleNames[index]})`}
                         </option>
                       ))}
+                      {/* Add initialData values if they're not in user's list */}
+                      {isEditing && initialData?.saleEmail && !user.involvedSaleEmails?.includes(initialData.saleEmail) && (
+                        <option value={initialData.saleEmail}>
+                          {initialData.saleEmail} {initialData.saleName && `(${initialData.saleName})`} (จากข้อมูลเดิม)
+                        </option>
+                      )}
                     </select>
                   )}
                 />
