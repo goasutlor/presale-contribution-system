@@ -239,6 +239,10 @@ class ApiService {
     });
   }
 
+  async getContributionById(id: string): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/contributions/${id}`);
+  }
+
   async updateContribution(id: string, contributionData: any): Promise<ApiResponse<any>> {
     return this.request<ApiResponse<any>>(`/api/contributions/${id}`, {
       method: 'PUT',

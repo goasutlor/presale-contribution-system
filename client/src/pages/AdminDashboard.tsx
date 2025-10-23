@@ -11,6 +11,7 @@ import {
   CheckCircleIcon,
   CogIcon,
   LockClosedIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 
 interface AdminDashboardData {
@@ -40,6 +41,24 @@ interface UserContribution {
   }>;
 }
 
+interface Contribution {
+  id: string;
+  title: string;
+  accountName: string;
+  saleName: string;
+  saleEmail: string;
+  contributionType: string;
+  impact: string;
+  effort: string;
+  estimatedImpactValue?: number;
+  description: string;
+  contributionMonth: string;
+  tags: string[];
+  status: 'draft' | 'submitted';
+  createdAt: string;
+  updatedAt: string;
+}
+
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -62,6 +81,11 @@ const AdminDashboard: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  
+  // Edit contribution states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<Contribution>>({});
   
   // Timeline (Time Series / Matrix) data for Admin (aggregated across users)
   interface AdminMonthlyData {
@@ -199,6 +223,51 @@ const AdminDashboard: React.FC = () => {
   const handleUserClick = (userContribution: UserContribution) => {
     setSelectedUser(userContribution);
     setShowUserDetails(true);
+  };
+
+  // Edit contribution handlers
+  const handleEditContribution = async (contributionId: string) => {
+    try {
+      const response = await apiService.getContributionById(contributionId);
+      if (response.success) {
+        setSelectedContribution(response.data);
+        setEditFormData(response.data);
+        setShowEditModal(true);
+      } else {
+        toast.error('Failed to load contribution details');
+      }
+    } catch (error: any) {
+      console.error('Error loading contribution:', error);
+      toast.error('Failed to load contribution details');
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedContribution) return;
+
+    try {
+      const response = await apiService.updateContribution(selectedContribution.id, editFormData);
+      if (response.success) {
+        toast.success('Contribution updated successfully');
+        setShowEditModal(false);
+        setSelectedContribution(null);
+        setEditFormData({});
+        // Refresh user contributions
+        fetchUserContributions();
+      } else {
+        toast.error('Failed to update contribution');
+      }
+    } catch (error: any) {
+      console.error('Error updating contribution:', error);
+      toast.error('Failed to update contribution');
+    }
+  };
+
+  const handleEditCancel = () => {
+    setShowEditModal(false);
+    setSelectedContribution(null);
+    setEditFormData({});
   };
 
   // Quick Actions handlers
@@ -699,6 +768,17 @@ const AdminDashboard: React.FC = () => {
                             }`}>
                               {contribution.impact === 'critical' ? 'Strategic' : contribution.impact === 'high' ? 'Department' : contribution.impact === 'medium' ? 'Team-Level' : 'Routine'}
                             </span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleEditContribution(contribution.id);
+                              }}
+                              className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                              title="Edit Contribution"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -840,6 +920,233 @@ const AdminDashboard: React.FC = () => {
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700"
                 >
                   Change Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contribution Modal */}
+      {showEditModal && selectedContribution && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Edit Contribution - {selectedContribution.title}
+              </h3>
+              <button
+                onClick={handleEditCancel}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Title */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.title || ''}
+                    onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+
+                {/* Account Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Account Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.accountName || ''}
+                    onChange={(e) => setEditFormData({...editFormData, accountName: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+
+                {/* Sale Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sale Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.saleName || ''}
+                    onChange={(e) => setEditFormData({...editFormData, saleName: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+
+                {/* Sale Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sale Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={editFormData.saleEmail || ''}
+                    onChange={(e) => setEditFormData({...editFormData, saleEmail: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+
+                {/* Contribution Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Contribution Type *
+                  </label>
+                  <select
+                    value={editFormData.contributionType || ''}
+                    onChange={(e) => setEditFormData({...editFormData, contributionType: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  >
+                    <option value="">Select Type</option>
+                    <option value="technical">Technical</option>
+                    <option value="business">Business</option>
+                    <option value="relationship">Relationship</option>
+                    <option value="innovation">Innovation</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                {/* Contribution Month */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Contribution Month *
+                  </label>
+                  <input
+                    type="month"
+                    value={editFormData.contributionMonth || ''}
+                    onChange={(e) => setEditFormData({...editFormData, contributionMonth: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+
+                {/* Impact */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Impact *
+                  </label>
+                  <select
+                    value={editFormData.impact || ''}
+                    onChange={(e) => setEditFormData({...editFormData, impact: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  >
+                    <option value="">Select Impact</option>
+                    <option value="low">Routine (Low Impact)</option>
+                    <option value="medium">Team-Level (Medium Impact)</option>
+                    <option value="high">Department (High Impact)</option>
+                    <option value="critical">Strategic (Critical Impact)</option>
+                  </select>
+                </div>
+
+                {/* Effort */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Effort *
+                  </label>
+                  <select
+                    value={editFormData.effort || ''}
+                    onChange={(e) => setEditFormData({...editFormData, effort: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  >
+                    <option value="">Select Effort</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+
+                {/* Estimated Impact Value */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Estimated Impact Value
+                  </label>
+                  <input
+                    type="number"
+                    value={editFormData.estimatedImpactValue || ''}
+                    onChange={(e) => setEditFormData({...editFormData, estimatedImpactValue: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tags (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.tags?.join(', ') || ''}
+                    onChange={(e) => setEditFormData({...editFormData, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="tag1, tag2, tag3"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  value={editFormData.description || ''}
+                  onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Status *
+                </label>
+                <select
+                  value={editFormData.status || ''}
+                  onChange={(e) => setEditFormData({...editFormData, status: e.target.value as 'draft' | 'submitted'})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
+                >
+                  <option value="draft">Draft</option>
+                  <option value="submitted">Submitted</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <button
+                  type="button"
+                  onClick={handleEditCancel}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700"
+                >
+                  Update Contribution
                 </button>
               </div>
             </form>

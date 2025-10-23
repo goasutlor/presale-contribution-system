@@ -630,6 +630,8 @@ const AllContributions: React.FC = () => {
                   setShowForm(false);
                   setEditingContribution(null);
                 }}
+                initialData={editingContribution}
+                isEditing={!!editingContribution}
               />
             </div>
           </div>

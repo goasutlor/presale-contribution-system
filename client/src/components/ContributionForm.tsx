@@ -27,6 +27,8 @@ interface ContributionFormProps {
   };
   onSubmit: (data: ContributionFormData, action: 'draft' | 'submit') => void;
   onCancel: () => void;
+  initialData?: any; // For editing existing contribution
+  isEditing?: boolean; // To distinguish between create and edit mode
 }
 
 const CONTRIBUTION_TYPES = [
@@ -53,7 +55,9 @@ const EFFORT_LEVELS = [
 const ContributionForm: React.FC<ContributionFormProps> = ({
   user,
   onSubmit,
-  onCancel
+  onCancel,
+  initialData,
+  isEditing = false
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagsInput, setTagsInput] = useState('');
@@ -90,7 +94,21 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
 
   // Auto-fill all fields when component mounts
   useEffect(() => {
-    if (user && user.involvedAccountNames && user.involvedSaleNames && user.involvedSaleEmails) {
+    if (isEditing && initialData) {
+      // Load existing data for editing
+      setValue('title', initialData.title || '');
+      setValue('accountName', initialData.accountName || '');
+      setValue('saleName', initialData.saleName || '');
+      setValue('saleEmail', initialData.saleEmail || '');
+      setValue('contributionType', initialData.contributionType || '');
+      setValue('impact', initialData.impact || 'medium');
+      setValue('effort', initialData.effort || 'medium');
+      setValue('estimatedImpactValue', initialData.estimatedImpactValue || 0);
+      setValue('description', initialData.description || '');
+      setValue('contributionMonth', initialData.contributionMonth || '');
+      setValue('tags', initialData.tags || []);
+      setTagsInput(initialData.tags ? initialData.tags.join(', ') : '');
+    } else if (user && user.involvedAccountNames && user.involvedSaleNames && user.involvedSaleEmails) {
       // Auto-fill Account Name
       if (user.involvedAccountNames.length === 1) {
         setValue('accountName', user.involvedAccountNames[0]);
@@ -106,7 +124,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         setValue('saleEmail', user.involvedSaleEmails[0]);
       }
     }
-  }, [user, setValue]);
+  }, [user, setValue, isEditing, initialData]);
 
   // Auto-fill Sale Email when Sale Name changes
   useEffect(() => {
