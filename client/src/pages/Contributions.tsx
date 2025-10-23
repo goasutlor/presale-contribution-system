@@ -40,6 +40,7 @@ export default function Contributions() {
 
   // Load contributions from API
   useEffect(() => {
+    console.log('🔍 Contributions page mounted - loading contributions');
     loadContributions();
   }, []);
 
@@ -47,8 +48,10 @@ export default function Contributions() {
   const loadContributions = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching contributions for user:', user?.fullName, 'role:', user?.role);
       const response = await apiService.getContributions();
       if (response.success) {
+        console.log('✅ Loaded contributions:', response.data?.length);
         setContributions(response.data);
       } else {
         console.error('Failed to load contributions:', response.message);
@@ -442,6 +445,8 @@ export default function Contributions() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
+                              console.log('📝 Edit clicked for contribution:', contribution.id, 'status:', contribution.status);
+                              console.log('📝 Contribution object:', contribution);
                               setEditingContribution(contribution);
                               setShowForm(true);
                             }}
