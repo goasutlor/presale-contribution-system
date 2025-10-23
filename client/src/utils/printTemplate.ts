@@ -63,7 +63,7 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         
         @page {
           size: A4;
-          margin: 0.3in;
+          margin: 0.5in;
         }
         
         @media print {
@@ -119,37 +119,23 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
             radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
             radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
             radial-gradient(circle at 40% 40%, rgba(255,255,255,0.05) 0%, transparent 50%);
-          opacity: 0.8;
+          opacity: 0.15;
         }
         
-        .report-header::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-          animation: shimmer 3s ease-in-out infinite;
-        }
-        
-        @keyframes shimmer {
-          0%, 100% { transform: translateX(-100%); }
-          50% { transform: translateX(100%); }
-        }
+        /* Remove shimmer/animation for professional tone */
         
         .report-logo {
-          margin-bottom: 1rem;
+          margin-bottom: 0.6rem;
           position: relative;
           z-index: 1;
-          width: 250px;
-          height: 90px;
+          width: 160px;
+          height: 60px;
         }
         
         .report-title {
-          font-size: 1.8rem;
+          font-size: 1.45rem;
           font-weight: 900;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.25rem;
           text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
           position: relative;
           z-index: 2;
@@ -158,13 +144,13 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .report-subtitle {
-          font-size: 1.1rem;
-          opacity: 0.95;
-          margin-bottom: 1rem;
-          font-weight: 600;
+          font-size: 0.95rem;
+          opacity: 0.9;
+          margin-bottom: 0.6rem;
+          font-weight: 500;
           position: relative;
           z-index: 2;
-          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
         }
         
         .report-date {
@@ -205,20 +191,19 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         .summary-cards {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
         }
         
         .summary-card {
-          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-          border: 2px solid transparent;
-          border-radius: 12px;
-          padding: 1.2rem 1rem;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 0.8rem 0.75rem;
           text-align: center;
-          transition: all 0.3s ease;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          box-shadow: none;
         }
         
         .summary-card::before {
@@ -249,14 +234,11 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .summary-number {
-          font-size: 2rem;
-          font-weight: 900;
-          margin-bottom: 0.5rem;
+          font-size: 1.4rem;
+          font-weight: 800;
+          margin-bottom: 0.3rem;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          background: linear-gradient(135deg, #1e40af, #3b82f6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: var(--brand-text);
         }
         
         .summary-card:nth-child(1) .summary-number {
@@ -281,8 +263,8 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .summary-label {
-          font-size: 0.9rem;
-          color: #6b7280;
+          font-size: 0.75rem;
+          color: #64748b;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.1em;
@@ -315,20 +297,20 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         .impact-cards {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
         }
         
         .impact-card {
-          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-          border: 2px solid transparent;
-          border-radius: 12px;
-          padding: 1.2rem 1rem;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 0.8rem 0.75rem;
           text-align: center;
           transition: all 0.3s ease;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          box-shadow: none;
         }
         
         .impact-card.critical {
@@ -388,14 +370,16 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .impact-icon {
-          font-size: 2rem;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.2rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         
         .impact-number {
-          font-size: 1.8rem;
-          font-weight: 900;
-          margin-bottom: 0.5rem;
+          font-size: 1.2rem;
+          font-weight: 800;
+          margin-bottom: 0.2rem;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
@@ -416,8 +400,8 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .impact-label {
-          font-size: 0.8rem;
-          color: #6b7280;
+          font-size: 0.7rem;
+          color: #64748b;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.1em;
@@ -428,12 +412,12 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .contributions-title {
-          font-size: 1.75rem;
+          font-size: 1.1rem;
           font-weight: 700;
-          color: #365486;
-          margin-bottom: 1.5rem;
-          border-bottom: 3px solid #7FC7D9;
-          padding-bottom: 0.75rem;
+          color: var(--brand-steel);
+          margin-bottom: 0.8rem;
+          border-bottom: 1px solid var(--brand-line);
+          padding-bottom: 0.5rem;
           position: relative;
         }
         
@@ -460,15 +444,15 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .contributions-table th {
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
-          color: white;
-          padding: 0.8rem 0.6rem;
+          background: #f8fafc;
+          color: #334155;
+          padding: 0.6rem 0.6rem;
           text-align: left;
-          font-weight: 700;
-          font-size: 0.8rem;
+          font-weight: 600;
+          font-size: 0.75rem;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          border-bottom: 3px solid #1e40af;
+          letter-spacing: 0.04em;
+          border-bottom: 1px solid #e5e7eb;
           position: relative;
         }
         
