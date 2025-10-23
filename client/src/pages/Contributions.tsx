@@ -435,22 +435,21 @@ export default function Contributions() {
                         <EyeIcon className="h-5 w-5" />
                       </button>
                       
-                      {/* Edit button - available for all contributions */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setEditingContribution(contribution);
-                          setShowForm(true);
-                        }}
-                        className="text-yellow-600 hover:text-yellow-900"
-                        title="แก้ไข"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      
                       {contribution.status === 'draft' && (
                         <>
+                          {/* Edit button - only for drafts */}
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setEditingContribution(contribution);
+                              setShowForm(true);
+                            }}
+                            className="text-yellow-600 hover:text-yellow-900"
+                            title="แก้ไข"
+                          >
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
                           <button
                             onClick={(e) => {
                               e.preventDefault();
