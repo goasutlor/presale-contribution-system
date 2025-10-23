@@ -163,6 +163,33 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         .report-content {
           padding: 1rem;
         }
+
+        /* Simple Attractive Sheet */
+        .sheet {
+          background: #f5f7f9; /* light neutral */
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 14px 18px;
+          margin-bottom: 14px;
+        }
+
+        .metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 22px;
+          align-items: end;
+        }
+        .metrics-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .metric {
+          text-align: center;
+        }
+        .metric-icon { height: 26px; margin-bottom: 6px; display:flex; align-items:center; justify-content:center; }
+        .metric-icon svg { stroke: #334155; }
+        .metric-number { font-size: 1.7rem; font-weight: 800; color: #0f172a; }
+        .metric-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; margin-top: 2px; }
+
+        .sheet-divider { border-top: 1px solid #e5e7eb; margin: 12px 0; }
         
         .summary-section {
           margin-bottom: 1.5rem;
@@ -806,64 +833,76 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         </div>
         
         <div class="report-content">
-          <div class="summary-section">
-            <h2 class="summary-title">Summary Overview</h2>
-            <div class="summary-cards">
-              <div class="summary-card">
-                <div class="summary-number">${filteredSummary.totalContributions}</div>
-                <div class="summary-label">Total Contributions</div>
+          <div class="sheet">
+            <div class="metrics-grid">
+              <div class="metric">
+                <div class="metric-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3h18v4H3zM5 7v14h4V7M10 7h4v14h-4M15 7h4v14h-4"/>
+                  </svg>
+                </div>
+                <div class="metric-number">${filteredSummary.totalContributions}</div>
+                <div class="metric-label">Total Contributions</div>
               </div>
-              <div class="summary-card">
-                <div class="summary-number">${filteredSummary.totalUsers}</div>
-                <div class="summary-label">Total Users</div>
+              <div class="metric">
+                <div class="metric-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 12a5 5 0 100-10 5 5 0 000 10z"/>
+                    <path d="M20 21a8 8 0 10-16 0"/>
+                  </svg>
+                </div>
+                <div class="metric-number">${filteredSummary.totalUsers}</div>
+                <div class="metric-label">Total Users</div>
               </div>
-              <div class="summary-card">
-                <div class="summary-number">${filteredSummary.totalAccounts}</div>
-                <div class="summary-label">Total Accounts</div>
+              <div class="metric">
+                <div class="metric-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7h18M3 12h18M3 17h18"/>
+                  </svg>
+                </div>
+                <div class="metric-number">${filteredSummary.totalAccounts}</div>
+                <div class="metric-label">Total Accounts</div>
               </div>
             </div>
-          </div>
-          
-          <div class="impact-distribution-section">
-            <h2 class="impact-title">Impact Distribution</h2>
-            <div class="impact-cards">
-              <div class="impact-card critical">
-                <div class="impact-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="sheet-divider"></div>
+            <div class="metrics-grid cols-4">
+              <div class="metric">
+                <div class="metric-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M6 9l6-6 6 6-6 12-6-12z"/>
                   </svg>
                 </div>
-                <div class="impact-number">${filteredSummary.criticalImpact}</div>
-                <div class="impact-label">Critical Impact</div>
+                <div class="metric-number">${filteredSummary.criticalImpact}</div>
+                <div class="metric-label">Critical</div>
               </div>
-              <div class="impact-card high">
-                <div class="impact-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="metric">
+                <div class="metric-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2s4 4 4 8-4 8-4 8-4-4-4-8 4-8 4-8z"/>
                   </svg>
                 </div>
-                <div class="impact-number">${filteredSummary.highImpact}</div>
-                <div class="impact-label">High Impact</div>
+                <div class="metric-number">${filteredSummary.highImpact}</div>
+                <div class="metric-label">High</div>
               </div>
-              <div class="impact-card medium">
-                <div class="impact-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="metric">
+                <div class="metric-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/>
                   </svg>
                 </div>
-                <div class="impact-number">${filteredSummary.mediumImpact}</div>
-                <div class="impact-label">Medium Impact</div>
+                <div class="metric-number">${filteredSummary.mediumImpact}</div>
+                <div class="metric-label">Medium</div>
               </div>
-              <div class="impact-card low">
-                <div class="impact-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="metric">
+                <div class="metric-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 20V10"/>
                     <path d="M12 10c0-4 3-7 7-7 0 4-3 7-7 7z"/>
                     <path d="M12 10C12 6 9 3 5 3c0 4 3 7 7 7z"/>
                   </svg>
                 </div>
-                <div class="impact-number">${filteredSummary.lowImpact}</div>
-                <div class="impact-label">Low Impact</div>
+                <div class="metric-number">${filteredSummary.lowImpact}</div>
+                <div class="metric-label">Low</div>
               </div>
             </div>
           </div>
