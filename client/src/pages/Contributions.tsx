@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
-import { PlusIcon, EyeIcon, TrashIcon, DocumentTextIcon, CalendarIcon, UserIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, EyeIcon, TrashIcon, DocumentTextIcon, CalendarIcon, UserIcon, BuildingOfficeIcon, PencilIcon } from '@heroicons/react/24/outline';
 import ContributionForm from '../components/ContributionForm';
 
 interface Contribution {
@@ -34,6 +34,7 @@ export default function Contributions() {
   const [showForm, setShowForm] = useState(false);
   const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
 
 
 
@@ -151,6 +152,7 @@ export default function Contributions() {
       if (response.success) {
         await loadContributions(); // Reload from API
         setShowForm(false);
+        setEditingContribution(null);
         toast.success(action === 'draft' ? 'Draft saved successfully' : 'Contribution submitted successfully');
       } else {
         toast.error(response.message || 'Failed to create contribution');
@@ -158,6 +160,54 @@ export default function Contributions() {
     } catch (error: any) {
       console.error('Error creating contribution:', error);
       toast.error(error.message || 'Failed to create contribution');
+    }
+  };
+
+  const handleUpdateContribution = async (data: any, action: 'draft' | 'submit') => {
+    if (!editingContribution) return;
+    
+    try {
+      // Use status from data if available, otherwise use action
+      const finalStatus = data.status || (action === 'draft' ? 'draft' : 'submitted');
+      
+      // Transform data to match API expectations
+      const apiData = {
+        accountName: data.accountName,
+        saleName: data.saleName,
+        saleEmail: data.saleEmail,
+        contributionType: data.contributionType,
+        title: data.title,
+        description: data.description,
+        impact: data.impact,
+        effort: data.effort,
+        estimatedImpactValue: data.estimatedImpactValue,
+        contributionMonth: data.contributionMonth,
+        tags: data.tags || [],
+        status: finalStatus
+      };
+
+      console.log('🔍 Frontend - Update Contribution Debug:', {
+        id: editingContribution.id,
+        action: action,
+        dataStatus: data.status,
+        finalStatus: finalStatus,
+        apiStatus: apiData.status,
+        isDraft: action === 'draft',
+        fullApiData: apiData
+      });
+
+      const response = await apiService.updateContribution(editingContribution.id, apiData);
+      if (response.success) {
+        await loadContributions(); // Reload from API
+        setShowForm(false);
+        setEditingContribution(null);
+        toast.success(action === 'draft' ? 'Contribution updated successfully' : 'Contribution updated and submitted successfully');
+      } else {
+        toast.error(response.message || 'Failed to update contribution');
+      }
+    } catch (error: any) {
+      console.error('Error updating contribution:', error);
+      toast.error(error.message || 'Failed to update contribution');
     }
   };
 
@@ -385,6 +435,20 @@ export default function Contributions() {
                         <EyeIcon className="h-5 w-5" />
                       </button>
                       
+                      {/* Edit button - available for all contributions */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setEditingContribution(contribution);
+                          setShowForm(true);
+                        }}
+                        className="text-yellow-600 hover:text-yellow-900"
+                        title="แก้ไข"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                      
                       {contribution.status === 'draft' && (
                         <>
                           <button
@@ -448,8 +512,13 @@ export default function Contributions() {
               
             <ContributionForm
                 user={user!}
-                onSubmit={memoizedOnSubmit}
-                onCancel={memoizedOnCancel}
+                onSubmit={editingContribution ? handleUpdateContribution : handleCreateContribution}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingContribution(null);
+                }}
+                initialData={editingContribution}
+                isEditing={!!editingContribution}
             />
               
             </div>
