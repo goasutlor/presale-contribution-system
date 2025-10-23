@@ -38,6 +38,29 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
   const pickedSale = selectedSale || (uniqueSales.length === 1 ? uniqueSales[0] : '');
   const pickedPresale = selectedPresale || (uniquePresales.length === 1 ? uniquePresales[0] : '');
   const showSpecific = Boolean(pickedSale && pickedPresale);
+  
+  // Impact distribution for donut
+  const totalImpactCount = filteredSummary.criticalImpact + filteredSummary.highImpact + filteredSummary.mediumImpact + filteredSummary.lowImpact;
+  const impactPct = {
+    critical: totalImpactCount ? Math.round((filteredSummary.criticalImpact / totalImpactCount) * 100) : 0,
+    high: totalImpactCount ? Math.round((filteredSummary.highImpact / totalImpactCount) * 100) : 0,
+    medium: totalImpactCount ? Math.round((filteredSummary.mediumImpact / totalImpactCount) * 100) : 0,
+    low: totalImpactCount ? Math.round((filteredSummary.lowImpact / totalImpactCount) * 100) : 0,
+  };
+  const donutOrder: Array<keyof typeof impactPct> = ['critical','high','medium','low'];
+  const donutColors = { critical: '#7c3aed', high: '#ea580c', medium: '#d97706', low: '#16a34a' } as Record<string,string>;
+  // Table column includes (move Description to a full-width row)
+  const includeAccount = printFields?.account !== false;
+  const includeTitle = printFields?.title !== false;
+  const includeType = printFields?.type !== false;
+  const includeImpact = printFields?.impact !== false;
+  const includeEffort = printFields?.effort !== false;
+  const includeStatus = printFields?.status !== false;
+  const includeMonth = printFields?.month !== false;
+  const includeSaleName = printFields?.saleName !== false;
+  const includePresaleName = printFields?.presaleName !== false;
+  const includeDescription = printFields?.description !== false;
+  const summaryColumnCount = [includeAccount, includeTitle, includeType, includeImpact, includeEffort, includeStatus, includeMonth, includeSaleName, includePresaleName].filter(Boolean).length;
 
   return `
     <!DOCTYPE html>
@@ -164,6 +187,18 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
 
         .logo-mark { flex:0 0 auto; opacity:.9; }
         .logo-mark svg { display:block; height:34px; width:auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.15)); }
+
+        /* Simple dashboard at top */
+        .top-dash { display:grid; grid-template-columns: 260px 1fr; gap: 18px; margin: 12px 0 8px; }
+        .donut-card { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:12px; }
+        .donut-title { font-size:.8rem; font-weight:700; color:#334155; margin-bottom:6px; }
+        .donut-wrap { display:flex; align-items:center; gap:12px; }
+        .donut-legend { display:grid; grid-template-columns: auto 1fr auto; gap:6px 10px; font-size:.72rem; color:#475569; }
+        .legend-swatch { width:10px; height:10px; border-radius:2px; }
+        .kpi-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .kpi { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; }
+        .kpi .label { font-size:.7rem; color:#64748b; text-transform:uppercase; letter-spacing:.12em; }
+        .kpi .value { font-size:1.2rem; font-weight:800; color:#0f172a; margin-top:2px; }
         
         .report-content {
           padding: 1rem;
@@ -505,6 +540,17 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           vertical-align: top;
           word-wrap: break-word;
         }
+        .contributions-table .desc-row td {
+          background:#f8fafc;
+          border-top: 0;
+          color:#334155;
+          font-size: .8rem;
+          line-height: 1.45;
+          padding: .6rem .8rem;
+          hyphens: auto;
+          overflow-wrap: anywhere;
+        }
+        .desc-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:#64748b; font-weight:700; margin-right:.5rem; }
 
         .contributions-table tbody tr:nth-child(even) {
           background: #f8fafc;
@@ -834,6 +880,33 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         
         <div class="report-content">
           <div class="sheet">
+            <div class="top-dash">
+              <div class="donut-card">
+                <div class="donut-title">Impact distribution</div>
+                <div class="donut-wrap">
+                  <svg width="88" height="88" viewBox="0 0 36 36" class="donut">
+                    <circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#e5e7eb" stroke-width="3"></circle>
+                    ${donutOrder.map((k, idx) => {
+                      const prev = donutOrder.slice(0, idx).reduce((a,c)=>a+impactPct[c],0);
+                      const dash = `${impactPct[k]} ${100-impactPct[k]}`;
+                      const offset = 25 - prev;
+                      return `<circle cx=\"18\" cy=\"18\" r=\"15.9155\" fill=\"transparent\" stroke=\"${donutColors[k]}\" stroke-width=\"3\" stroke-dasharray=\"${dash}\" stroke-dashoffset=\"${offset}\" transform=\"rotate(-90 18 18)\"/>`;
+                    }).join('')}
+                  </svg>
+                  <div class="donut-legend">
+                    <div class="legend-swatch" style="background:${donutColors.critical}"></div><div>Critical</div><div>${impactPct.critical}%</div>
+                    <div class="legend-swatch" style="background:${donutColors.high}"></div><div>High</div><div>${impactPct.high}%</div>
+                    <div class="legend-swatch" style="background:${donutColors.medium}"></div><div>Medium</div><div>${impactPct.medium}%</div>
+                    <div class="legend-swatch" style="background:${donutColors.low}"></div><div>Low</div><div>${impactPct.low}%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="kpi-grid">
+                <div class="kpi"><div class="label">Total contributions</div><div class="value">${filteredSummary.totalContributions}</div></div>
+                <div class="kpi"><div class="label">Users</div><div class="value">${filteredSummary.totalUsers}</div></div>
+                <div class="kpi"><div class="label">Accounts</div><div class="value">${filteredSummary.totalAccounts}</div></div>
+              </div>
+            </div>
             <div class="metrics-grid">
               <div class="metric">
                 <div class="metric-icon">
@@ -913,33 +986,36 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
               <table class="contributions-table">
                 <thead>
                   <tr>
-                    ${printFields?.account !== false ? '<th>Account</th>' : ''}
-                    ${printFields?.title !== false ? '<th>Title</th>' : ''}
-                    ${printFields?.description !== false ? '<th>Description</th>' : ''}
-                    ${printFields?.type !== false ? '<th>Type</th>' : ''}
-                    ${printFields?.impact !== false ? '<th>Impact</th>' : ''}
-                    ${printFields?.effort !== false ? '<th>Effort</th>' : ''}
-                    ${printFields?.status !== false ? '<th>Status</th>' : ''}
-                    ${printFields?.month !== false ? '<th>Month</th>' : ''}
-                    ${printFields?.saleName !== false ? '<th>Sale Name</th>' : ''}
-                    ${printFields?.presaleName !== false ? '<th>Presale Name</th>' : ''}
+                    ${includeAccount ? '<th>Account</th>' : ''}
+                    ${includeTitle ? '<th>Title</th>' : ''}
+                    ${includeType ? '<th>Type</th>' : ''}
+                    ${includeImpact ? '<th>Impact</th>' : ''}
+                    ${includeEffort ? '<th>Effort</th>' : ''}
+                    ${includeStatus ? '<th>Status</th>' : ''}
+                    ${includeMonth ? '<th>Month</th>' : ''}
+                    ${includeSaleName ? '<th>Sale Name</th>' : ''}
+                    ${includePresaleName ? '<th>Presale Name</th>' : ''}
                   </tr>
                 </thead>
                 <tbody>
-                  ${filteredContributions.map((contrib: any) => `
-                    <tr>
-                      ${printFields?.account !== false ? `<td>${contrib.accountName || 'N/A'}</td>` : ''}
-                      ${printFields?.title !== false ? `<td>${contrib.title || 'N/A'}</td>` : ''}
-                      ${printFields?.description !== false ? `<td>${contrib.description || 'N/A'}</td>` : ''}
-                      ${printFields?.type !== false ? `<td>${contrib.contributionType || 'N/A'}</td>` : ''}
-                      ${printFields?.impact !== false ? `<td><span class="impact-badge impact-${contrib.impact}">${contrib.impact}</span></td>` : ''}
-                      ${printFields?.effort !== false ? `<td><span class="effort-badge effort-${contrib.effort}">${contrib.effort}</span></td>` : ''}
-                      ${printFields?.status !== false ? `<td><span class="status-badge status-${contrib.status}">${contrib.status}</span></td>` : ''}
-                      ${printFields?.month !== false ? `<td>${contrib.contributionMonth || 'N/A'}</td>` : ''}
-                      ${printFields?.saleName !== false ? `<td>${contrib.saleName || 'N/A'}</td>` : ''}
-                      ${printFields?.presaleName !== false ? `<td>${contrib.userName || 'N/A'}</td>` : ''}
-                    </tr>
-                  `).join('')}
+                  ${filteredContributions.map((contrib: any) => {
+                    const summaryRow = `
+                      <tr>
+                        ${includeAccount ? `<td>${contrib.accountName || 'N/A'}</td>` : ''}
+                        ${includeTitle ? `<td>${contrib.title || 'N/A'}</td>` : ''}
+                        ${includeType ? `<td>${contrib.contributionType || 'N/A'}</td>` : ''}
+                        ${includeImpact ? `<td><span class="impact-badge impact-${contrib.impact}">${contrib.impact}</span></td>` : ''}
+                        ${includeEffort ? `<td><span class="effort-badge effort-${contrib.effort}">${contrib.effort}</span></td>` : ''}
+                        ${includeStatus ? `<td><span class="status-badge status-${contrib.status}">${contrib.status}</span></td>` : ''}
+                        ${includeMonth ? `<td>${contrib.contributionMonth || 'N/A'}</td>` : ''}
+                        ${includeSaleName ? `<td>${contrib.saleName || 'N/A'}</td>` : ''}
+                        ${includePresaleName ? `<td>${contrib.userName || 'N/A'}</td>` : ''}
+                      </tr>`;
+                    const descRow = includeDescription && (contrib.description || '').trim().length > 0 
+                      ? `<tr class="desc-row"><td colspan="${summaryColumnCount}"><span class="desc-label">Description</span>${contrib.description}</td></tr>`
+                      : '';
+                    return summaryRow + descRow;
+                  }).join('')}
                 </tbody>
               </table>
             ` : `
