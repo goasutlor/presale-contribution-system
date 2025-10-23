@@ -99,9 +99,9 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .report-header {
-          background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-steel) 100%);
+          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #06b6d4 75%, #10b981 100%);
           color: white;
-          padding: 1.6rem 1.2rem;
+          padding: 1.2rem 1.0rem;
           text-align: center;
           position: relative;
           overflow: hidden;
