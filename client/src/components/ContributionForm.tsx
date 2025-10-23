@@ -126,15 +126,15 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     }
   }, [user, setValue, isEditing, initialData]);
 
-  // Auto-fill Sale Email when Sale Name changes
+  // Auto-fill Sale Email when Sale Name changes (only for new contributions)
   useEffect(() => {
-    if (watchedSaleName && user.involvedSaleNames && user.involvedSaleNames.includes(watchedSaleName)) {
+    if (!isEditing && watchedSaleName && user.involvedSaleNames && user.involvedSaleNames.includes(watchedSaleName)) {
       const saleIndex = user.involvedSaleNames.indexOf(watchedSaleName);
       if (saleIndex !== -1 && user.involvedSaleEmails && user.involvedSaleEmails[saleIndex]) {
         setValue('saleEmail', user.involvedSaleEmails[saleIndex]);
       }
     }
-  }, [watchedSaleName, user.involvedSaleNames, user.involvedSaleEmails, setValue]);
+  }, [watchedSaleName, user.involvedSaleNames, user.involvedSaleEmails, setValue, isEditing]);
 
   const onFormSubmit = async (data: ContributionFormData, action: 'draft' | 'submit') => {
     setIsSubmitting(true);
@@ -236,7 +236,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Account Name <span className="text-red-500">*</span>
               </label>
-              {user.involvedAccountNames && user.involvedAccountNames.length === 1 ? (
+              {!isEditing && user.involvedAccountNames && user.involvedAccountNames.length === 1 ? (
                 <div className="relative">
                   <input
                     type="text"
@@ -278,7 +278,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sale Name <span className="text-red-500">*</span>
               </label>
-              {user.involvedSaleNames && user.involvedSaleNames.length === 1 ? (
+              {!isEditing && user.involvedSaleNames && user.involvedSaleNames.length === 1 ? (
                 <div className="relative">
                   <input
                     type="text"
@@ -320,7 +320,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sale Email <span className="text-red-500">*</span>
               </label>
-              {user.involvedSaleEmails && user.involvedSaleEmails.length === 1 ? (
+              {!isEditing && user.involvedSaleEmails && user.involvedSaleEmails.length === 1 ? (
                 <div className="relative">
                   <input
                     type="email"
