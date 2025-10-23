@@ -507,7 +507,7 @@ const Reports: React.FC = () => {
                     </div>
                   </div>
                 )}
-              </div>
+              
 
         {/* Print Fields Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
