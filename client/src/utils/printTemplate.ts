@@ -865,13 +865,8 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
             </div>
             <div class="logo-mark">
               <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <linearGradient id="markGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#e0f2fe"/>
-                    <stop offset="100%" stop-color="#a7f3d0"/>
-                  </linearGradient>
-                </defs>
-                <path d="M8 40 L28 16 L36 28 L56 8" fill="none" stroke="url(#markGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="0" y="0" width="64" height="64" rx="12" fill="#f7931e" />
+                <polygon points="32,16 48,44 16,44" fill="#ffffff"/>
               </svg>
             </div>
           </div>
