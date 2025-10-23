@@ -445,10 +445,11 @@ export default function Contributions() {
                               setEditingContribution(contribution);
                               setShowForm(true);
                             }}
-                            className="text-yellow-600 hover:text-yellow-900"
+                            className="inline-flex items-center px-2 py-1 border border-yellow-300 text-xs font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
                             title="แก้ไข"
                           >
-                            <PencilIcon className="h-5 w-5" />
+                            <PencilIcon className="h-4 w-4 mr-1" />
+                            Edit
                           </button>
                           <button
                             onClick={(e) => {
