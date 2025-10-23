@@ -806,27 +806,7 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
     <body>
       <div class="report-container">
         <div class="report-header">
-          <svg width="250" height="90" viewBox="0 0 300 140" class="report-logo">
-            <defs>
-              <linearGradient id="logoBlueLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#365486" />
-                <stop offset="100%" stop-color="#7FC7D9" />
-              </linearGradient>
-              <linearGradient id="logoOrange" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#FF7A1A" />
-                <stop offset="100%" stop-color="#F7931E" />
-              </linearGradient>
-            </defs>
-            <line x1="30" y1="116" x2="270" y2="116" stroke="url(#logoBlueLine)" stroke-width="2" opacity="0.35" />
-            <polygon points="116,40 146,16 174,40 164,40 146,26 128,40" fill="url(#logoOrange)" />
-            <polygon points="156,44 180,28 200,44 192,44 180,34 168,44" fill="url(#logoOrange)" opacity="0.85" />
-            <line x1="52" y1="76" x2="96" y2="76" stroke="url(#logoOrange)" stroke-width="6" stroke-linecap="round" />
-            <polygon points="96,76 86,72 86,80" fill="#FF7A1A" />
-            <line x1="248" y1="76" x2="204" y2="76" stroke="url(#logoOrange)" stroke-width="6" stroke-linecap="round" />
-            <polygon points="204,76 214,72 214,80" fill="#FF7A1A" />
-            <text x="150" y="92" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="50" fill="white">ASC3</text>
-            <text x="150" y="110" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="14" fill="white" opacity="0.9" letter-spacing="1.5">ACCOUNT CONTRIBUTION</text>
-          </svg>
+          <div style="font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; opacity:.9; color:#e5f0ff; margin-bottom:.25rem;">ASC3</div>
           <h1 class="report-title">${reportType === 'dashboard' ? 'Dashboard Overview' : 'Comprehensive Report'}</h1>
           <p class="report-subtitle">ASC3 Contribution Management System</p>
           <p class="report-date">Generated on ${currentDate}</p>
