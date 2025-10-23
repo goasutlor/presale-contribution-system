@@ -47,6 +47,14 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
       <title>ASC3 Contribution Report</title>
       <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
       <style>
+        :root {
+          --brand-navy: #0f172a; /* slate-900 */
+          --brand-steel: #1e293b; /* slate-800 */
+          --brand-line: #e2e8f0; /* slate-200 */
+          --brand-muted: #475569; /* slate-600 */
+          --brand-text: #111827; /* gray-900 */
+          --brand-accent: #2563eb; /* blue-600 */
+        }
         * {
           margin: 0;
           padding: 0;
@@ -91,9 +99,9 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .report-header {
-          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #06b6d4 75%, #10b981 100%);
+          background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-steel) 100%);
           color: white;
-          padding: 2rem 1.5rem;
+          padding: 1.6rem 1.2rem;
           text-align: center;
           position: relative;
           overflow: hidden;
@@ -139,17 +147,14 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .report-title {
-          font-size: 2rem;
+          font-size: 1.8rem;
           font-weight: 900;
           margin-bottom: 0.5rem;
           text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
           position: relative;
           z-index: 2;
           letter-spacing: -0.02em;
-          background: linear-gradient(45deg, #ffffff, #e0f2fe);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #ffffff;
         }
         
         .report-subtitle {
@@ -484,6 +489,33 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           vertical-align: top;
           word-wrap: break-word;
         }
+
+        .contributions-table tbody tr:nth-child(even) {
+          background: #f8fafc;
+        }
+        .contributions-table tbody tr:nth-child(odd) {
+          background: #ffffff;
+        }
+
+        .status-badge, .impact-badge, .effort-badge {
+          display: inline-block;
+          padding: 0.15rem 0.45rem;
+          border-radius: 999px;
+          font-weight: 700;
+          font-size: 0.7rem;
+          letter-spacing: .02em;
+          text-transform: uppercase;
+          border: 1px solid rgba(0,0,0,.05);
+        }
+        .status-approved { background:#dcfce7; color:#166534; }
+        .status-submitted { background:#dbeafe; color:#1e40af; }
+        .status-draft { background:#fef9c3; color:#854d0e; }
+        .status-rejected { background:#fee2e2; color:#991b1b; }
+
+        .impact-critical { background:#ede9fe; color:#5b21b6; }
+        .impact-high { background:#ffe4e6; color:#9f1239; }
+        .impact-medium { background:#fef3c7; color:#92400e; }
+        .impact-low { background:#dcfce7; color:#065f46; }
         
         .contributions-table tr:hover {
           background: #f7fafc;
@@ -812,22 +844,40 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
             <h2 class="impact-title">Impact Distribution</h2>
             <div class="impact-cards">
               <div class="impact-card critical">
-                <div class="impact-icon">💎</div>
+                <div class="impact-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6-6 6 6-6 12-6-12z"/>
+                  </svg>
+                </div>
                 <div class="impact-number">${filteredSummary.criticalImpact}</div>
                 <div class="impact-label">Critical Impact</div>
               </div>
               <div class="impact-card high">
-                <div class="impact-icon">🔥</div>
+                <div class="impact-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2s4 4 4 8-4 8-4 8-4-4-4-8 4-8 4-8z"/>
+                  </svg>
+                </div>
                 <div class="impact-number">${filteredSummary.highImpact}</div>
                 <div class="impact-label">High Impact</div>
               </div>
               <div class="impact-card medium">
-                <div class="impact-icon">⭐</div>
+                <div class="impact-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/>
+                  </svg>
+                </div>
                 <div class="impact-number">${filteredSummary.mediumImpact}</div>
                 <div class="impact-label">Medium Impact</div>
               </div>
               <div class="impact-card low">
-                <div class="impact-icon">🌱</div>
+                <div class="impact-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20V10"/>
+                    <path d="M12 10c0-4 3-7 7-7 0 4-3 7-7 7z"/>
+                    <path d="M12 10C12 6 9 3 5 3c0 4 3 7 7 7z"/>
+                  </svg>
+                </div>
                 <div class="impact-number">${filteredSummary.lowImpact}</div>
                 <div class="impact-label">Low Impact</div>
               </div>
