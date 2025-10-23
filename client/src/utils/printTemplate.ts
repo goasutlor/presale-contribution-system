@@ -550,7 +550,7 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           hyphens: auto;
           overflow-wrap: anywhere;
         }
-        .desc-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:#64748b; font-weight:700; margin-right:.5rem; }
+        .desc-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#0f172a; font-weight:900; margin-right:.5rem; }
 
         .contributions-table tbody tr:nth-child(even) {
           background: #f8fafc;
