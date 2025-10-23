@@ -346,180 +346,91 @@ const Reports: React.FC = () => {
   }
 
   return (
-    <div className="reports-page min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="reports-page min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-4">
-            <ChartBarIcon className="h-8 w-8 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 dark:from-white dark:via-blue-100 dark:to-indigo-100 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
             {t('reports.title')}
           </h1>
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             {t('reports.subtitle')}
           </p>
       </div>
 
       {/* Statistics Cards */}
       {reportData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <ChartBarIcon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contributions</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.totalContributions}</p>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Contributions</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.totalContributions}</p>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                  <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.totalUsers}</p>
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Active Users</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.totalUsers}</p>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Accounts</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.totalAccounts}</p>
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Accounts</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.totalAccounts}</p>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
-                  <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">High Impact</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.highImpact + reportData.criticalImpact}</p>
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">High/Critical Impact</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.highImpact + reportData.criticalImpact}</p>
           </div>
         </div>
       )}
 
       {/* Impact Distribution Chart */}
       {reportData && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Impact Distribution</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-8 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Impact distribution</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-white font-bold text-lg">💎</span>
-              </div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Critical</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.criticalImpact}</p>
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Critical</p>
+              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.criticalImpact}</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-white font-bold text-lg">🔥</span>
-              </div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">High</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.highImpact}</p>
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">High</p>
+              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.highImpact}</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-white font-bold text-lg">⭐</span>
-              </div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Medium</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.mediumImpact}</p>
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Medium</p>
+              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.mediumImpact}</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-white font-bold text-lg">🌱</span>
-              </div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Low</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.lowImpact}</p>
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Low</p>
+              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.lowImpact}</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Report Type Selection */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg p-6 mb-6 border border-blue-200 dark:border-gray-600">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center mr-3">
-              <ChartBarIcon className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('reports.comprehensiveReport')}</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-300">รายงานแบบละเอียดพร้อม Timeline และปุ่ม Print</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('reports.comprehensiveReport')}</h2>
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">รายงานแบบละเอียดพร้อม Timeline และปุ่ม Print</p>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('reports.filters')}</h2>
+            <div className="flex gap-2">
+              <button onClick={() => setShowFilters(!showFilters)} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                {showFilters ? 'ซ่อนตัวกรอง' : 'แสดงตัวกรอง'}
+              </button>
+              <button onClick={clearFilters} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                {t('reports.clearFilters')}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                <FunnelIcon className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('reports.filters')}</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-300">กรองข้อมูลตามเงื่อนไขที่ต้องการ</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-md hover:shadow-lg"
-              >
-                <FunnelIcon className="h-4 w-4 mr-2" />
-                {showFilters ? 'ซ่อนตัวกรอง' : 'แสดงตัวกรอง'}
-              </button>
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                <XMarkIcon className="h-4 w-4 mr-2" />
-{t('reports.clearFilters')}
-              </button>
-          </div>
-      </div>
-
           {showFilters && (
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <span className="flex items-center">
-                      <svg className="h-4 w-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                      Account Name
-                    </span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Name</label>
             <select
                   value={filters.accountName}
                   onChange={(e) => handleFilterChange('accountName', e.target.value)}
@@ -532,14 +443,7 @@ const Reports: React.FC = () => {
             </select>
           </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <span className="flex items-center">
-                      <svg className="h-4 w-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      Sale Name
-                    </span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Sale Name</label>
                 <select
                   value={filters.saleName}
                   onChange={(e) => handleFilterChange('saleName', e.target.value)}
@@ -552,14 +456,7 @@ const Reports: React.FC = () => {
             </select>
           </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <span className="flex items-center">
-                      <svg className="h-4 w-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                      </svg>
-                      Presale Name
-                    </span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Presale Name</label>
                 <select
                   value={filters.presaleName}
                   onChange={(e) => handleFilterChange('presaleName', e.target.value)}
@@ -573,14 +470,7 @@ const Reports: React.FC = () => {
                     </div>
                 
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <span className="flex items-center">
-                      <svg className="h-4 w-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      Impact Level
-                    </span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Impact Level</label>
                 <select
                   value={filters.impact}
                   onChange={(e) => handleFilterChange('impact', e.target.value)}
@@ -595,14 +485,7 @@ const Reports: React.FC = () => {
                   </div>
                 
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <span className="flex items-center">
-                      <svg className="h-4 w-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Contribution Type
-                    </span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contribution Type</label>
                 <select
                   value={filters.contributionType}
                   onChange={(e) => handleFilterChange('contributionType', e.target.value)}
@@ -616,14 +499,7 @@ const Reports: React.FC = () => {
                           </div>
                 
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <span className="flex items-center">
-                      <svg className="h-4 w-4 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Status
-                    </span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                 <select
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
