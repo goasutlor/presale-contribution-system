@@ -4,15 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import Tooltip from '../components/Tooltip';
-import {
-  ChartBarIcon,
-  PrinterIcon,
-  ArrowDownTrayIcon,
-  FunnelIcon,
-  XMarkIcon,
-  CheckIcon,
-  EyeIcon,
-} from '@heroicons/react/24/outline';
+// Icons removed for minimal aesthetic
 import { generateEarthToneReport } from '../utils/printTemplate';
 
 interface ReportData {
@@ -518,16 +510,9 @@ const Reports: React.FC = () => {
               </div>
 
         {/* Print Fields Selection */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center mr-3">
-              <PrinterIcon className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">เลือก Field ที่จะ Print</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">เลือกฟิลด์ที่ต้องการแสดงในรายงาน</p>
-            </div>
-          </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">เลือก Field ที่จะ Print</h3>
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">เลือกฟิลด์ที่ต้องการแสดงในรายงาน</p>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
             <label className="flex items-center">
                         <input
@@ -653,33 +638,26 @@ const Reports: React.FC = () => {
                   </div>
                 
         {/* Report Actions */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg p-6 mb-6 border border-blue-200 dark:border-gray-600">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                <ChartBarIcon className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Generate Report</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">สร้างและพิมพ์รายงานตามข้อมูลที่กรอง</p>
-              </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Generate Report</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400">สร้างและพิมพ์รายงานตามข้อมูลที่กรอง</p>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               <Tooltip content="ดูตัวอย่างรายงานก่อนพิมพ์">
                 <button
                   onClick={handleShowPreview}
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <EyeIcon className="h-5 w-5 mr-2" />
                   Show Preview
                 </button>
               </Tooltip>
               <Tooltip content="พิมพ์รายงาน">
                 <button
                   onClick={handlePrintReport}
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800"
                 >
-                  <PrinterIcon className="h-5 w-5 mr-2" />
                   Print Report
                 </button>
               </Tooltip>
@@ -694,15 +672,10 @@ const Reports: React.FC = () => {
           
           return (
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-600">
-              <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-gray-600 to-blue-600 rounded-lg flex items-center justify-center mr-3">
-                  <ChartBarIcon className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Filtered Report Summary</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">สรุปข้อมูลตามเงื่อนไขที่กรอง</p>
-                </div>
-              </div>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Filtered Report Summary</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300">สรุปข้อมูลตามเงื่อนไขที่กรอง</p>
+          </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
                   <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{filteredData.totalContributions}</div>
@@ -722,23 +695,11 @@ const Reports: React.FC = () => {
         })()}
         
         {reportData && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                  <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Filtered Results</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{filteredContributions.length} contributions found</p>
-                </div>
-              </div>
-              <div className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-                {filteredContributions.length} items
-              </div>
-            </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Filtered Results</h3>
+            <div className="text-xs text-gray-600 dark:text-gray-300">{filteredContributions.length} items</div>
+          </div>
             {filteredContributions.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
