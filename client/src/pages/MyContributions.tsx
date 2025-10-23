@@ -11,6 +11,7 @@ import {
   ClockIcon,
   EyeIcon,
   PlusIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import ContributionForm from '../components/ContributionForm';
@@ -41,6 +42,7 @@ const MyContributions: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
 
   const loadContributions = useCallback(async () => {
     try {
@@ -86,6 +88,7 @@ const MyContributions: React.FC = () => {
       if (response.success) {
         await loadContributions();
         setShowForm(false);
+        setEditingContribution(null);
         toast.success(action === 'draft' ? 'Draft saved successfully' : 'Contribution submitted successfully');
       } else {
         toast.error(response.message || 'Failed to create contribution');
@@ -93,6 +96,53 @@ const MyContributions: React.FC = () => {
     } catch (error: any) {
       console.error('Error creating contribution:', error);
       toast.error(error.message || 'Failed to create contribution');
+    }
+  };
+
+  const handleUpdateContribution = async (data: any, action: 'draft' | 'submit') => {
+    if (!editingContribution) return;
+    
+    try {
+      // Use status from data if available, otherwise use action
+      const finalStatus = data.status || (action === 'draft' ? 'draft' : 'submitted');
+      
+      // Transform data to match API expectations
+      const apiData = {
+        accountName: data.accountName,
+        saleName: data.saleName,
+        saleEmail: data.saleEmail,
+        contributionType: data.contributionType,
+        title: data.title,
+        description: data.description,
+        impact: data.impact,
+        effort: data.effort,
+        estimatedImpactValue: data.estimatedImpactValue,
+        contributionMonth: data.contributionMonth,
+        tags: data.tags || [],
+        status: finalStatus
+      };
+
+      console.log('🔍 MyContributions - Update Contribution Debug:', {
+        action: action,
+        dataStatus: data.status,
+        finalStatus: finalStatus,
+        apiStatus: apiData.status,
+        isDraft: action === 'draft',
+        fullApiData: apiData
+      });
+
+      const response = await apiService.updateContribution(editingContribution.id, apiData);
+      if (response.success) {
+        await loadContributions(); // Reload from API
+        setShowForm(false);
+        setEditingContribution(null);
+        toast.success(action === 'draft' ? 'Draft updated successfully' : 'Contribution updated and submitted successfully');
+      } else {
+        toast.error(response.message || 'Failed to update contribution');
+      }
+    } catch (error: any) {
+      console.error('Error updating contribution:', error);
+      toast.error(error.message || 'Failed to update contribution');
     }
   };
 
@@ -361,6 +411,23 @@ const MyContributions: React.FC = () => {
                     </Tooltip>
                     {contribution.status === 'draft' && (
                       <>
+                        <Tooltip content="แก้ไข">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('📝 Edit clicked for contribution:', contribution.id, 'status:', contribution.status);
+                              console.log('📝 Contribution object:', contribution);
+                              setEditingContribution(contribution);
+                              setShowForm(true);
+                            }}
+                            className="inline-flex items-center px-2 py-1 border border-yellow-300 text-xs font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
+                            title="แก้ไข"
+                          >
+                            <PencilIcon className="h-4 w-4 mr-1" />
+                            Edit
+                          </button>
+                        </Tooltip>
                         <Tooltip content="ส่งข้อมูล">
                           <button
                             onClick={() => handleSubmitContribution(contribution.id)}
@@ -407,8 +474,13 @@ const MyContributions: React.FC = () => {
             </div>
             <ContributionForm
               user={user}
-              onSubmit={handleCreateContribution}
-              onCancel={() => setShowForm(false)}
+              onSubmit={editingContribution ? handleUpdateContribution : handleCreateContribution}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingContribution(null);
+              }}
+              initialData={editingContribution}
+              isEditing={!!editingContribution}
             />
           </div>
         </div>
@@ -497,10 +569,13 @@ const MyContributions: React.FC = () => {
               
               <ContributionForm 
                 user={user!}
-                onSubmit={handleCreateContribution}
+                onSubmit={editingContribution ? handleUpdateContribution : handleCreateContribution}
                 onCancel={() => {
                   setShowForm(false);
+                  setEditingContribution(null);
                 }}
+                initialData={editingContribution}
+                isEditing={!!editingContribution}
               />
             </div>
           </div>
