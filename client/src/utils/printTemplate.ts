@@ -6,7 +6,7 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
   console.log('🔍 filters:', filters);
   console.log('🔍 printFields:', printFields);
   
-  const currentDate = new Date().toLocaleDateString('th-TH', {
+  const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -859,7 +859,6 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         <div class="report-header">
           <div class="report-header-inner">
             <div class="header-brand">
-              <div style="font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; opacity:.9; color:#e5f0ff; margin-bottom:.25rem;">ASC3</div>
               <h1 class="report-title">${reportType === 'dashboard' ? 'Dashboard Overview' : 'Comprehensive Report'}</h1>
               <p class="report-subtitle">ASC3 Contribution Management System</p>
               <p class="report-date">Generated on ${currentDate}</p>
