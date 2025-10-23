@@ -107,6 +107,8 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           overflow: hidden;
           border-radius: 12px 12px 0 0;
         }
+        .report-header-inner { display:flex; align-items:center; justify-content:space-between; gap: 16px; }
+        .header-brand { text-align:left; }
         
         .report-header::before {
           content: '';
@@ -159,6 +161,9 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           position: relative;
           z-index: 1;
         }
+
+        .logo-mark { flex:0 0 auto; opacity:.9; }
+        .logo-mark svg { display:block; height:34px; width:auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.15)); }
         
         .report-content {
           padding: 1rem;
@@ -806,10 +811,25 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
     <body>
       <div class="report-container">
         <div class="report-header">
-          <div style="font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; opacity:.9; color:#e5f0ff; margin-bottom:.25rem;">ASC3</div>
-          <h1 class="report-title">${reportType === 'dashboard' ? 'Dashboard Overview' : 'Comprehensive Report'}</h1>
-          <p class="report-subtitle">ASC3 Contribution Management System</p>
-          <p class="report-date">Generated on ${currentDate}</p>
+          <div class="report-header-inner">
+            <div class="header-brand">
+              <div style="font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; opacity:.9; color:#e5f0ff; margin-bottom:.25rem;">ASC3</div>
+              <h1 class="report-title">${reportType === 'dashboard' ? 'Dashboard Overview' : 'Comprehensive Report'}</h1>
+              <p class="report-subtitle">ASC3 Contribution Management System</p>
+              <p class="report-date">Generated on ${currentDate}</p>
+            </div>
+            <div class="logo-mark">
+              <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <linearGradient id="markGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#e0f2fe"/>
+                    <stop offset="100%" stop-color="#a7f3d0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M8 40 L28 16 L36 28 L56 8" fill="none" stroke="url(#markGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
         </div>
         
         <div class="report-content">
