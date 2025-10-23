@@ -91,12 +91,13 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .report-header {
-          background: linear-gradient(135deg, #365486 0%, #7FC7D9 100%);
+          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #06b6d4 75%, #10b981 100%);
           color: white;
-          padding: 1.5rem 1rem;
+          padding: 2rem 1.5rem;
           text-align: center;
           position: relative;
           overflow: hidden;
+          border-radius: 12px 12px 0 0;
         }
         
         .report-header::before {
@@ -106,8 +107,27 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           left: 0;
           right: 0;
           bottom: 0;
-          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-          opacity: 0.3;
+          background: 
+            radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(255,255,255,0.05) 0%, transparent 50%);
+          opacity: 0.8;
+        }
+        
+        .report-header::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+          animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+          0%, 100% { transform: translateX(-100%); }
+          50% { transform: translateX(100%); }
         }
         
         .report-logo {
@@ -119,21 +139,27 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         }
         
         .report-title {
-          font-size: 1.5rem;
+          font-size: 2rem;
           font-weight: 900;
-          margin-bottom: 0.4rem;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          margin-bottom: 0.5rem;
+          text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
           position: relative;
-          z-index: 1;
+          z-index: 2;
+          letter-spacing: -0.02em;
+          background: linear-gradient(45deg, #ffffff, #e0f2fe);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
         
         .report-subtitle {
-          font-size: 1rem;
+          font-size: 1.1rem;
           opacity: 0.95;
-          margin-bottom: 0.8rem;
-          font-weight: 500;
+          margin-bottom: 1rem;
+          font-weight: 600;
           position: relative;
-          z-index: 1;
+          z-index: 2;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         
         .report-date {
@@ -174,19 +200,20 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         .summary-cards {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 0.5rem;
-          margin-bottom: 0.6rem;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
         }
         
         .summary-card {
-          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-          border: 1px solid #cbd5e0;
-          border-radius: 6px;
-          padding: 0.6rem 0.5rem;
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          border: 2px solid transparent;
+          border-radius: 12px;
+          padding: 1.2rem 1rem;
           text-align: center;
           transition: all 0.3s ease;
           position: relative;
           overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         
         .summary-card::before {
@@ -196,25 +223,196 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
           left: 0;
           right: 0;
           height: 4px;
-          background: linear-gradient(90deg, #365486, #7FC7D9);
+          background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
+        }
+        
+        .summary-card:nth-child(1)::before {
+          background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+        }
+        
+        .summary-card:nth-child(2)::before {
+          background: linear-gradient(90deg, #10b981, #059669);
+        }
+        
+        .summary-card:nth-child(3)::before {
+          background: linear-gradient(90deg, #8b5cf6, #7c3aed);
         }
         
         .summary-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 20px 40px rgba(54, 84, 134, 0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         
         .summary-number {
-          font-size: 1.4rem;
+          font-size: 2rem;
           font-weight: 900;
-          color: #365486;
-          margin-bottom: 0.3rem;
+          margin-bottom: 0.5rem;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          background: linear-gradient(135deg, #1e40af, #3b82f6);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        .summary-card:nth-child(1) .summary-number {
+          background: linear-gradient(135deg, #1e40af, #3b82f6);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        .summary-card:nth-child(2) .summary-number {
+          background: linear-gradient(135deg, #059669, #10b981);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        .summary-card:nth-child(3) .summary-number {
+          background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
         
         .summary-label {
           font-size: 0.9rem;
-          color: #4a5568;
+          color: #6b7280;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+        
+        .impact-distribution-section {
+          margin-bottom: 2rem;
+        }
+        
+        .impact-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #1e40af;
+          margin-bottom: 1rem;
+          border-bottom: 3px solid #3b82f6;
+          padding-bottom: 0.5rem;
+          position: relative;
+        }
+        
+        .impact-title::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          width: 60px;
+          height: 3px;
+          background: #1e40af;
+        }
+        
+        .impact-cards {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+        
+        .impact-card {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          border: 2px solid transparent;
+          border-radius: 12px;
+          padding: 1.2rem 1rem;
+          text-align: center;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .impact-card.critical {
+          border-color: #dc2626;
+        }
+        
+        .impact-card.critical::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #dc2626, #ef4444);
+        }
+        
+        .impact-card.high {
+          border-color: #ea580c;
+        }
+        
+        .impact-card.high::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #ea580c, #f97316);
+        }
+        
+        .impact-card.medium {
+          border-color: #d97706;
+        }
+        
+        .impact-card.medium::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #d97706, #f59e0b);
+        }
+        
+        .impact-card.low {
+          border-color: #16a34a;
+        }
+        
+        .impact-card.low::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #16a34a, #22c55e);
+        }
+        
+        .impact-icon {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+        }
+        
+        .impact-number {
+          font-size: 1.8rem;
+          font-weight: 900;
+          margin-bottom: 0.5rem;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .impact-card.critical .impact-number {
+          color: #dc2626;
+        }
+        
+        .impact-card.high .impact-number {
+          color: #ea580c;
+        }
+        
+        .impact-card.medium .impact-number {
+          color: #d97706;
+        }
+        
+        .impact-card.low .impact-number {
+          color: #16a34a;
+        }
+        
+        .impact-label {
+          font-size: 0.8rem;
+          color: #6b7280;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.1em;
@@ -247,30 +445,41 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
         .contributions-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
           background: white;
-          border-radius: 6px;
+          border-radius: 12px;
           overflow: hidden;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e5e7eb;
           font-size: 10px;
         }
         
         .contributions-table th {
-          background: linear-gradient(135deg, #365486 0%, #4a6fa5 100%);
+          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
           color: white;
-          padding: 0.6rem 0.5rem;
+          padding: 0.8rem 0.6rem;
           text-align: left;
           font-weight: 700;
           font-size: 0.8rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          border-bottom: 2px solid #2d3748;
+          border-bottom: 3px solid #1e40af;
+          position: relative;
+        }
+        
+        .contributions-table th::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
         }
         
         .contributions-table td {
-          padding: 0.6rem 0.5rem;
-          border-bottom: 1px solid #e2e8f0;
+          padding: 0.8rem 0.6rem;
+          border-bottom: 1px solid #f3f4f6;
           font-size: 0.8rem;
           vertical-align: top;
           word-wrap: break-word;
@@ -595,6 +804,32 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
               <div class="summary-card">
                 <div class="summary-number">${filteredSummary.totalAccounts}</div>
                 <div class="summary-label">Total Accounts</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="impact-distribution-section">
+            <h2 class="impact-title">Impact Distribution</h2>
+            <div class="impact-cards">
+              <div class="impact-card critical">
+                <div class="impact-icon">💎</div>
+                <div class="impact-number">${filteredSummary.criticalImpact}</div>
+                <div class="impact-label">Critical Impact</div>
+              </div>
+              <div class="impact-card high">
+                <div class="impact-icon">🔥</div>
+                <div class="impact-number">${filteredSummary.highImpact}</div>
+                <div class="impact-label">High Impact</div>
+              </div>
+              <div class="impact-card medium">
+                <div class="impact-icon">⭐</div>
+                <div class="impact-number">${filteredSummary.mediumImpact}</div>
+                <div class="impact-label">Medium Impact</div>
+              </div>
+              <div class="impact-card low">
+                <div class="impact-icon">🌱</div>
+                <div class="impact-number">${filteredSummary.lowImpact}</div>
+                <div class="impact-label">Low Impact</div>
               </div>
             </div>
           </div>
