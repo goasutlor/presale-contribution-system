@@ -95,7 +95,25 @@ const MyContributions: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error creating contribution:', error);
-      toast.error(error.message || 'Failed to create contribution');
+      console.error('Error details:', {
+        message: error.message,
+        status: error.status,
+        response: error.response
+      });
+      
+      // Show more specific error message
+      let errorMessage = 'Failed to create contribution';
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.status === 400) {
+        errorMessage = 'Invalid data provided. Please check your input.';
+      } else if (error.status === 401) {
+        errorMessage = 'Please login again.';
+      } else if (error.status === 403) {
+        errorMessage = 'You do not have permission to perform this action.';
+      }
+      
+      toast.error(errorMessage);
     }
   };
 

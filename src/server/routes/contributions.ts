@@ -203,7 +203,8 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log('❌ Validation errors:', errors.array());
-    throw createError('Validation failed', 400);
+    const errorMessages = errors.array().map(err => err.msg).join(', ');
+    throw createError(`Validation failed: ${errorMessages}`, 400);
   }
   
   console.log('✅ Validation passed, status:', req.body.status);
@@ -243,20 +244,43 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   console.log('🔍 Create Contribution - Request Data:', contributionData);
 
   // Validate that account and sale are in user's allowed list
-  if (!req.user!.involvedAccountNames.includes(contributionData.accountName)) {
+  // Handle case where arrays might be empty or undefined
+  const userAccountNames = req.user!.involvedAccountNames || [];
+  const userSaleNames = req.user!.involvedSaleNames || [];
+  const userSaleEmails = req.user!.involvedSaleEmails || [];
+  
+  console.log('🔍 User validation data:', {
+    accountNames: userAccountNames,
+    saleNames: userSaleNames,
+    saleEmails: userSaleEmails,
+    requestedAccount: contributionData.accountName,
+    requestedSale: contributionData.saleName,
+    requestedSaleEmail: contributionData.saleEmail
+  });
+  
+  if (userAccountNames.length > 0 && !userAccountNames.includes(contributionData.accountName)) {
     console.log('❌ Account validation failed:', {
-      userAccounts: req.user!.involvedAccountNames,
+      userAccounts: userAccountNames,
       requestedAccount: contributionData.accountName
     });
     throw createError('Account not in your allowed list', 400);
   }
 
-  if (!req.user!.involvedSaleNames.includes(contributionData.saleName)) {
+  if (userSaleNames.length > 0 && !userSaleNames.includes(contributionData.saleName)) {
     console.log('❌ Sale validation failed:', {
-      userSales: req.user!.involvedSaleNames,
+      userSales: userSaleNames,
       requestedSale: contributionData.saleName
     });
     throw createError('Sale not in your allowed list', 400);
+  }
+  
+  // Validate sale email if provided
+  if (userSaleEmails.length > 0 && !userSaleEmails.includes(contributionData.saleEmail)) {
+    console.log('❌ Sale email validation failed:', {
+      userSaleEmails: userSaleEmails,
+      requestedSaleEmail: contributionData.saleEmail
+    });
+    throw createError('Sale email not in your allowed list', 400);
   }
 
   const contributionId = uuidv4();

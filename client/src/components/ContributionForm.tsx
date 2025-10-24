@@ -173,6 +173,37 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         return;
       }
       
+      // Validate user data consistency
+      console.log('🔍 User data validation:', {
+        userAccountNames: user.involvedAccountNames,
+        userSaleNames: user.involvedSaleNames,
+        userSaleEmails: user.involvedSaleEmails,
+        selectedAccount: submitData.accountName,
+        selectedSale: submitData.saleName,
+        selectedSaleEmail: submitData.saleEmail
+      });
+      
+      // Check if selected account is in user's allowed list
+      if (user.involvedAccountNames && user.involvedAccountNames.length > 0 && 
+          !user.involvedAccountNames.includes(submitData.accountName)) {
+        toast.error('Account ที่เลือกไม่อยู่ในรายการที่อนุญาต กรุณาเลือกใหม่');
+        return;
+      }
+      
+      // Check if selected sale is in user's allowed list
+      if (user.involvedSaleNames && user.involvedSaleNames.length > 0 && 
+          !user.involvedSaleNames.includes(submitData.saleName)) {
+        toast.error('Sale ที่เลือกไม่อยู่ในรายการที่อนุญาต กรุณาเลือกใหม่');
+        return;
+      }
+      
+      // Check if selected sale email is in user's allowed list
+      if (user.involvedSaleEmails && user.involvedSaleEmails.length > 0 && 
+          !user.involvedSaleEmails.includes(submitData.saleEmail)) {
+        toast.error('Sale Email ที่เลือกไม่อยู่ในรายการที่อนุญาต กรุณาเลือกใหม่');
+        return;
+      }
+      
       console.log('🔍 ContributionForm - onFormSubmit Debug:', {
         action: action,
         submitData: submitData,
