@@ -34,21 +34,31 @@ export const authenticateToken = async (
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     console.log('🔍 Token decoded:', { userId: decoded.userId });
     
+    // Always fetch fresh user data from database
+    console.log('🔄 Fetching fresh user data from database...');
     const row: any = await dbQueryOne('SELECT * FROM users WHERE id = ?', [decoded.userId]);
     if (!row) return next(createError('User not found', 401));
 
-    console.log('🔍 Database User Row:', {
+    console.log('🔍 Fresh Database User Row:', {
       id: row.id,
       email: row.email,
       involvedAccountNames: row.involvedAccountNames,
       involvedSaleNames: row.involvedSaleNames,
       involvedSaleEmails: row.involvedSaleEmails,
-      blogLinks: row.blogLinks
+      blogLinks: row.blogLinks,
+      updatedAt: row.updatedAt
     });
 
     const safeParse = (v: any) => {
       if (Array.isArray(v)) return v;
-      if (typeof v === 'string' && v.trim().length > 0) { try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; } }
+      if (typeof v === 'string' && v.trim().length > 0) { 
+        try { 
+          const p = JSON.parse(v); 
+          return Array.isArray(p) ? p : []; 
+        } catch { 
+          return []; 
+        } 
+      }
       return [];
     };
 
@@ -62,13 +72,14 @@ export const authenticateToken = async (
       updatedAt: new Date(row.updatedAt)
     };
 
-    console.log('🔍 Parsed User Data:', {
+    console.log('🔍 Fresh Parsed User Data:', {
       id: user.id,
       email: user.email,
       involvedAccountNames: user.involvedAccountNames,
       involvedSaleNames: user.involvedSaleNames,
       involvedSaleEmails: user.involvedSaleEmails,
-      blogLinks: user.blogLinks
+      blogLinks: user.blogLinks,
+      updatedAt: user.updatedAt
     });
 
     req.user = user;

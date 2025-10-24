@@ -35,7 +35,7 @@ interface Contribution {
 }
 
 const MyContributions: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -92,7 +92,7 @@ const MyContributions: React.FC = () => {
         
         // Refresh user profile to get latest data
         console.log('🔄 Refreshing user profile after contribution creation...');
-        await apiService.getProfile();
+        await refreshUser();
         
         toast.success(action === 'draft' ? 'Draft saved successfully' : 'Contribution submitted successfully');
       } else {
@@ -167,7 +167,7 @@ const MyContributions: React.FC = () => {
         
         // Refresh user profile to get latest data
         console.log('🔄 Refreshing user profile after contribution update...');
-        await apiService.getProfile();
+        await refreshUser();
         
         toast.success(action === 'draft' ? 'Draft updated successfully' : 'Contribution updated and submitted successfully');
       } else {
