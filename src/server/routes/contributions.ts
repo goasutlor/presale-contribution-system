@@ -199,11 +199,13 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   console.log('🔍 Create Contribution Status:', req.body.status);
   console.log('🔍 Create Contribution Tags:', req.body.tags, 'Type:', typeof req.body.tags);
   console.log('🔍 Create Contribution estimatedImpactValue:', req.body.estimatedImpactValue, 'Type:', typeof req.body.estimatedImpactValue);
+  console.log('🔍 Create Contribution - Full Request:', JSON.stringify(req.body, null, 2));
   
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log('❌ Validation errors:', errors.array());
     const errorMessages = errors.array().map(err => err.msg).join(', ');
+    console.log('❌ Validation error details:', JSON.stringify(errors.array(), null, 2));
     throw createError(`Validation failed: ${errorMessages}`, 400);
   }
   
@@ -351,6 +353,29 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
 
   res.status(201).json({ success: true, message: 'Contribution created successfully', data: { id: contributionId } });
 }));
+
+// Add error handler for contribution creation
+router.use((error: any, req: AuthRequest, res: Response, next: any) => {
+  console.error('❌ Contribution creation error:', error);
+  console.error('❌ Error details:', {
+    message: error.message,
+    status: error.status,
+    stack: error.stack
+  });
+  
+  if (res.headersSent) {
+    return next(error);
+  }
+  
+  const status = error.status || 500;
+  const message = error.message || 'Internal server error';
+  
+  res.status(status).json({
+    success: false,
+    message: message,
+    error: error
+  });
+});
 
 // Update contribution
 router.put('/:id', requireUser, updateContributionValidation, asyncHandler(async (req: AuthRequest, res: Response) => {

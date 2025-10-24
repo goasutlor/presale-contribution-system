@@ -87,6 +87,7 @@ class ApiService {
         try {
           const errorData = await response.json();
           console.error('❌ Error response data:', errorData);
+          console.error('❌ Error response details:', JSON.stringify(errorData, null, 2));
           if (errorData.message) {
             errorMessage = errorData.message;
           } else if (errorData.error) {
