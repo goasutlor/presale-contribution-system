@@ -50,11 +50,14 @@ export const authenticateToken = async (
     });
 
     const safeParse = (v: any) => {
-      if (Array.isArray(v)) return v;
+      if (Array.isArray(v)) return v.map(item => typeof item === 'string' ? item.trim() : item);
       if (typeof v === 'string' && v.trim().length > 0) { 
         try { 
           const p = JSON.parse(v); 
-          return Array.isArray(p) ? p : []; 
+          if (Array.isArray(p)) {
+            return p.map(item => typeof item === 'string' ? item.trim() : item);
+          }
+          return []; 
         } catch { 
           return []; 
         } 

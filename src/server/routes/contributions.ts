@@ -268,28 +268,32 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
     requestedSaleEmail: contributionData.saleEmail
   });
   
-  if (userAccountNames.length > 0 && !userAccountNames.includes(contributionData.accountName)) {
+  if (userAccountNames.length > 0 && !userAccountNames.includes(contributionData.accountName.trim())) {
     console.log('❌ Account validation failed:', {
       userAccounts: userAccountNames,
       requestedAccount: contributionData.accountName,
-      accountMatch: userAccountNames.includes(contributionData.accountName)
+      requestedAccountTrimmed: contributionData.accountName.trim(),
+      accountMatch: userAccountNames.includes(contributionData.accountName.trim())
     });
     throw createError(`Account "${contributionData.accountName}" not in your allowed list. Available accounts: ${userAccountNames.join(', ')}`, 400);
   }
 
-  if (userSaleNames.length > 0 && !userSaleNames.includes(contributionData.saleName)) {
+  if (userSaleNames.length > 0 && !userSaleNames.includes(contributionData.saleName.trim())) {
     console.log('❌ Sale validation failed:', {
       userSales: userSaleNames,
-      requestedSale: contributionData.saleName
+      requestedSale: contributionData.saleName,
+      requestedSaleTrimmed: contributionData.saleName.trim(),
+      saleMatch: userSaleNames.includes(contributionData.saleName.trim())
     });
     throw createError('Sale not in your allowed list', 400);
   }
   
   // Validate sale email if provided
-  if (userSaleEmails.length > 0 && !userSaleEmails.includes(contributionData.saleEmail)) {
+  if (userSaleEmails.length > 0 && !userSaleEmails.includes(contributionData.saleEmail.trim())) {
     console.log('❌ Sale email validation failed:', {
       userSaleEmails: userSaleEmails,
-      requestedSaleEmail: contributionData.saleEmail
+      requestedSaleEmail: contributionData.saleEmail,
+      requestedSaleEmailTrimmed: contributionData.saleEmail.trim()
     });
     throw createError('Sale email not in your allowed list', 400);
   }
