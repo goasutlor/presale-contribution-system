@@ -89,6 +89,11 @@ const MyContributions: React.FC = () => {
         await loadContributions();
         setShowForm(false);
         setEditingContribution(null);
+        
+        // Refresh user profile to get latest data
+        console.log('🔄 Refreshing user profile after contribution creation...');
+        await apiService.getProfile();
+        
         toast.success(action === 'draft' ? 'Draft saved successfully' : 'Contribution submitted successfully');
       } else {
         toast.error(response.message || 'Failed to create contribution');
@@ -154,6 +159,11 @@ const MyContributions: React.FC = () => {
         await loadContributions(); // Reload from API
         setShowForm(false);
         setEditingContribution(null);
+        
+        // Refresh user profile to get latest data
+        console.log('🔄 Refreshing user profile after contribution update...');
+        await apiService.getProfile();
+        
         toast.success(action === 'draft' ? 'Draft updated successfully' : 'Contribution updated and submitted successfully');
       } else {
         toast.error(response.message || 'Failed to update contribution');

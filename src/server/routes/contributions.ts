@@ -235,7 +235,7 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   }
 
   // Debug user data
-  console.log('🔍 Create Contribution - User Data:', {
+  console.log('🔍 Create Contribution - User Data from token:', {
     userId: req.user!.id,
     involvedAccountNames: req.user!.involvedAccountNames,
     involvedSaleNames: req.user!.involvedSaleNames,
@@ -243,11 +243,43 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   });
   console.log('🔍 Create Contribution - Request Data:', contributionData);
 
-  // Validate that account and sale are in user's allowed list
-  // Handle case where arrays might be empty or undefined
-  const userAccountNames = req.user!.involvedAccountNames || [];
-  const userSaleNames = req.user!.involvedSaleNames || [];
-  const userSaleEmails = req.user!.involvedSaleEmails || [];
+  // Get fresh user data from database to ensure we have the latest information
+  console.log('🔍 Fetching fresh user data from database...');
+  const freshUserData: any = await dbQueryOne('SELECT * FROM users WHERE id = ?', [req.user!.id]);
+  
+  if (!freshUserData) {
+    throw createError('User not found in database', 404);
+  }
+
+  // Parse fresh user data
+  const safeParse = (v: any) => {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string' && v.trim().length > 0) { 
+      try { 
+        const p = JSON.parse(v); 
+        return Array.isArray(p) ? p : []; 
+      } catch { 
+        return []; 
+      } 
+    }
+    return [];
+  };
+
+  const freshUserAccountNames = safeParse(freshUserData.involvedAccountNames);
+  const freshUserSaleNames = safeParse(freshUserData.involvedSaleNames);
+  const freshUserSaleEmails = safeParse(freshUserData.involvedSaleEmails);
+
+  console.log('🔍 Fresh User Data from database:', {
+    userId: freshUserData.id,
+    involvedAccountNames: freshUserAccountNames,
+    involvedSaleNames: freshUserSaleNames,
+    involvedSaleEmails: freshUserSaleEmails
+  });
+
+  // Validate that account and sale are in user's allowed list using fresh data
+  const userAccountNames = freshUserAccountNames || [];
+  const userSaleNames = freshUserSaleNames || [];
+  const userSaleEmails = freshUserSaleEmails || [];
   
   console.log('🔍 User validation data:', {
     accountNames: userAccountNames,
