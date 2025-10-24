@@ -30,10 +30,21 @@ const createContributionValidation = [
   body('description').trim().isLength({ min: 1 }).withMessage('Description is required'),
   body('impact').isIn(['low', 'medium', 'high', 'critical']).withMessage('Valid impact level is required'),
   body('effort').isIn(['low', 'medium', 'high']).withMessage('Valid effort level is required'),
-  body('estimatedImpactValue').optional().isNumeric().withMessage('Estimated impact value must be a number'),
+  body('estimatedImpactValue').optional().custom((value) => {
+    if (value === undefined || value === null || value === '') return true;
+    if (typeof value === 'number') return true;
+    if (typeof value === 'string' && !isNaN(Number(value))) return true;
+    throw new Error('Estimated impact value must be a number');
+  }),
   body('contributionMonth').isLength({ min: 7 }).withMessage('Valid contribution month is required (YYYY-MM)'),
   body('status').optional().isIn(['draft', 'submitted']).withMessage('Valid status is required'),
-  body('tags').isArray().withMessage('Tags must be an array')
+  body('tags').custom((value) => {
+    // Allow both array and string (comma-separated)
+    if (Array.isArray(value)) return true;
+    if (typeof value === 'string') return true;
+    if (value === undefined || value === null) return true;
+    throw new Error('Tags must be an array or string');
+  })
 ];
 
 // Validation for updating contributions
@@ -186,6 +197,8 @@ router.get('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Respo
 router.post('/', requireUser, createContributionValidation, asyncHandler(async (req: AuthRequest, res: Response) => {
   console.log('🔍 Create Contribution Request Body:', req.body);
   console.log('🔍 Create Contribution Status:', req.body.status);
+  console.log('🔍 Create Contribution Tags:', req.body.tags, 'Type:', typeof req.body.tags);
+  console.log('🔍 Create Contribution estimatedImpactValue:', req.body.estimatedImpactValue, 'Type:', typeof req.body.estimatedImpactValue);
   
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -198,6 +211,20 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   const contributionData: CreateContributionRequest = req.body;
   console.log('🔍 ContributionData after assignment:', contributionData);
   console.log('🔍 ContributionData.status:', contributionData.status);
+  
+  // Process tags - convert string to array if needed
+  if (typeof contributionData.tags === 'string') {
+    contributionData.tags = (contributionData.tags as string).split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+  } else if (!Array.isArray(contributionData.tags)) {
+    contributionData.tags = [];
+  }
+  
+  // Ensure estimatedImpactValue is a number
+  if (contributionData.estimatedImpactValue === undefined || contributionData.estimatedImpactValue === null) {
+    contributionData.estimatedImpactValue = 0;
+  } else if (typeof contributionData.estimatedImpactValue === 'string') {
+    contributionData.estimatedImpactValue = Number(contributionData.estimatedImpactValue);
+  }
   
   const userId = req.user!.id;
 

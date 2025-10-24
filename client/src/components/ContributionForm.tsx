@@ -157,6 +157,22 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         status: action === 'draft' ? 'draft' : 'submitted'
       };
       
+      // Validate required fields before submission
+      if (!submitData.accountName || !submitData.saleName || !submitData.saleEmail) {
+        toast.error('กรุณากรอกข้อมูล Account และ Sale ให้ครบถ้วน');
+        return;
+      }
+      
+      if (!submitData.title || !submitData.description) {
+        toast.error('กรุณากรอก Title และ Description');
+        return;
+      }
+      
+      if (!submitData.contributionMonth) {
+        toast.error('กรุณาเลือกเดือนที่ทำ Contribution');
+        return;
+      }
+      
       console.log('🔍 ContributionForm - onFormSubmit Debug:', {
         action: action,
         submitData: submitData,

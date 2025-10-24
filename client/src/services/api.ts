@@ -89,6 +89,8 @@ class ApiService {
           console.error('❌ Error response data:', errorData);
           if (errorData.message) {
             errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
           }
         } catch (e) {
           console.error('❌ Could not parse error response:', e);
