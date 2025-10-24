@@ -118,7 +118,12 @@ const MyContributions: React.FC = () => {
         errorMessage = 'You do not have permission to perform this action.';
       }
       
-      toast.error(errorMessage);
+      // Show specific error message for account validation
+      if (error.message && error.message.includes('not in your allowed list')) {
+        toast.error(`ข้อมูลไม่ถูกต้อง: ${error.message}`);
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 

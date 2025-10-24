@@ -180,13 +180,16 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         userSaleEmails: user.involvedSaleEmails,
         selectedAccount: submitData.accountName,
         selectedSale: submitData.saleName,
-        selectedSaleEmail: submitData.saleEmail
+        selectedSaleEmail: submitData.saleEmail,
+        accountNamesLength: user.involvedAccountNames?.length || 0,
+        saleNamesLength: user.involvedSaleNames?.length || 0,
+        saleEmailsLength: user.involvedSaleEmails?.length || 0
       });
       
       // Check if selected account is in user's allowed list
       if (user.involvedAccountNames && user.involvedAccountNames.length > 0 && 
           !user.involvedAccountNames.includes(submitData.accountName)) {
-        toast.error('Account ที่เลือกไม่อยู่ในรายการที่อนุญาต กรุณาเลือกใหม่');
+        toast.error(`Account "${submitData.accountName}" ไม่อยู่ในรายการที่อนุญาต กรุณาเลือกจาก: ${user.involvedAccountNames.join(', ')}`);
         return;
       }
       

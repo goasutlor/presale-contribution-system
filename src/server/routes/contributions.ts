@@ -295,9 +295,10 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
   if (userAccountNames.length > 0 && !userAccountNames.includes(contributionData.accountName)) {
     console.log('❌ Account validation failed:', {
       userAccounts: userAccountNames,
-      requestedAccount: contributionData.accountName
+      requestedAccount: contributionData.accountName,
+      accountMatch: userAccountNames.includes(contributionData.accountName)
     });
-    throw createError('Account not in your allowed list', 400);
+    throw createError(`Account "${contributionData.accountName}" not in your allowed list. Available accounts: ${userAccountNames.join(', ')}`, 400);
   }
 
   if (userSaleNames.length > 0 && !userSaleNames.includes(contributionData.saleName)) {
