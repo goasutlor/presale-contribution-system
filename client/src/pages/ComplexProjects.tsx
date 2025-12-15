@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RocketLaunchIcon, CheckBadgeIcon, XMarkIcon, PlusIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+import { RocketLaunchIcon, CheckBadgeIcon, XMarkIcon, PlusIcon, ClipboardDocumentListIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
@@ -116,6 +116,18 @@ const ComplexProjects: React.FC = () => {
     setForm({
       projectName: project.projectName,
       description: project.description,
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('ยืนยันลบโครงการนี้?')) return;
+    try {
+      await apiService.deleteComplexProject(id);
+      toast.success('ลบข้อมูลเรียบร้อย');
+      const refreshed = await apiService.getComplexProjects();
+      if (refreshed.success) setItems(refreshed.data);
+    } catch (err: any) {
+      toast.error(err.message || 'ลบข้อมูลไม่สำเร็จ');
+    }
+  };
+
       salesName: project.salesName,
       accountName: project.accountName,
       status: project.status,
@@ -404,14 +416,25 @@ const ComplexProjects: React.FC = () => {
                     </p>
                   </div>
 
-                  {project.userId === user?.id || user?.role === 'admin' ? (
-                    <button
-                      onClick={() => startEdit(project)}
-                      className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                    >
-                      แก้ไข
-                    </button>
-                  ) : null}
+                  <div className="flex items-center gap-3">
+                    {(project.userId === user?.id || user?.role === 'admin') && (
+                      <button
+                        onClick={() => startEdit(project)}
+                        className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                      >
+                        แก้ไข
+                      </button>
+                    )}
+                    {user?.role === 'admin' && (
+                      <button
+                        onClick={() => handleDelete(project.id)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium inline-flex items-center gap-1"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                        ลบ
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -288,6 +288,12 @@ class ApiService {
     });
   }
 
+  async deleteComplexProject(id: string): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/complex-projects/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Report endpoints (normalized)
   async getDashboardReport(): Promise<ApiResponse<any>> {
     return this.request<ApiResponse<any>>('/api/reports/dashboard'); // GET

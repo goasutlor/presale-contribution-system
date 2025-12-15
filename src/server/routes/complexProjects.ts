@@ -230,5 +230,18 @@ router.put('/:id', requireUser, updateValidation, asyncHandler(async (req: AuthR
   res.json({ success: true, message: 'Complex project updated' });
 }));
 
+// Delete complex project (admin or owner)
+router.delete('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const existing = await dbQueryOne('SELECT * FROM complex_projects WHERE id = ?', [id]);
+  if (!existing) throw createError('Complex project not found', 404);
+  if (req.user!.role !== 'admin' && existing.userId !== req.user!.id) {
+    throw createError('Access denied', 403);
+  }
+
+  await dbExecute('DELETE FROM complex_projects WHERE id = ?', [id]);
+  res.json({ success: true, message: 'Complex project deleted' });
+}));
+
 export { router as complexProjectRoutes };
 
