@@ -116,6 +116,17 @@ const ComplexProjects: React.FC = () => {
     setForm({
       projectName: project.projectName,
       description: project.description,
+      salesName: project.salesName,
+      accountName: project.accountName,
+      status: project.status,
+      keySuccessFactors: project.keySuccessFactors || '',
+      reasonsForLoss: project.reasonsForLoss || '',
+      lessonsLearned: project.lessonsLearned,
+      suggestionsForImprovement: project.suggestionsForImprovement,
+    });
+    setShowForm(true);
+  };
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('ยืนยันลบโครงการนี้?')) return;
     try {
@@ -126,17 +137,6 @@ const ComplexProjects: React.FC = () => {
     } catch (err: any) {
       toast.error(err.message || 'ลบข้อมูลไม่สำเร็จ');
     }
-  };
-
-      salesName: project.salesName,
-      accountName: project.accountName,
-      status: project.status,
-      keySuccessFactors: project.keySuccessFactors || '',
-      reasonsForLoss: project.reasonsForLoss || '',
-      lessonsLearned: project.lessonsLearned,
-      suggestionsForImprovement: project.suggestionsForImprovement,
-    });
-    setShowForm(true);
   };
 
   return (
