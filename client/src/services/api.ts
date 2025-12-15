@@ -265,6 +265,29 @@ class ApiService {
     });
   }
 
+  // Complex Projects 2025 endpoints
+  async getComplexProjects(): Promise<ApiResponse<any[]>> {
+    return this.request<ApiResponse<any[]>>('/api/complex-projects');
+  }
+
+  async getComplexProjectById(id: string): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/complex-projects/${id}`);
+  }
+
+  async createComplexProject(payload: any): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/api/complex-projects', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateComplexProject(id: string, payload: any): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/complex-projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
   // Report endpoints (normalized)
   async getDashboardReport(): Promise<ApiResponse<any>> {
     return this.request<ApiResponse<any>>('/api/reports/dashboard'); // GET

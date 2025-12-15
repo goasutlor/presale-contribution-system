@@ -34,6 +34,22 @@ export interface Contribution {
   updatedAt: Date;
 }
 
+export interface ComplexProject {
+  id: string;
+  userId: string;
+  userName?: string;
+  projectName: string;
+  salesName: string;
+  accountName: string;
+  status: 'win' | 'loss';
+  keySuccessFactors?: string;
+  reasonsForLoss?: string;
+  lessonsLearned: string;
+  suggestionsForImprovement: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ReportFilter {
   startDate?: Date;
   endDate?: Date;
@@ -123,6 +139,28 @@ export interface UpdateContributionRequest {
   contributionMonth?: string; // Changed from startDate/endDate to single month field
   status?: 'draft' | 'submitted' | 'approved' | 'rejected'; // Updated status field
   tags?: string[];
+}
+
+export interface CreateComplexProjectRequest {
+  projectName: string;
+  salesName: string;
+  accountName: string;
+  status: 'win' | 'loss';
+  keySuccessFactors?: string;
+  reasonsForLoss?: string;
+  lessonsLearned: string;
+  suggestionsForImprovement: string;
+}
+
+export interface UpdateComplexProjectRequest {
+  projectName?: string;
+  salesName?: string;
+  accountName?: string;
+  status?: 'win' | 'loss';
+  keySuccessFactors?: string;
+  reasonsForLoss?: string;
+  lessonsLearned?: string;
+  suggestionsForImprovement?: string;
 }
 
 export interface FunctionalTestResult {

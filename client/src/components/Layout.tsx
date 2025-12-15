@@ -16,6 +16,7 @@ import {
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   LinkIcon,
+  RocketLaunchIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 
@@ -32,6 +33,7 @@ const Layout: React.FC = () => {
   const navigation = [
     { name: t('nav.dashboard'), href: '/dashboard', icon: HomeIcon },
     { name: t('nav.contributions'), href: '/my-contributions', icon: DocumentTextIcon },
+    { name: t('nav.complexProjects'), href: '/complex-projects-2025', icon: RocketLaunchIcon },
     { name: t('nav.reports'), href: '/reports', icon: ChartBarIcon },
     { name: t('nav.userManagement'), href: '/user-management', icon: UserGroupIcon },
     ...(user?.role === 'admin' ? [

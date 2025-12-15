@@ -16,6 +16,7 @@ import AllContributions from './pages/AllContributions';
 import MyContributions from './pages/MyContributions';
 import FunctionalTest from './pages/FunctionalTest';
 import PortfolioSummary from './pages/PortfolioSummary';
+import ComplexProjects from './pages/ComplexProjects';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -49,6 +50,7 @@ const AppRoutes: React.FC = () => {
         <Route path="my-contributions" element={
           user?.role === 'admin' ? <AllContributions /> : <MyContributions />
         } />
+            <Route path="complex-projects-2025" element={<ComplexProjects />} />
             <Route path="reports" element={<Reports />} />
             <Route path="user-management" element={<UserManagement />} />
             <Route path="portfolio-summary" element={<PortfolioSummary />} />

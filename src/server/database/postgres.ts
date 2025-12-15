@@ -58,6 +58,14 @@ const COLUMN_NAME_MAP: Record<string, string> = {
   createdat: 'createdAt',
   updatedat: 'updatedAt',
 
+  // complex_projects
+  projectname: 'projectName',
+  salesname: 'salesName',
+  keysuccessfactors: 'keySuccessFactors',
+  reasonsforloss: 'reasonsForLoss',
+  lessonslearned: 'lessonsLearned',
+  suggestionsforimprovement: 'suggestionsForImprovement',
+
   // contributions
   userid: 'userId',
   accountname: 'accountName',
@@ -145,6 +153,25 @@ async function createTables(): Promise<void> {
       saleApproval BOOLEAN DEFAULT false,
       saleApprovalDate TIMESTAMP,
       saleApprovalNotes TEXT,
+      createdAt TIMESTAMP DEFAULT NOW(),
+      updatedAt TIMESTAMP DEFAULT NOW(),
+      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Complex, Big, or Challenging Projects 2025
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS complex_projects (
+      id VARCHAR(255) PRIMARY KEY,
+      userId VARCHAR(255) NOT NULL,
+      projectName VARCHAR(500) NOT NULL,
+      salesName VARCHAR(255) NOT NULL,
+      accountName VARCHAR(255) NOT NULL,
+      status VARCHAR(20) NOT NULL,
+      keySuccessFactors TEXT,
+      reasonsForLoss TEXT,
+      lessonsLearned TEXT NOT NULL,
+      suggestionsForImprovement TEXT NOT NULL,
       createdAt TIMESTAMP DEFAULT NOW(),
       updatedAt TIMESTAMP DEFAULT NOW(),
       FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE

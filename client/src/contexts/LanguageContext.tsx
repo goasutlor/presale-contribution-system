@@ -15,6 +15,7 @@ const translations: Record<string, Record<string, string>> = {
     // Navigation
     'nav.dashboard': 'แดชบอร์ด',
     'nav.contributions': 'ผลงาน',
+    'nav.complexProjects': 'โครงการท้าทาย 2025',
     'nav.reports': 'รายงาน',
     'nav.userManagement': 'จัดการผู้ใช้',
     'nav.functionalTest': 'ทดสอบระบบ',
@@ -433,6 +434,7 @@ const translations: Record<string, Record<string, string>> = {
     // Navigation
     'nav.dashboard': 'Dashboard',
     'nav.contributions': 'Contributions',
+    'nav.complexProjects': 'Complex Projects 2025',
     'nav.reports': 'Reports',
     'nav.userManagement': 'User Management',
     'nav.functionalTest': 'Functional Test',

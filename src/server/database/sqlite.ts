@@ -72,16 +72,42 @@ export async function initializeDatabase(): Promise<void> {
         )
       `, (err) => {
         if (err) {
-          console.error('❌ Error creating SQLite tables:', err);
+          console.error('❌ Error creating SQLite contributions table:', err);
           reject(err);
-        } else {
+          return;
+        }
+
+        // Complex projects table
+        database.run(`
+          CREATE TABLE IF NOT EXISTS complex_projects (
+            id TEXT PRIMARY KEY,
+            userId TEXT NOT NULL,
+            projectName TEXT NOT NULL,
+            salesName TEXT NOT NULL,
+            accountName TEXT NOT NULL,
+            status TEXT NOT NULL,
+            keySuccessFactors TEXT,
+            reasonsForLoss TEXT,
+            lessonsLearned TEXT NOT NULL,
+            suggestionsForImprovement TEXT NOT NULL,
+            createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+            updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (userId) REFERENCES users(id)
+          )
+        `, (complexErr) => {
+          if (complexErr) {
+            console.error('❌ Error creating SQLite complex_projects table:', complexErr);
+            reject(complexErr);
+            return;
+          }
+
           console.log('✅ SQLite tables created/verified');
           
           // Create admin user if not exists
           createAdminUser()
             .then(() => resolve())
             .catch(reject);
-        }
+        });
       });
     });
   });

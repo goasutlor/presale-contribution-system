@@ -8,6 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { contributionRoutes } from './routes/contributions';
+import { complexProjectRoutes } from './routes/complexProjects';
 import { reportRoutes } from './routes/reports';
 import { testRoutes } from './routes/functionalTest';
 import { initializeDatabase } from './database/init';
@@ -63,6 +64,7 @@ const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWA
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contributions', contributionRoutes);
+app.use('/api/complex-projects', complexProjectRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/test', testRoutes);
 

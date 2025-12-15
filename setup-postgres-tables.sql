@@ -39,6 +39,22 @@ CREATE TABLE IF NOT EXISTS contributions (
     UNIQUE("userId", "contributionMonth")
 );
 
+-- Complex, Big, or Challenging Projects 2025
+CREATE TABLE IF NOT EXISTS complex_projects (
+    id VARCHAR(255) PRIMARY KEY,
+    "userId" VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    "projectName" VARCHAR(500) NOT NULL,
+    "salesName" VARCHAR(255) NOT NULL,
+    "accountName" VARCHAR(255) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    "keySuccessFactors" TEXT,
+    "reasonsForLoss" TEXT,
+    "lessonsLearned" TEXT NOT NULL,
+    "suggestionsForImprovement" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_contributions_user_id ON contributions("userId");
 CREATE INDEX IF NOT EXISTS idx_contributions_month ON contributions("contributionMonth");

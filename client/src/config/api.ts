@@ -26,6 +26,12 @@ export const API_CONFIG = {
       GET: (id: string) => `/api/contributions/${id}`,
       SUBMIT: (id: string) => `/api/contributions/${id}/submit`,
     },
+    COMPLEX_PROJECTS: {
+      LIST: '/api/complex-projects',
+      CREATE: '/api/complex-projects',
+      UPDATE: (id: string) => `/api/complex-projects/${id}`,
+      GET: (id: string) => `/api/complex-projects/${id}`,
+    },
     REPORTS: {
       DASHBOARD: '/api/reports/dashboard',
       COMPREHENSIVE: '/api/reports/comprehensive',
