@@ -9,6 +9,7 @@ interface ComplexProject {
   userId: string;
   userName?: string;
   projectName: string;
+  description: string;
   salesName: string;
   accountName: string;
   status: 'win' | 'loss';

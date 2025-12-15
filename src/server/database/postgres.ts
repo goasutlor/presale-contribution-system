@@ -60,7 +60,6 @@ const COLUMN_NAME_MAP: Record<string, string> = {
 
   // complex_projects
   projectname: 'projectName',
-  description: 'description',
   salesname: 'salesName',
   keysuccessfactors: 'keySuccessFactors',
   reasonsforloss: 'reasonsForLoss',
