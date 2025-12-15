@@ -13,6 +13,7 @@ router.use(authenticateToken);
 
 const createValidation = [
   body('projectName').trim().isLength({ min: 1 }).withMessage('Project Name is required'),
+  body('description').trim().isLength({ min: 5 }).withMessage('Description is required'),
   body('salesName').trim().isLength({ min: 1 }).withMessage('Sales Name is required'),
   body('accountName').trim().isLength({ min: 1 }).withMessage('Account Name is required'),
   body('status').isIn(['win', 'loss']).withMessage('Status must be win or loss'),
@@ -39,6 +40,7 @@ const createValidation = [
 const updateValidation = [
   body('status').optional().isIn(['win', 'loss']).withMessage('Status must be win or loss'),
   body('projectName').optional().trim().isLength({ min: 1 }).withMessage('Project Name is required'),
+  body('description').optional().trim().isLength({ min: 5 }).withMessage('Description is required'),
   body('salesName').optional().trim().isLength({ min: 1 }).withMessage('Sales Name is required'),
   body('accountName').optional().trim().isLength({ min: 1 }).withMessage('Account Name is required'),
   body('keySuccessFactors').optional().isString(),
@@ -52,6 +54,7 @@ const mapRowToProject = (row: any) => ({
   userId: row.userId,
   userName: row.userName,
   projectName: row.projectName,
+  description: row.description,
   salesName: row.salesName,
   accountName: row.accountName,
   status: row.status,
@@ -137,13 +140,14 @@ router.post('/', requireUser, createValidation, asyncHandler(async (req: AuthReq
   const id = uuidv4();
   await dbExecute(`
     INSERT INTO complex_projects (
-      id, userId, projectName, salesName, accountName, status,
+      id, userId, projectName, description, salesName, accountName, status,
       keySuccessFactors, reasonsForLoss, lessonsLearned, suggestionsForImprovement
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     id,
     userId,
     data.projectName,
+    data.description,
     data.salesName,
     data.accountName,
     data.status,
@@ -204,6 +208,7 @@ router.put('/:id', requireUser, updateValidation, asyncHandler(async (req: AuthR
   };
 
   if (data.projectName !== undefined) setField('projectName', data.projectName);
+  if (data.description !== undefined) setField('description', data.description);
   if (data.salesName !== undefined) setField('salesName', data.salesName);
   if (data.accountName !== undefined) setField('accountName', data.accountName);
   if (data.status !== undefined) setField('status', data.status);

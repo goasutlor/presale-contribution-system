@@ -22,6 +22,7 @@ interface ComplexProject {
 
 const defaultForm = {
   projectName: '',
+  description: '',
   salesName: '',
   accountName: '',
   status: 'win' as 'win' | 'loss',
@@ -75,6 +76,7 @@ const ComplexProjects: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.projectName.trim()) return toast.error('กรุณากรอก Project Name');
+    if (!form.description.trim()) return toast.error('กรุณากรอกรายละเอียดโครงการ');
     if (!form.salesName.trim()) return toast.error('กรุณาเลือก Sales Name');
     if (!form.accountName.trim()) return toast.error('กรุณาเลือก Account Name');
     if (!form.lessonsLearned.trim()) return toast.error('กรุณากรอก Lessons Learned');
@@ -112,6 +114,7 @@ const ComplexProjects: React.FC = () => {
     setEditingId(project.id);
     setForm({
       projectName: project.projectName,
+      description: project.description,
       salesName: project.salesName,
       accountName: project.accountName,
       status: project.status,
@@ -181,6 +184,19 @@ const ComplexProjects: React.FC = () => {
                 onChange={(e) => setForm({ ...form, projectName: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 placeholder="ชื่อโครงการ"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Project Description <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                rows={3}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="อธิบายภาพรวมโครงการว่าเกี่ยวกับอะไร ทำอะไรให้ลูกค้า"
               />
             </div>
 
@@ -352,6 +368,9 @@ const ComplexProjects: React.FC = () => {
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                       Account: {project.accountName} • Sales: {project.salesName}
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200 mt-2">
+                      {project.description}
                     </p>
 
                     {project.status === 'win' && project.keySuccessFactors && (

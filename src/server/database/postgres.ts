@@ -60,6 +60,7 @@ const COLUMN_NAME_MAP: Record<string, string> = {
 
   // complex_projects
   projectname: 'projectName',
+  description: 'description',
   salesname: 'salesName',
   keysuccessfactors: 'keySuccessFactors',
   reasonsforloss: 'reasonsForLoss',
@@ -165,6 +166,7 @@ async function createTables(): Promise<void> {
       id VARCHAR(255) PRIMARY KEY,
       userId VARCHAR(255) NOT NULL,
       projectName VARCHAR(500) NOT NULL,
+      description TEXT,
       salesName VARCHAR(255) NOT NULL,
       accountName VARCHAR(255) NOT NULL,
       status VARCHAR(20) NOT NULL,
@@ -184,6 +186,7 @@ async function createTables(): Promise<void> {
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApproval BOOLEAN DEFAULT false`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalDate TIMESTAMP`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalNotes TEXT`);
+  await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS description TEXT`);
 
   console.log('✅ Database tables created/verified');
 }

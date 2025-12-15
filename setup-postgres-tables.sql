@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS complex_projects (
     id VARCHAR(255) PRIMARY KEY,
     "userId" VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     "projectName" VARCHAR(500) NOT NULL,
+    description TEXT,
     "salesName" VARCHAR(255) NOT NULL,
     "accountName" VARCHAR(255) NOT NULL,
     status VARCHAR(20) NOT NULL,

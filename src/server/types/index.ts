@@ -39,6 +39,7 @@ export interface ComplexProject {
   userId: string;
   userName?: string;
   projectName: string;
+  description: string;
   salesName: string;
   accountName: string;
   status: 'win' | 'loss';
@@ -143,6 +144,7 @@ export interface UpdateContributionRequest {
 
 export interface CreateComplexProjectRequest {
   projectName: string;
+  description: string;
   salesName: string;
   accountName: string;
   status: 'win' | 'loss';
@@ -154,6 +156,7 @@ export interface CreateComplexProjectRequest {
 
 export interface UpdateComplexProjectRequest {
   projectName?: string;
+  description?: string;
   salesName?: string;
   accountName?: string;
   status?: 'win' | 'loss';

@@ -83,6 +83,7 @@ export async function initializeDatabase(): Promise<void> {
             id TEXT PRIMARY KEY,
             userId TEXT NOT NULL,
             projectName TEXT NOT NULL,
+            description TEXT,
             salesName TEXT NOT NULL,
             accountName TEXT NOT NULL,
             status TEXT NOT NULL,
@@ -100,6 +101,13 @@ export async function initializeDatabase(): Promise<void> {
             reject(complexErr);
             return;
           }
+
+          // Ensure new columns exist for existing databases
+          database.run('ALTER TABLE complex_projects ADD COLUMN description TEXT', (alterErr) => {
+            if (alterErr && !alterErr.message.includes('duplicate column')) {
+              console.warn('⚠️ Could not add description column to complex_projects:', alterErr.message);
+            }
+          });
 
           console.log('✅ SQLite tables created/verified');
           
