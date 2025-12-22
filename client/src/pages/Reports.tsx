@@ -4,8 +4,9 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import Tooltip from '../components/Tooltip';
+import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 // Icons removed for minimal aesthetic
-import { generateEarthToneReport } from '../utils/printTemplate';
+import { generateEarthToneReport, generateComplexProjectsReport } from '../utils/printTemplate';
 
 interface ReportData {
   contributions: any[];
@@ -56,6 +57,10 @@ const Reports: React.FC = () => {
     presales: [] as string[]
   });
 
+  // Complex Projects state
+  const [complexProjects, setComplexProjects] = useState<any[]>([]);
+  const [loadingComplexProjects, setLoadingComplexProjects] = useState(false);
+
   const reportTypes = [
     { value: 'comprehensive', label: 'Comprehensive Report', description: 'รายงานแบบละเอียดพร้อม Timeline' }
   ];
@@ -63,6 +68,7 @@ const Reports: React.FC = () => {
   useEffect(() => {
     console.log('🔍 Reports useEffect triggered, user:', user);
     loadReportData();
+    loadComplexProjects();
   }, []);
 
   const loadReportData = async () => {
@@ -131,6 +137,23 @@ const Reports: React.FC = () => {
       toast.error('Failed to load report data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadComplexProjects = async () => {
+    try {
+      setLoadingComplexProjects(true);
+      const response = await apiService.getComplexProjects();
+      if (response.success) {
+        setComplexProjects(response.data || []);
+      } else {
+        toast.error('Failed to load complex projects data');
+      }
+    } catch (error) {
+      console.error('Error loading complex projects:', error);
+      toast.error('Failed to load complex projects data');
+    } finally {
+      setLoadingComplexProjects(false);
     }
   };
 
@@ -234,6 +257,41 @@ const Reports: React.FC = () => {
       console.error('❌ filteredData.contributions:', filteredData?.contributions);
       console.error('❌ filteredData.contributions.length:', filteredData?.contributions?.length);
       toast.error('No data matches the current filters. Please adjust your filters and try again.');
+    }
+  };
+
+  const handlePrintComplexProjects = () => {
+    if (!complexProjects || complexProjects.length === 0) {
+      toast.error('No complex projects data available. Please check if there are any projects in the system.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      const reportContent = generateComplexProjectsReport(complexProjects, user);
+      printWindow.document.write(reportContent);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    } else {
+      toast.error('Failed to open print window');
+    }
+  };
+
+  const handlePreviewComplexProjects = () => {
+    if (!complexProjects || complexProjects.length === 0) {
+      toast.error('No complex projects data available. Please check if there are any projects in the system.');
+      return;
+    }
+
+    const previewWindow = window.open('', '_blank');
+    if (previewWindow) {
+      const reportContent = generateComplexProjectsReport(complexProjects, user);
+      previewWindow.document.write(reportContent);
+      previewWindow.document.close();
+      previewWindow.focus();
+    } else {
+      toast.error('Failed to open preview window');
     }
   };
 
@@ -399,8 +457,115 @@ const Reports: React.FC = () => {
 
       {/* Report Type Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('reports.comprehensiveReport')}</h2>
-          <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">รายงานแบบละเอียดพร้อม Timeline และปุ่ม Print</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('reports.comprehensiveReport')}</h2>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">รายงานแบบละเอียดพร้อม Timeline และปุ่ม Print</p>
+            </div>
+            <div className="flex gap-2">
+              <Tooltip content="ดูตัวอย่างรายงานก่อนพิมพ์">
+                <button
+                  onClick={handleShowPreview}
+                  disabled={!filteredData || filteredData.contributions.length === 0}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Show Preview
+                </button>
+              </Tooltip>
+              <Tooltip content="พิมพ์รายงาน">
+                <button
+                  onClick={handlePrintReport}
+                  disabled={!filteredData || filteredData.contributions.length === 0}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Print Report
+                </button>
+              </Tooltip>
+            </div>
+          </div>
+        </div>
+
+        {/* Complex Projects Report Section */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-blue-200 dark:border-gray-600 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <RocketLaunchIcon className="h-6 w-6 text-primary-600" />
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Complex, Big, or Challenging Projects 2025
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  รายงาน Lessons & Learn สำหรับโครงการขนาดใหญ่หรือท้าทาย ประจำปี 2025
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Tooltip content="ดูตัวอย่างรายงานก่อนพิมพ์">
+                <button
+                  onClick={handlePreviewComplexProjects}
+                  disabled={loadingComplexProjects || complexProjects.length === 0}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Show Preview
+                </button>
+              </Tooltip>
+              <Tooltip content="พิมพ์รายงาน Lessons & Learn">
+                <button
+                  onClick={handlePrintComplexProjects}
+                  disabled={loadingComplexProjects || complexProjects.length === 0}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Print Report
+                </button>
+              </Tooltip>
+            </div>
+          </div>
+          
+          {loadingComplexProjects ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">กำลังโหลดข้อมูล...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">{complexProjects.length}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Projects</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {complexProjects.filter(p => p.status === 'win').length}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Win Projects</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  {complexProjects.filter(p => p.status === 'loss').length}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Loss Projects</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {new Set(complexProjects.map(p => p.accountName)).size}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Unique Accounts</div>
+              </div>
+            </div>
+          )}
+          
+          {!loadingComplexProjects && complexProjects.length === 0 && (
+            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+              <p className="mb-2">ยังไม่มีข้อมูลโครงการ</p>
+              <p className="text-sm">กรุณาเพิ่มข้อมูลในหน้า <span className="font-semibold text-primary-600">Complex Projects</span> ก่อนพิมพ์รายงาน</p>
+            </div>
+          )}
         </div>
 
         {/* Filters */}
@@ -637,33 +802,6 @@ const Reports: React.FC = () => {
                   </div>
                   </div>
                 
-        {/* Report Actions */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Generate Report</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">สร้างและพิมพ์รายงานตามข้อมูลที่กรอง</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Tooltip content="ดูตัวอย่างรายงานก่อนพิมพ์">
-                <button
-                  onClick={handleShowPreview}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Show Preview
-                </button>
-              </Tooltip>
-              <Tooltip content="พิมพ์รายงาน">
-                <button
-                  onClick={handlePrintReport}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800"
-                >
-                  Print Report
-                </button>
-              </Tooltip>
-            </div>
-          </div>
-        </div>
                 
         {/* Report Summary */}
         {reportData && (() => {

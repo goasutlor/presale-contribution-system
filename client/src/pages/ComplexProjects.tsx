@@ -21,12 +21,24 @@ interface ComplexProject {
   updatedAt: string;
 }
 
-const defaultForm = {
+type ComplexProjectForm = {
+  projectName: string;
+  description: string;
+  salesName: string;
+  accountName: string;
+  status: 'win' | 'loss';
+  keySuccessFactors: string;
+  reasonsForLoss: string;
+  lessonsLearned: string;
+  suggestionsForImprovement: string;
+};
+
+const defaultForm: ComplexProjectForm = {
   projectName: '',
   description: '',
   salesName: '',
   accountName: '',
-  status: 'win' as 'win' | 'loss',
+  status: 'win',
   keySuccessFactors: '',
   reasonsForLoss: '',
   lessonsLearned: '',
@@ -40,7 +52,7 @@ const ComplexProjects: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(defaultForm);
+  const [form, setForm] = useState<ComplexProjectForm>(defaultForm);
 
   const accountOptions = useMemo(() => user?.involvedAccountNames || [], [user]);
   const salesOptions = useMemo(() => user?.involvedSaleNames || [], [user]);

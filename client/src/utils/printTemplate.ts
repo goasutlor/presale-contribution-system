@@ -1044,3 +1044,472 @@ export const generateEarthToneReport = (data: any, reportType: string, user: any
     </html>
   `;
 };
+
+export const generateComplexProjectsReport = (projects: any[], user: any) => {
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Calculate statistics
+  const totalProjects = projects.length;
+  const winProjects = projects.filter(p => p.status === 'win').length;
+  const lossProjects = projects.filter(p => p.status === 'loss').length;
+  const uniqueAccounts = new Set(projects.map(p => p.accountName)).size;
+  const uniqueSales = new Set(projects.map(p => p.salesName)).size;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Complex, Big, or Challenging Projects 2025 - Lessons & Learn Report</title>
+      <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <style>
+        :root {
+          --brand-navy: #0f172a;
+          --brand-steel: #1e293b;
+          --brand-line: #e2e8f0;
+          --brand-muted: #475569;
+          --brand-text: #111827;
+          --brand-accent: #2563eb;
+        }
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        @page {
+          size: A4;
+          margin: 0.5in;
+        }
+        
+        @media print {
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          
+          .page-break {
+            page-break-before: always;
+          }
+          
+          .no-break {
+            page-break-inside: avoid;
+          }
+        }
+        
+        body {
+          font-family: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          line-height: 1.6;
+          color: #2d3748;
+          background: white;
+          font-size: 11px;
+        }
+        
+        .report-container {
+          max-width: 100%;
+          margin: 0;
+          background: white;
+        }
+        
+        .report-header {
+          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #06b6d4 75%, #10b981 100%);
+          color: white;
+          padding: 1.5rem 1.2rem;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+          border-radius: 12px 12px 0 0;
+          margin-bottom: 1.5rem;
+        }
+        
+        .report-header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: 
+            radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+          opacity: 0.15;
+        }
+        
+        .report-title {
+          font-size: 1.6rem;
+          font-weight: 900;
+          margin-bottom: 0.3rem;
+          text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+          position: relative;
+          z-index: 2;
+          letter-spacing: -0.02em;
+        }
+        
+        .report-subtitle {
+          font-size: 1rem;
+          opacity: 0.95;
+          margin-bottom: 0.5rem;
+          font-weight: 500;
+          position: relative;
+          z-index: 2;
+        }
+        
+        .report-date {
+          font-size: 0.85rem;
+          opacity: 0.9;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .report-content {
+          padding: 0 0.5rem;
+        }
+        
+        .summary-section {
+          margin-bottom: 2rem;
+        }
+        
+        .summary-cards {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+        
+        .summary-card {
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 1rem;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .summary-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
+        }
+        
+        .summary-card:nth-child(1)::before {
+          background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+        }
+        
+        .summary-card:nth-child(2)::before {
+          background: linear-gradient(90deg, #10b981, #059669);
+        }
+        
+        .summary-card:nth-child(3)::before {
+          background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+        
+        .summary-card:nth-child(4)::before {
+          background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+        }
+        
+        .summary-number {
+          font-size: 1.8rem;
+          font-weight: 800;
+          margin-bottom: 0.4rem;
+          color: var(--brand-text);
+        }
+        
+        .summary-label {
+          font-size: 0.75rem;
+          color: #64748b;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+        
+        .projects-section {
+          margin-bottom: 2rem;
+        }
+        
+        .section-title {
+          font-size: 1.2rem;
+          font-weight: 700;
+          color: #1e40af;
+          margin-bottom: 1rem;
+          border-bottom: 3px solid #3b82f6;
+          padding-bottom: 0.5rem;
+          position: relative;
+        }
+        
+        .section-title::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          width: 60px;
+          height: 3px;
+          background: #1e40af;
+        }
+        
+        .project-card {
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 1.2rem;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          page-break-inside: avoid;
+        }
+        
+        .project-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 1rem;
+          padding-bottom: 0.8rem;
+          border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .project-name {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 0.3rem;
+        }
+        
+        .project-meta {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          font-size: 0.85rem;
+          color: #64748b;
+          margin-top: 0.3rem;
+        }
+        
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.4rem 0.8rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        
+        .status-win {
+          background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+          color: #166534;
+          border: 1px solid #86efac;
+        }
+        
+        .status-loss {
+          background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+          color: #991b1b;
+          border: 1px solid #fca5a5;
+        }
+        
+        .project-description {
+          background: #f8fafc;
+          border-left: 4px solid #3b82f6;
+          padding: 0.8rem 1rem;
+          margin-bottom: 1rem;
+          border-radius: 4px;
+          font-size: 0.9rem;
+          line-height: 1.6;
+          color: #334155;
+        }
+        
+        .info-section {
+          margin-bottom: 1rem;
+        }
+        
+        .info-title {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #1e40af;
+          margin-bottom: 0.5rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        
+        .info-content {
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          padding: 0.8rem 1rem;
+          font-size: 0.9rem;
+          line-height: 1.7;
+          color: #475569;
+          white-space: pre-line;
+        }
+        
+        .lessons-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+        
+        .lessons-section {
+          background: #f8fafc;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          padding: 1rem;
+        }
+        
+        .lessons-title {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #1e40af;
+          margin-bottom: 0.6rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        
+        .lessons-content {
+          font-size: 0.9rem;
+          line-height: 1.7;
+          color: #475569;
+          white-space: pre-line;
+        }
+        
+        .footer-section {
+          margin-top: 2rem;
+          padding-top: 1.5rem;
+          border-top: 2px solid #e5e7eb;
+          text-align: center;
+          color: #64748b;
+          font-size: 0.8rem;
+        }
+        
+        @media print {
+          .project-card {
+            page-break-inside: avoid;
+            margin-bottom: 1rem;
+          }
+          
+          .summary-cards {
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+          }
+          
+          .summary-card {
+            padding: 0.8rem;
+          }
+          
+          .summary-number {
+            font-size: 1.5rem;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="report-container">
+        <div class="report-header">
+          <h1 class="report-title">Complex, Big, or Challenging Projects 2025</h1>
+          <p class="report-subtitle">Lessons & Learn Reference Report</p>
+          <p class="report-date">Generated on ${currentDate}</p>
+        </div>
+        
+        <div class="report-content">
+          <div class="summary-section">
+            <div class="summary-cards">
+              <div class="summary-card">
+                <div class="summary-number">${totalProjects}</div>
+                <div class="summary-label">Total Projects</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-number">${winProjects}</div>
+                <div class="summary-label">Win Projects</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-number">${lossProjects}</div>
+                <div class="summary-label">Loss Projects</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-number">${uniqueAccounts}</div>
+                <div class="summary-label">Unique Accounts</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="projects-section">
+            <h2 class="section-title">Project Details & Lessons Learned</h2>
+            ${projects.length > 0 ? projects.map((project, index) => `
+              <div class="project-card">
+                <div class="project-header">
+                  <div style="flex: 1;">
+                    <div class="project-name">${index + 1}. ${project.projectName || 'N/A'}</div>
+                    <div class="project-meta">
+                      <span><strong>Account:</strong> ${project.accountName || 'N/A'}</span>
+                      <span><strong>Sales:</strong> ${project.salesName || 'N/A'}</span>
+                      ${project.userName ? `<span><strong>Owner:</strong> ${project.userName}</span>` : ''}
+                    </div>
+                  </div>
+                  <span class="status-badge status-${project.status}">
+                    ${project.status === 'win' ? '✓ WIN' : '✗ LOSS'}
+                  </span>
+                </div>
+                
+                ${project.description ? `
+                  <div class="project-description">
+                    <strong>Project Description:</strong><br>
+                    ${project.description}
+                  </div>
+                ` : ''}
+                
+                ${project.status === 'win' && project.keySuccessFactors ? `
+                  <div class="info-section">
+                    <div class="info-title">
+                      <span>🎯</span> Key Success Factors
+                    </div>
+                    <div class="info-content">${project.keySuccessFactors}</div>
+                  </div>
+                ` : ''}
+                
+                ${project.status === 'loss' && project.reasonsForLoss ? `
+                  <div class="info-section">
+                    <div class="info-title">
+                      <span>⚠️</span> Reasons for Loss
+                    </div>
+                    <div class="info-content">${project.reasonsForLoss}</div>
+                  </div>
+                ` : ''}
+                
+                <div class="lessons-grid">
+                  <div class="lessons-section">
+                    <div class="lessons-title">📚 Lessons Learned</div>
+                    <div class="lessons-content">${project.lessonsLearned || 'N/A'}</div>
+                  </div>
+                  <div class="lessons-section">
+                    <div class="lessons-title">💡 Suggestions for Improvement</div>
+                    <div class="lessons-content">${project.suggestionsForImprovement || 'N/A'}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('') : `
+              <div style="text-align: center; padding: 3rem; color: #718096; font-style: italic;">
+                No projects found.
+              </div>
+            `}
+          </div>
+          
+          <div class="footer-section">
+            <p>This report is generated for reference and Lessons & Learn purposes.</p>
+            <p style="margin-top: 0.5rem;">ASC3 Contribution Management System - ${currentDate}</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
