@@ -1083,7 +1083,7 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         
         @page {
           size: A4;
-          margin: 0.5in;
+          margin: 0.4in 0.5in;
         }
         
         @media print {
@@ -1103,10 +1103,10 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         
         body {
           font-family: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          line-height: 1.6;
+          line-height: 1.5;
           color: #2d3748;
           background: white;
-          font-size: 11px;
+          font-size: 10px;
         }
         
         .report-container {
@@ -1118,12 +1118,12 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         .report-header {
           background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #06b6d4 75%, #10b981 100%);
           color: white;
-          padding: 1.5rem 1.2rem;
+          padding: 0.8rem 1rem;
           text-align: center;
           position: relative;
           overflow: hidden;
-          border-radius: 12px 12px 0 0;
-          margin-bottom: 1.5rem;
+          border-radius: 8px 8px 0 0;
+          margin-bottom: 0.8rem;
         }
         
         .report-header::before {
@@ -1140,55 +1140,55 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         }
         
         .report-title {
-          font-size: 1.6rem;
-          font-weight: 900;
-          margin-bottom: 0.3rem;
-          text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+          font-size: 1.3rem;
+          font-weight: 800;
+          margin-bottom: 0.2rem;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
           position: relative;
           z-index: 2;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.01em;
         }
         
         .report-subtitle {
-          font-size: 1rem;
+          font-size: 0.75rem;
           opacity: 0.95;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.2rem;
           font-weight: 500;
           position: relative;
           z-index: 2;
         }
         
         .report-date {
-          font-size: 0.85rem;
+          font-size: 0.7rem;
           opacity: 0.9;
           position: relative;
           z-index: 1;
         }
         
         .report-content {
-          padding: 0 0.5rem;
+          padding: 0;
         }
         
         .summary-section {
-          margin-bottom: 2rem;
+          margin-bottom: 0.8rem;
         }
         
         .summary-cards {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
+          gap: 0.6rem;
+          margin-bottom: 0;
         }
         
         .summary-card {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          padding: 1rem;
+          border-radius: 8px;
+          padding: 0.6rem 0.5rem;
           text-align: center;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .summary-card::before {
@@ -1218,51 +1218,53 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         }
         
         .summary-number {
-          font-size: 1.8rem;
+          font-size: 1.4rem;
           font-weight: 800;
-          margin-bottom: 0.4rem;
+          margin-bottom: 0.2rem;
           color: var(--brand-text);
+          line-height: 1.2;
         }
         
         .summary-label {
-          font-size: 0.75rem;
+          font-size: 0.65rem;
           color: #64748b;
           font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.08em;
         }
         
         .projects-section {
-          margin-bottom: 2rem;
+          margin-bottom: 0;
+          margin-top: 0.8rem;
         }
         
         .section-title {
-          font-size: 1.2rem;
+          font-size: 1rem;
           font-weight: 700;
           color: #1e40af;
-          margin-bottom: 1rem;
-          border-bottom: 3px solid #3b82f6;
-          padding-bottom: 0.5rem;
+          margin-bottom: 0.6rem;
+          border-bottom: 2px solid #3b82f6;
+          padding-bottom: 0.3rem;
           position: relative;
         }
         
         .section-title::after {
           content: '';
           position: absolute;
-          bottom: -3px;
+          bottom: -2px;
           left: 0;
-          width: 60px;
-          height: 3px;
+          width: 50px;
+          height: 2px;
           background: #1e40af;
         }
         
         .project-card {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          padding: 1.2rem;
-          margin-bottom: 1.5rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          border-radius: 8px;
+          padding: 0.9rem;
+          margin-bottom: 0.9rem;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           page-break-inside: avoid;
         }
         
@@ -1270,36 +1272,38 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 1rem;
-          padding-bottom: 0.8rem;
-          border-bottom: 2px solid #f3f4f6;
+          margin-bottom: 0.6rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #f3f4f6;
         }
         
         .project-name {
-          font-size: 1.1rem;
+          font-size: 0.95rem;
           font-weight: 700;
           color: #0f172a;
-          margin-bottom: 0.3rem;
+          margin-bottom: 0.2rem;
+          line-height: 1.3;
         }
         
         .project-meta {
           display: flex;
-          gap: 1rem;
+          gap: 0.8rem;
           flex-wrap: wrap;
-          font-size: 0.85rem;
+          font-size: 0.75rem;
           color: #64748b;
-          margin-top: 0.3rem;
+          margin-top: 0.2rem;
         }
         
         .status-badge {
           display: inline-flex;
           align-items: center;
-          padding: 0.4rem 0.8rem;
-          border-radius: 20px;
-          font-size: 0.75rem;
+          padding: 0.25rem 0.6rem;
+          border-radius: 12px;
+          font-size: 0.65rem;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.04em;
+          white-space: nowrap;
         }
         
         .status-win {
@@ -1316,38 +1320,38 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         
         .project-description {
           background: #f8fafc;
-          border-left: 4px solid #3b82f6;
-          padding: 0.8rem 1rem;
-          margin-bottom: 1rem;
-          border-radius: 4px;
-          font-size: 0.9rem;
-          line-height: 1.6;
+          border-left: 3px solid #3b82f6;
+          padding: 0.6rem 0.8rem;
+          margin-bottom: 0.6rem;
+          border-radius: 3px;
+          font-size: 0.8rem;
+          line-height: 1.5;
           color: #334155;
         }
         
         .info-section {
-          margin-bottom: 1rem;
+          margin-bottom: 0.6rem;
         }
         
         .info-title {
-          font-size: 0.85rem;
+          font-size: 0.75rem;
           font-weight: 700;
           color: #1e40af;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.4rem;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.04em;
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.4rem;
         }
         
         .info-content {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 0.8rem 1rem;
-          font-size: 0.9rem;
-          line-height: 1.7;
+          border-radius: 6px;
+          padding: 0.6rem 0.8rem;
+          font-size: 0.8rem;
+          line-height: 1.6;
           color: #475569;
           white-space: pre-line;
         }
@@ -1355,59 +1359,140 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         .lessons-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-          margin-top: 1rem;
+          gap: 0.6rem;
+          margin-top: 0.6rem;
         }
         
         .lessons-section {
           background: #f8fafc;
           border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 1rem;
+          border-radius: 6px;
+          padding: 0.7rem;
         }
         
         .lessons-title {
-          font-size: 0.85rem;
+          font-size: 0.75rem;
           font-weight: 700;
           color: #1e40af;
-          margin-bottom: 0.6rem;
+          margin-bottom: 0.4rem;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.04em;
         }
         
         .lessons-content {
-          font-size: 0.9rem;
-          line-height: 1.7;
+          font-size: 0.8rem;
+          line-height: 1.6;
           color: #475569;
           white-space: pre-line;
         }
         
         .footer-section {
-          margin-top: 2rem;
-          padding-top: 1.5rem;
-          border-top: 2px solid #e5e7eb;
+          margin-top: 1rem;
+          padding-top: 0.8rem;
+          border-top: 1px solid #e5e7eb;
           text-align: center;
           color: #64748b;
-          font-size: 0.8rem;
+          font-size: 0.7rem;
         }
         
         @media print {
-          .project-card {
-            page-break-inside: avoid;
-            margin-bottom: 1rem;
+          .report-header {
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.6rem;
+          }
+          
+          .report-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.15rem;
+          }
+          
+          .report-subtitle {
+            font-size: 0.7rem;
+            margin-bottom: 0.15rem;
+          }
+          
+          .report-date {
+            font-size: 0.65rem;
+          }
+          
+          .summary-section {
+            margin-bottom: 0.6rem;
           }
           
           .summary-cards {
-            gap: 0.6rem;
-            margin-bottom: 1rem;
+            gap: 0.5rem;
+            margin-bottom: 0;
           }
           
           .summary-card {
-            padding: 0.8rem;
+            padding: 0.5rem 0.4rem;
           }
           
           .summary-number {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
+            margin-bottom: 0.15rem;
+          }
+          
+          .summary-label {
+            font-size: 0.6rem;
+          }
+          
+          .projects-section {
+            margin-top: 0.6rem;
+          }
+          
+          .section-title {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+          }
+          
+          .project-card {
+            page-break-inside: avoid;
+            margin-bottom: 0.7rem;
+            padding: 0.8rem;
+          }
+          
+          .project-header {
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.4rem;
+          }
+          
+          .project-name {
+            font-size: 0.9rem;
+          }
+          
+          .project-meta {
+            font-size: 0.7rem;
+            gap: 0.6rem;
+          }
+          
+          .project-description {
+            padding: 0.5rem 0.7rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+          }
+          
+          .info-section {
+            margin-bottom: 0.5rem;
+          }
+          
+          .info-content {
+            padding: 0.5rem 0.7rem;
+            font-size: 0.75rem;
+          }
+          
+          .lessons-grid {
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+          }
+          
+          .lessons-section {
+            padding: 0.6rem;
+          }
+          
+          .lessons-content {
+            font-size: 0.75rem;
           }
         }
       </style>
@@ -1504,8 +1589,7 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
           </div>
           
           <div class="footer-section">
-            <p>This report is generated for reference and Lessons & Learn purposes.</p>
-            <p style="margin-top: 0.5rem;">ASC3 Contribution Management System - ${currentDate}</p>
+            <p style="margin: 0;">ASC3 Contribution Management System | Generated on ${currentDate}</p>
           </div>
         </div>
       </div>
