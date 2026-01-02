@@ -1045,6 +1045,7 @@ const Reports: React.FC = () => {
 
       </div>
     </div>
+    </div>
   );
 };
 
