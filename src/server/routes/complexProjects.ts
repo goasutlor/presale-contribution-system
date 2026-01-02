@@ -16,7 +16,7 @@ const createValidation = [
   body('description').trim().isLength({ min: 5 }).withMessage('Description is required'),
   body('salesName').trim().isLength({ min: 1 }).withMessage('Sales Name is required'),
   body('accountName').trim().isLength({ min: 1 }).withMessage('Account Name is required'),
-  body('status').isIn(['win', 'loss']).withMessage('Status must be win or loss'),
+  body('status').isIn(['win', 'loss', 'ongoing']).withMessage('Status must be win, loss, or ongoing'),
   body('keySuccessFactors').custom((value, { req }) => {
     if (req.body.status === 'win') {
       if (typeof value !== 'string' || value.trim().length === 0) {

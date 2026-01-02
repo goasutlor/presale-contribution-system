@@ -12,7 +12,7 @@ interface ComplexProject {
   description: string;
   salesName: string;
   accountName: string;
-  status: 'win' | 'loss';
+  status: 'win' | 'loss' | 'ongoing';
   keySuccessFactors?: string;
   reasonsForLoss?: string;
   lessonsLearned: string;
@@ -26,7 +26,7 @@ type ComplexProjectForm = {
   description: string;
   salesName: string;
   accountName: string;
-  status: 'win' | 'loss';
+  status: 'win' | 'loss' | 'ongoing';
   keySuccessFactors: string;
   reasonsForLoss: string;
   lessonsLearned: string;
@@ -262,7 +262,7 @@ const ComplexProjects: React.FC = () => {
                 Project Status <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center gap-4">
-                {(['win', 'loss'] as const).map((status) => (
+                {(['win', 'loss', 'ongoing'] as const).map((status) => (
                   <label key={status} className="flex items-center space-x-2">
                     <input
                       type="radio"
@@ -271,7 +271,9 @@ const ComplexProjects: React.FC = () => {
                       checked={form.status === status}
                       onChange={() => setForm({ ...form, status })}
                     />
-                    <span className="capitalize text-gray-800 dark:text-gray-200">{status}</span>
+                    <span className="capitalize text-gray-800 dark:text-gray-200">
+                      {status === 'ongoing' ? 'Ongoing' : status}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -305,6 +307,21 @@ const ComplexProjects: React.FC = () => {
                   onChange={(e) => setForm({ ...form, reasonsForLoss: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   placeholder="ราคา / Solution ไม่ตรง / Competitor Advantage / Timing / Requirement Change ฯลฯ"
+                />
+              </div>
+            )}
+            
+            {form.status === 'ongoing' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Current Progress & Status
+                </label>
+                <textarea
+                  rows={3}
+                  value={form.keySuccessFactors}
+                  onChange={(e) => setForm({ ...form, keySuccessFactors: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  placeholder="อธิบายสถานะปัจจุบันของโครงการ ความคืบหน้า และสิ่งที่กำลังดำเนินการ"
                 />
               </div>
             )}
@@ -382,10 +399,12 @@ const ComplexProjects: React.FC = () => {
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         project.status === 'win'
                           ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                          : project.status === 'loss'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-blue-100 text-blue-800'
                       }`}>
                         <CheckBadgeIcon className="h-4 w-4 mr-1" />
-                        {project.status === 'win' ? 'Win' : 'Loss'}
+                        {project.status === 'win' ? 'Win' : project.status === 'loss' ? 'Loss' : 'Ongoing'}
                       </span>
                       {project.userName && (
                         <span className="text-xs text-gray-500 dark:text-gray-400">Owner: {project.userName}</span>
@@ -409,6 +428,13 @@ const ComplexProjects: React.FC = () => {
                       <div className="mt-3">
                         <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Reasons for Loss</p>
                         <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{project.reasonsForLoss}</p>
+                      </div>
+                    )}
+
+                    {project.status === 'ongoing' && project.keySuccessFactors && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Current Progress & Status</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{project.keySuccessFactors}</p>
                       </div>
                     )}
 

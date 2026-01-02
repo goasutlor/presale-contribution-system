@@ -1056,6 +1056,7 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
   const totalProjects = projects.length;
   const winProjects = projects.filter(p => p.status === 'win').length;
   const lossProjects = projects.filter(p => p.status === 'loss').length;
+  const ongoingProjects = projects.filter(p => p.status === 'ongoing').length;
   const uniqueAccounts = new Set(projects.map(p => p.accountName)).size;
   const uniqueSales = new Set(projects.map(p => p.salesName)).size;
 
@@ -1175,7 +1176,7 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         
         .summary-cards {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(5, 1fr);
           gap: 0.6rem;
           margin-bottom: 0;
         }
@@ -1214,6 +1215,10 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         }
         
         .summary-card:nth-child(4)::before {
+          background: linear-gradient(90deg, #3b82f6, #2563eb);
+        }
+        
+        .summary-card:nth-child(5)::before {
           background: linear-gradient(90deg, #8b5cf6, #7c3aed);
         }
         
@@ -1316,6 +1321,12 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
           background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
           color: #991b1b;
           border: 1px solid #fca5a5;
+        }
+        
+        .status-ongoing {
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+          color: #1e40af;
+          border: 1px solid #93c5fd;
         }
         
         .project-description {
@@ -1521,6 +1532,10 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                 <div class="summary-label">Loss Projects</div>
               </div>
               <div class="summary-card">
+                <div class="summary-number">${ongoingProjects}</div>
+                <div class="summary-label">Ongoing Projects</div>
+              </div>
+              <div class="summary-card">
                 <div class="summary-number">${uniqueAccounts}</div>
                 <div class="summary-label">Unique Accounts</div>
               </div>
@@ -1541,7 +1556,7 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                     </div>
                   </div>
                   <span class="status-badge status-${project.status}">
-                    ${project.status === 'win' ? '✓ WIN' : '✗ LOSS'}
+                    ${project.status === 'win' ? '✓ WIN' : project.status === 'loss' ? '✗ LOSS' : '⟳ ONGOING'}
                   </span>
                 </div>
                 
@@ -1567,6 +1582,15 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                       <span>⚠️</span> Reasons for Loss
                     </div>
                     <div class="info-content">${project.reasonsForLoss}</div>
+                  </div>
+                ` : ''}
+                
+                ${project.status === 'ongoing' && project.keySuccessFactors ? `
+                  <div class="info-section">
+                    <div class="info-title">
+                      <span>📊</span> Current Progress & Status
+                    </div>
+                    <div class="info-content">${project.keySuccessFactors}</div>
                   </div>
                 ` : ''}
                 

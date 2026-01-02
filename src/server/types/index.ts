@@ -42,7 +42,7 @@ export interface ComplexProject {
   description: string;
   salesName: string;
   accountName: string;
-  status: 'win' | 'loss';
+  status: 'win' | 'loss' | 'ongoing';
   keySuccessFactors?: string;
   reasonsForLoss?: string;
   lessonsLearned: string;
@@ -147,7 +147,7 @@ export interface CreateComplexProjectRequest {
   description: string;
   salesName: string;
   accountName: string;
-  status: 'win' | 'loss';
+  status: 'win' | 'loss' | 'ongoing';
   keySuccessFactors?: string;
   reasonsForLoss?: string;
   lessonsLearned: string;

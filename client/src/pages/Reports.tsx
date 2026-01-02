@@ -534,7 +534,7 @@ const Reports: React.FC = () => {
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">กำลังโหลดข้อมูล...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
               <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">{complexProjects.length}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Projects</div>
@@ -550,6 +550,12 @@ const Reports: React.FC = () => {
                   {complexProjects.filter(p => p.status === 'loss').length}
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Loss Projects</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {complexProjects.filter(p => p.status === 'ongoing').length}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Ongoing Projects</div>
               </div>
               <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
