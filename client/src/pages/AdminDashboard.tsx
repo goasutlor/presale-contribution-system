@@ -66,6 +66,7 @@ const AdminDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
   const [userContributions, setUserContributions] = useState<UserContribution[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState<number>(2025); // Default to 2025 (current data)
   const [selectedUser, setSelectedUser] = useState<UserContribution | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -112,14 +113,14 @@ const AdminDashboard: React.FC = () => {
     fetchAdminDashboardData();
     fetchUserContributions();
     fetchTimelineData();
-  }, [user?.id]);
+  }, [user?.id, selectedYear]);
 
   const fetchAdminDashboardData = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching admin dashboard data...');
+      console.log('🔍 Fetching admin dashboard data for year:', selectedYear);
       
-      // Get contributions data
+      // Get contributions data and filter by year
       const contributionsResponse = await apiService.getContributions();
       console.log('🔍 Contributions response:', contributionsResponse);
       
@@ -128,10 +129,16 @@ const AdminDashboard: React.FC = () => {
       console.log('🔍 Users response:', usersResponse);
       
       if (contributionsResponse.success && usersResponse.success) {
-        const contributions = contributionsResponse.data;
+        const allContributions = contributionsResponse.data;
+        // Filter contributions by selected year
+        const contributions = allContributions.filter((c: any) => {
+          const contribYear = c.year || 
+            (c.contributionMonth ? parseInt(c.contributionMonth.split('-')[0]) : new Date(c.createdAt).getFullYear());
+          return contribYear === selectedYear;
+        });
         const users = usersResponse.data;
         
-        // Calculate statistics
+        // Calculate statistics for selected year
         const totalContributions = contributions.length;
         const totalUsers = users.length;
         const uniqueAccounts = new Set(contributions.map((c: any) => c.accountName)).size;
@@ -150,7 +157,7 @@ const AdminDashboard: React.FC = () => {
           impactBreakdown
         };
         
-        console.log('🔍 Calculated dashboard data:', dashboardData);
+        console.log('🔍 Calculated dashboard data for year', selectedYear, ':', dashboardData);
         setDashboardData(dashboardData);
       } else {
         toast.error('Failed to load dashboard data');
@@ -165,7 +172,8 @@ const AdminDashboard: React.FC = () => {
 
   const fetchTimelineData = async () => {
     try {
-      const response = await apiService.getTimelineData();
+      console.log('🔍 Fetching timeline data for year:', selectedYear);
+      const response = await apiService.getTimelineData(selectedYear);
       if (response.success) {
         setTimelineData(response.data);
       }
@@ -178,10 +186,17 @@ const AdminDashboard: React.FC = () => {
     try {
       const response = await apiService.getContributions();
       if (response.success) {
+        // Filter contributions by selected year
+        const filteredContributions = response.data.filter((c: any) => {
+          const contribYear = c.year || 
+            (c.contributionMonth ? parseInt(c.contributionMonth.split('-')[0]) : new Date(c.createdAt).getFullYear());
+          return contribYear === selectedYear;
+        });
+        
         // Group contributions by user
         const userMap = new Map<string, UserContribution>();
         
-        response.data.forEach((contribution: any) => {
+        filteredContributions.forEach((contribution: any) => {
           const userId = contribution.userId;
           const userName = contribution.userName;
           
@@ -429,8 +444,29 @@ const AdminDashboard: React.FC = () => {
     { name: 'Routine (Low Impact)', value: dashboardData?.impactBreakdown.low || 0, color: 'bg-green-500' },
   ];
 
+  // Available years
+  const availableYears = [2025, 2026];
+
   return (
     <div className="space-y-6">
+      {/* Year Selector */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-soft p-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          >
+            {availableYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Admin Welcome Section */}
       <div className="bg-gradient-to-r from-secondary-600 to-secondary-700 rounded-2xl p-6 text-white">
         <div className="flex items-center space-x-4">
