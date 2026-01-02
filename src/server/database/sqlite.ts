@@ -64,7 +64,7 @@ export async function initializeDatabase(): Promise<void> {
           effort TEXT NOT NULL,
           estimatedImpactValue REAL,
           contributionMonth TEXT NOT NULL,
-          year INTEGER NOT NULL DEFAULT (strftime('%Y', 'now')),
+          year INTEGER NOT NULL DEFAULT 2025,
           status TEXT NOT NULL DEFAULT 'draft',
           tags TEXT,
           createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -105,9 +105,16 @@ export async function initializeDatabase(): Promise<void> {
           }
 
           // Ensure new columns exist for existing databases
-          database.run('ALTER TABLE contributions ADD COLUMN year INTEGER DEFAULT (strftime(\'%Y\', \'now\'))', (alterErr) => {
+          database.run('ALTER TABLE contributions ADD COLUMN year INTEGER DEFAULT 2025', (alterErr) => {
             if (alterErr && !alterErr.message.includes('duplicate column')) {
               console.warn('⚠️ Could not add year column to contributions:', alterErr.message);
+            } else {
+              // Update existing records without year to 2025
+              database.run('UPDATE contributions SET year = 2025 WHERE year IS NULL', (updateErr) => {
+                if (updateErr) {
+                  console.warn('⚠️ Could not update year to 2025 for contributions:', updateErr.message);
+                }
+              });
             }
           });
           database.run('ALTER TABLE complex_projects ADD COLUMN description TEXT', (alterErr) => {
@@ -115,9 +122,16 @@ export async function initializeDatabase(): Promise<void> {
               console.warn('⚠️ Could not add description column to complex_projects:', alterErr.message);
             }
           });
-          database.run('ALTER TABLE complex_projects ADD COLUMN year INTEGER DEFAULT (strftime(\'%Y\', \'now\'))', (alterErr) => {
+          database.run('ALTER TABLE complex_projects ADD COLUMN year INTEGER DEFAULT 2025', (alterErr) => {
             if (alterErr && !alterErr.message.includes('duplicate column')) {
               console.warn('⚠️ Could not add year column to complex_projects:', alterErr.message);
+            } else {
+              // Update existing records without year to 2025
+              database.run('UPDATE complex_projects SET year = 2025 WHERE year IS NULL', (updateErr) => {
+                if (updateErr) {
+                  console.warn('⚠️ Could not update year to 2025 for complex_projects:', updateErr.message);
+                }
+              });
             }
           });
 

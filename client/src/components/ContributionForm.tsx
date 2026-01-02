@@ -83,7 +83,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       estimatedImpactValue: 0,
       description: '',
       contributionMonth: '',
-      year: new Date().getFullYear(),
+      year: 2026, // Default to 2026 (new year)
       tags: []
     },
     mode: 'onChange'
@@ -111,7 +111,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       setValue('description', initialData.description || '');
       setValue('contributionMonth', initialData.contributionMonth || '');
       setValue('year', initialData.year || 
-        (initialData.contributionMonth ? parseInt(initialData.contributionMonth.split('-')[0]) : new Date().getFullYear()));
+        (initialData.contributionMonth ? parseInt(initialData.contributionMonth.split('-')[0]) : 2026));
       setValue('tags', initialData.tags || []);
       setTagsInput(initialData.tags ? initialData.tags.join(', ') : '');
       console.log('🔍 Edit Mode - Set values:', {
@@ -182,7 +182,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       if (!submitData.year && submitData.contributionMonth) {
         submitData.year = parseInt(submitData.contributionMonth.split('-')[0]);
       } else if (!submitData.year) {
-        submitData.year = new Date().getFullYear();
+        submitData.year = 2026;
       }
       
       // Validate user data consistency
@@ -619,11 +619,8 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i + 1).map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
+                    <option value={2025}>2025</option>
+                    <option value={2026}>2026</option>
                   </select>
                 )}
               />
@@ -642,7 +639,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                 control={control}
                 rules={{ required: 'กรุณาเลือกเดือนที่ทำ Contribution' }}
                 render={({ field }) => {
-                  const year = watchedYear || new Date().getFullYear();
+                  const year = watchedYear || 2026;
                   const months = [
                     { value: '01', label: 'มกราคม' },
                     { value: '02', label: 'กุมภาพันธ์' },

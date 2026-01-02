@@ -27,6 +27,7 @@ const reportFilterValidation = [
 router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
+  const year = req.query.year ? parseInt(req.query.year as string) : 2025; // Default to 2025
 
   // Build base query based on user role
   let baseQuery = `
@@ -43,10 +44,19 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   `;
 
   const queryParams: any[] = [];
+  const whereConditions: string[] = [];
+
+  // Filter by year (use year field or extract from contributionMonth)
+  whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
+  queryParams.push(year, `${year}-%`);
 
   if (!isAdmin) {
-    baseQuery += ' WHERE userId = ?';
+    whereConditions.push('userId = ?');
     queryParams.push(userId);
+  }
+
+  if (whereConditions.length > 0) {
+    baseQuery += ' WHERE ' + whereConditions.join(' AND ');
   }
 
   const row: any = await dbQueryOne(baseQuery, queryParams);
@@ -70,10 +80,8 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
 router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
+  const year = req.query.year ? parseInt(req.query.year as string) : 2025; // Default to 2025
 
-  // Get current year
-  const currentYear = new Date().getFullYear();
-  
   // Build base query based on user role
   let baseQuery = `
     SELECT 
@@ -81,10 +89,10 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
       impact,
       COUNT(*) as count
     FROM contributions
-    WHERE contributionMonth LIKE ?
+    WHERE (year = ? OR (year IS NULL AND contributionMonth LIKE ?))
   `;
 
-  const queryParams: any[] = [`${currentYear}-%`];
+  const queryParams: any[] = [year, `${year}-%`];
 
   if (!isAdmin) {
     baseQuery += ' AND userId = ?';
@@ -98,10 +106,10 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
   // Generate 12 months data
   const monthlyData: any[] = [];
   for (let month = 1; month <= 12; month++) {
-    const monthStr = `${currentYear}-${month.toString().padStart(2, '0')}`;
+    const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
     const monthData = {
       month: monthStr,
-      monthName: new Date(currentYear, month - 1).toLocaleString('en-US', { month: 'short' }),
+      monthName: new Date(year, month - 1).toLocaleString('en-US', { month: 'short' }),
       contributions: { low: 0, medium: 0, high: 0, critical: 0, total: 0 }
     };
 
@@ -118,7 +126,7 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
     monthlyData.push(monthData);
   }
 
-  res.json({ success: true, data: { year: currentYear, monthlyData } });
+  res.json({ success: true, data: { year: year, monthlyData } });
 }));
 
 // Get comprehensive report data

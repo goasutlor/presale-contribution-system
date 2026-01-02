@@ -51,6 +51,7 @@ const Dashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [timelineData, setTimelineData] = useState<TimelineData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState<number>(2026); // Default to 2026 (new year)
 
   useEffect(() => {
     // Only fetch data if user is authenticated
@@ -60,14 +61,14 @@ const Dashboard: React.FC = () => {
     } else {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, selectedYear]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching dashboard data...');
+      console.log('🔍 Fetching dashboard data for year:', selectedYear);
       
-      const response = await apiService.getDashboardData();
+      const response = await apiService.getDashboardData(selectedYear);
       console.log('🔍 Dashboard API response:', response);
       
       if (response.success) {
@@ -85,9 +86,9 @@ const Dashboard: React.FC = () => {
 
   const fetchTimelineData = async () => {
     try {
-      console.log('🔍 Fetching timeline data...');
+      console.log('🔍 Fetching timeline data for year:', selectedYear);
       
-      const response = await apiService.getTimelineData();
+      const response = await apiService.getTimelineData(selectedYear);
       console.log('🔍 Timeline API response:', response);
       
       if (response.success) {
@@ -230,8 +231,30 @@ const Dashboard: React.FC = () => {
     return markers;
   };
 
+  // Get available years (2025, 2026, etc.)
+  const availableYears = [2025, 2026, 2027, 2028, 2029];
+
   return (
     <div className="space-y-6">
+      {/* Year Selector */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-soft p-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
+          {availableYears.map((year) => (
+            <button
+              key={year}
+              onClick={() => setSelectedYear(year)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedYear === year
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {year}
+            </button>
+          ))}
+        </div>
+      </div>
       {/* Welcome Section - World Class Design */}
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-3xl p-8 text-white shadow-2xl border border-blue-500/20">
         <div className="flex items-center">

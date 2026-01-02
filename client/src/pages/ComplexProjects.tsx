@@ -45,7 +45,7 @@ const defaultForm: ComplexProjectForm = {
   reasonsForLoss: '',
   lessonsLearned: '',
   suggestionsForImprovement: '',
-  year: new Date().getFullYear(),
+  year: 2026, // Default to 2026 (new year)
 };
 
 const ComplexProjects: React.FC = () => {
@@ -56,31 +56,15 @@ const ComplexProjects: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ComplexProjectForm>(defaultForm);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<number>(2026); // Default to 2026 (new year)
 
   const accountOptions = useMemo(() => user?.involvedAccountNames || [], [user]);
   const salesOptions = useMemo(() => user?.involvedSaleNames || [], [user]);
 
-  // Get available years from items
+  // Get available years - fixed to 2025 and 2026
   const availableYears = useMemo(() => {
-    const years = new Set<number>();
-    items.forEach(item => {
-      if (item.year) {
-        years.add(item.year);
-      } else {
-        // Fallback: extract year from createdAt if year field doesn't exist
-        const year = new Date(item.createdAt).getFullYear();
-        years.add(year);
-      }
-    });
-    const sortedYears = Array.from(years).sort((a, b) => b - a);
-    // If no years found, add current year and previous year
-    if (sortedYears.length === 0) {
-      const currentYear = new Date().getFullYear();
-      return [currentYear, currentYear - 1];
-    }
-    return sortedYears;
-  }, [items]);
+    return [2025, 2026].sort((a, b) => b - a);
+  }, []);
 
   // Filter items by selected year
   const filteredItems = useMemo(() => {
@@ -213,36 +197,41 @@ const ComplexProjects: React.FC = () => {
         </button>
       </div>
 
-      {/* Year Selector */}
+      {/* Year Selector - Dropdown for Admin, Buttons for Users */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-soft p-4">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
-          {availableYears.map((year) => (
-            <button
-              key={year}
-              onClick={() => setSelectedYear(year)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedYear === year
-                  ? 'bg-primary-600 text-white shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+          {user?.role === 'admin' ? (
+            // Dropdown for Admin
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
-              {year}
-            </button>
-          ))}
-          {/* Add button to add new year */}
-          <button
-            onClick={() => {
-              const newYear = new Date().getFullYear();
-              if (!availableYears.includes(newYear)) {
-                setSelectedYear(newYear);
-              }
-            }}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1"
-          >
-            <PlusIcon className="h-4 w-4" />
-            เพิ่มปีใหม่
-          </button>
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          ) : (
+            // Buttons for regular users
+            <>
+              {availableYears.map((year) => (
+                <button
+                  key={year}
+                  onClick={() => setSelectedYear(year)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedYear === year
+                      ? 'bg-primary-600 text-white shadow-sm'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  {year}
+                </button>
+              ))}
+            </>
+          )}
         </div>
       </div>
 
@@ -279,11 +268,8 @@ const ComplexProjects: React.FC = () => {
                 onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
               >
-                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i + 1).map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
+                <option value={2025}>2025</option>
+                <option value={2026}>2026</option>
               </select>
             </div>
 

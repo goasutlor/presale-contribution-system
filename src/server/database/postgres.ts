@@ -147,7 +147,7 @@ async function createTables(): Promise<void> {
       effort VARCHAR(50) NOT NULL,
       estimatedImpactValue DECIMAL(15,2),
       contributionMonth VARCHAR(20) NOT NULL,
-      year INTEGER NOT NULL DEFAULT EXTRACT(YEAR FROM NOW()),
+      year INTEGER NOT NULL DEFAULT 2025,
       status VARCHAR(50) NOT NULL DEFAULT 'draft',
       tags TEXT,
       attachments TEXT,
@@ -186,9 +186,17 @@ async function createTables(): Promise<void> {
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApproval BOOLEAN DEFAULT false`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalDate TIMESTAMP`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalNotes TEXT`);
-  await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT EXTRACT(YEAR FROM NOW())`);
+  await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT 2025`);
+  // Update existing records without year to 2025
+  await db.query(`UPDATE contributions SET year = 2025 WHERE year IS NULL`);
+  // Also update based on contributionMonth if year is still NULL
+  await db.query(`UPDATE contributions SET year = CAST(SUBSTRING(contributionMonth, 1, 4) AS INTEGER) WHERE year IS NULL AND contributionMonth LIKE '2025-%'`);
+  await db.query(`UPDATE contributions SET year = 2025 WHERE year IS NULL`);
+  
   await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS description TEXT`);
-  await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT EXTRACT(YEAR FROM NOW())`);
+  await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT 2025`);
+  // Update existing records without year to 2025
+  await db.query(`UPDATE complex_projects SET year = 2025 WHERE year IS NULL`);
 
   console.log('✅ Database tables created/verified');
 }
