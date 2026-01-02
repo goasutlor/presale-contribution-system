@@ -146,22 +146,48 @@ export async function initializeDatabase(): Promise<void> {
                   console.warn('⚠️ Could not update year to 2025 for complex_projects:', updateErr.message);
                 }
               });
-
-              // Normalize year from createdAt (fix drift for existing rows)
-              // If a row has year not matching createdAt year, align it to createdAt year.
-              database.run(
-                `UPDATE complex_projects
-                 SET year = CAST(strftime('%Y', createdAt) AS INTEGER)
-                 WHERE createdAt IS NOT NULL
-                   AND (year IS NULL OR year != CAST(strftime('%Y', createdAt) AS INTEGER))`,
-                (fixErr) => {
-                  if (fixErr) {
-                    console.warn('⚠️ Could not normalize year from createdAt for complex_projects:', fixErr.message);
-                  }
-                }
-              );
             }
           });
+
+          // One-time migration: move ALL existing complex_projects to year=2025 (as per current business rule)
+          // so selecting 2026 will show 0 until new 2026 data is added later.
+          // This runs only once and is tracked via app_meta.
+          database.run(
+            `CREATE TABLE IF NOT EXISTS app_meta (
+              key TEXT PRIMARY KEY,
+              value TEXT
+            )`,
+            (metaErr) => {
+              if (metaErr) {
+                console.warn('⚠️ Could not create app_meta table:', metaErr.message);
+              } else {
+                const flagKey = 'complex_projects_all_to_2025_v1';
+                database.get('SELECT value FROM app_meta WHERE key = ?', [flagKey], (flagErr, flagRow: any) => {
+                  if (flagErr) {
+                    console.warn('⚠️ Could not read app_meta flag:', flagErr.message);
+                    return;
+                  }
+                  if (!flagRow) {
+                    database.run('UPDATE complex_projects SET year = 2025', (migrateErr) => {
+                      if (migrateErr) {
+                        console.warn('⚠️ Could not migrate complex_projects to year=2025:', migrateErr.message);
+                        return;
+                      }
+                      database.run(
+                        'INSERT INTO app_meta (key, value) VALUES (?, ?)',
+                        [flagKey, new Date().toISOString()],
+                        (insertErr) => {
+                          if (insertErr) {
+                            console.warn('⚠️ Could not store app_meta flag:', insertErr.message);
+                          }
+                        }
+                      );
+                    });
+                  }
+                });
+              }
+            }
+          );
 
           console.log('✅ SQLite tables created/verified');
           

@@ -201,15 +201,24 @@ async function createTables(): Promise<void> {
   
   await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS description TEXT`);
   await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT 2025`);
-  // Normalize year from createdAt (fix drift for existing rows)
-  await db.query(`
-    UPDATE complex_projects
-    SET year = EXTRACT(YEAR FROM createdAt)::int
-    WHERE createdAt IS NOT NULL
-      AND (year IS NULL OR year != EXTRACT(YEAR FROM createdAt)::int)
-  `);
-  // Safety fallback for any remaining NULLs
+  // Ensure year exists for any legacy rows
   await db.query(`UPDATE complex_projects SET year = 2025 WHERE year IS NULL`);
+
+  // One-time migration: move ALL existing complex_projects to year=2025 (as per current business rule)
+  // so selecting 2026 will show 0 until new 2026 data is added later.
+  // This runs only once and is tracked via app_meta.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS app_meta (
+      key VARCHAR(255) PRIMARY KEY,
+      value TEXT
+    )
+  `);
+  const flagKey = 'complex_projects_all_to_2025_v1';
+  const flagRes = await db.query('SELECT value FROM app_meta WHERE key = $1', [flagKey]);
+  if (!flagRes.rows || flagRes.rows.length === 0) {
+    await db.query('UPDATE complex_projects SET year = 2025');
+    await db.query('INSERT INTO app_meta (key, value) VALUES ($1, $2)', [flagKey, new Date().toISOString()]);
+  }
 
   console.log('✅ Database tables created/verified');
 }
