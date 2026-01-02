@@ -60,8 +60,8 @@ const Reports: React.FC = () => {
   // Complex Projects state
   const [complexProjects, setComplexProjects] = useState<any[]>([]);
   const [loadingComplexProjects, setLoadingComplexProjects] = useState(false);
-  const [selectedYearContributions, setSelectedYearContributions] = useState<number>(2026); // Default to 2026 (new year)
-  const [selectedYearComplexProjects, setSelectedYearComplexProjects] = useState<number>(2026); // Default to 2026 (new year)
+  const [selectedYearContributions, setSelectedYearContributions] = useState<number>(2025); // Default to 2025 (all existing data is for 2025)
+  const [selectedYearComplexProjects, setSelectedYearComplexProjects] = useState<number>(2025); // Default to 2025 (all existing data is for 2025)
 
   const reportTypes = [
     { value: 'comprehensive', label: 'Comprehensive Report', description: 'รายงานแบบละเอียดพร้อม Timeline' }
