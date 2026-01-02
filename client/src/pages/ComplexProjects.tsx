@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RocketLaunchIcon, CheckBadgeIcon, XMarkIcon, PlusIcon, ClipboardDocumentListIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { RocketLaunchIcon, CheckBadgeIcon, XMarkIcon, PlusIcon, ClipboardDocumentListIcon, TrashIcon, UserIcon, BuildingOfficeIcon, UserGroupIcon, BookOpenIcon, LightBulbIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
@@ -389,89 +389,153 @@ const ComplexProjects: React.FC = () => {
         ) : items.length === 0 ? (
           <div className="py-12 text-center text-gray-500 dark:text-gray-400">ยังไม่มีข้อมูล</div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          <div className="space-y-6">
             {items.map((project) => (
-              <div key={project.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{project.projectName}</h3>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        project.status === 'win'
-                          ? 'bg-green-100 text-green-800'
-                          : project.status === 'loss'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        <CheckBadgeIcon className="h-4 w-4 mr-1" />
-                        {project.status === 'win' ? 'Win' : project.status === 'loss' ? 'Loss' : 'Ongoing'}
-                      </span>
-                      {project.userName && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Owner: {project.userName}</span>
+              <div 
+                key={project.id} 
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+              >
+                {/* Header Section */}
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-3 mb-3">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+                          {project.projectName}
+                        </h3>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 ${
+                          project.status === 'win'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                            : project.status === 'loss'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                        }`}>
+                          <CheckBadgeIcon className="h-3.5 w-3.5 mr-1.5" />
+                          {project.status === 'win' ? 'Win' : project.status === 'loss' ? 'Loss' : 'Ongoing'}
+                        </span>
+                      </div>
+                      
+                      {/* Meta Information */}
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        {project.userName && (
+                          <div className="flex items-center gap-1.5">
+                            <UserIcon className="h-4 w-4 text-gray-400" />
+                            <span className="font-medium">{project.userName}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <BuildingOfficeIcon className="h-4 w-4 text-gray-400" />
+                          <span>{project.accountName}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <UserGroupIcon className="h-4 w-4 text-gray-400" />
+                          <span>{project.salesName}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          <ClockIcon className="h-4 w-4 text-gray-400" />
+                          <span className="text-xs">{new Date(project.updatedAt).toLocaleDateString('th-TH', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {(project.userId === user?.id || user?.role === 'admin') && (
+                        <button
+                          onClick={() => startEdit(project)}
+                          className="px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                        >
+                          แก้ไข
+                        </button>
+                      )}
+                      {user?.role === 'admin' && (
+                        <button
+                          onClick={() => handleDelete(project.id)}
+                          className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                          ลบ
+                        </button>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      Account: {project.accountName} • Sales: {project.salesName}
-                    </p>
-                    <p className="text-sm text-gray-700 dark:text-gray-200 mt-2">
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="px-6 py-5 space-y-5">
+                  {/* Project Description */}
+                  <div className="bg-blue-50 dark:bg-blue-900/10 border-l-4 border-blue-500 rounded-r-lg p-4">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                      <RocketLaunchIcon className="h-4 w-4 text-blue-600" />
+                      Project Description
+                    </h4>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                       {project.description}
-                    </p>
-
-                    {project.status === 'win' && project.keySuccessFactors && (
-                      <div className="mt-3">
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Key Success Factors</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{project.keySuccessFactors}</p>
-                      </div>
-                    )}
-
-                    {project.status === 'loss' && project.reasonsForLoss && (
-                      <div className="mt-3">
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Reasons for Loss</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{project.reasonsForLoss}</p>
-                      </div>
-                    )}
-
-                    {project.status === 'ongoing' && project.keySuccessFactors && (
-                      <div className="mt-3">
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Current Progress & Status</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{project.keySuccessFactors}</p>
-                      </div>
-                    )}
-
-                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Lessons Learned</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{project.lessonsLearned}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Suggestions for Improvement</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{project.suggestionsForImprovement}</p>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
-                      อัปเดตล่าสุด: {new Date(project.updatedAt).toLocaleString()}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    {(project.userId === user?.id || user?.role === 'admin') && (
-                      <button
-                        onClick={() => startEdit(project)}
-                        className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                      >
-                        แก้ไข
-                      </button>
-                    )}
-                    {user?.role === 'admin' && (
-                      <button
-                        onClick={() => handleDelete(project.id)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium inline-flex items-center gap-1"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                        ลบ
-                      </button>
-                    )}
+                  {/* Status-Specific Information */}
+                  {project.status === 'win' && project.keySuccessFactors && (
+                    <div className="bg-green-50 dark:bg-green-900/10 border-l-4 border-green-500 rounded-r-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                        <CheckBadgeIcon className="h-4 w-4 text-green-600" />
+                        Key Success Factors
+                      </h4>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        {project.keySuccessFactors}
+                      </p>
+                    </div>
+                  )}
+
+                  {project.status === 'loss' && project.reasonsForLoss && (
+                    <div className="bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 rounded-r-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                        <XMarkIcon className="h-4 w-4 text-red-600" />
+                        Reasons for Loss
+                      </h4>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        {project.reasonsForLoss}
+                      </p>
+                    </div>
+                  )}
+
+                  {project.status === 'ongoing' && project.keySuccessFactors && (
+                    <div className="bg-blue-50 dark:bg-blue-900/10 border-l-4 border-blue-500 rounded-r-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                        <ClockIcon className="h-4 w-4 text-blue-600" />
+                        Current Progress & Status
+                      </h4>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        {project.keySuccessFactors}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Lessons & Suggestions Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
+                    <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <BookOpenIcon className="h-4 w-4 text-amber-600" />
+                        Lessons Learned
+                      </h4>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        {project.lessonsLearned}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <LightBulbIcon className="h-4 w-4 text-purple-600" />
+                        Suggestions for Improvement
+                      </h4>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        {project.suggestionsForImprovement}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
