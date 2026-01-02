@@ -1274,9 +1274,9 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         }
         
         .project-header-section {
-          background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+          background: linear-gradient(to right, #f9fafb 0%, #f3f4f6 100%);
           border-bottom: 1px solid #e5e7eb;
-          padding: 0.8rem 1rem;
+          padding: 1rem 1.5rem;
         }
         
         .project-header {
@@ -1284,36 +1284,48 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
           justify-content: space-between;
           align-items: flex-start;
           gap: 1rem;
-          margin-bottom: 0.6rem;
+          margin-bottom: 0.75rem;
+        }
+        
+        .project-name-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
         }
         
         .project-name {
-          font-size: 1.1rem;
+          font-size: 1.25rem;
           font-weight: 800;
-          color: #0f172a;
-          margin-bottom: 0.4rem;
+          color: #111827;
           line-height: 1.3;
+          flex: 1;
         }
         
         .project-meta {
           display: flex;
           gap: 1rem;
           flex-wrap: wrap;
-          font-size: 0.75rem;
-          color: #64748b;
+          font-size: 0.875rem;
+          color: #4b5563;
           align-items: center;
         }
         
         .meta-item {
           display: inline-flex;
           align-items: center;
-          gap: 0.3rem;
+          gap: 0.375rem;
         }
         
         .meta-icon {
-          width: 14px;
-          height: 14px;
-          opacity: 0.6;
+          width: 16px;
+          height: 16px;
+          color: #9ca3af;
+          flex-shrink: 0;
+        }
+        
+        .meta-item strong {
+          font-weight: 600;
         }
         
         .status-badge {
@@ -1347,33 +1359,42 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         }
         
         .project-content {
-          padding: 1rem;
-          space-y: 0.8rem;
+          padding: 1.25rem 1.5rem;
         }
         
         .content-section {
-          margin-bottom: 0.8rem;
+          margin-bottom: 1.25rem;
         }
         
         .project-description {
           background: #eff6ff;
           border-left: 4px solid #3b82f6;
-          border-radius: 0 6px 6px 0;
-          padding: 0.7rem 0.9rem;
-          margin-bottom: 0.8rem;
-          font-size: 0.8rem;
-          line-height: 1.6;
-          color: #1e3a8a;
+          border-radius: 0 8px 8px 0;
+          padding: 1rem;
+          margin-bottom: 1.25rem;
         }
         
         .desc-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #1e40af;
-          margin-bottom: 0.4rem;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #111827;
+          margin-bottom: 0.5rem;
           display: flex;
           align-items: center;
-          gap: 0.4rem;
+          gap: 0.5rem;
+        }
+        
+        .desc-title svg {
+          width: 16px;
+          height: 16px;
+          color: #2563eb;
+        }
+        
+        .desc-content {
+          font-size: 0.875rem;
+          line-height: 1.625;
+          color: #1e40af;
+          white-space: pre-line;
         }
         
         .info-section {
@@ -1383,77 +1404,94 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         .info-section.win {
           background: #f0fdf4;
           border-left: 4px solid #22c55e;
-          border-radius: 0 6px 6px 0;
-          padding: 0.7rem 0.9rem;
+          border-radius: 0 8px 8px 0;
+          padding: 1rem;
         }
         
         .info-section.loss {
           background: #fef2f2;
           border-left: 4px solid #ef4444;
-          border-radius: 0 6px 6px 0;
-          padding: 0.7rem 0.9rem;
+          border-radius: 0 8px 8px 0;
+          padding: 1rem;
         }
         
         .info-section.ongoing {
           background: #eff6ff;
           border-left: 4px solid #3b82f6;
-          border-radius: 0 6px 6px 0;
-          padding: 0.7rem 0.9rem;
+          border-radius: 0 8px 8px 0;
+          padding: 1rem;
         }
         
         .info-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #0f172a;
-          margin-bottom: 0.4rem;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #111827;
+          margin-bottom: 0.5rem;
           display: flex;
           align-items: center;
-          gap: 0.4rem;
+          gap: 0.5rem;
+        }
+        
+        .info-title svg {
+          width: 16px;
+          height: 16px;
+        }
+        
+        .info-title .icon-win {
+          color: #16a34a;
+        }
+        
+        .info-title .icon-loss {
+          color: #dc2626;
+        }
+        
+        .info-title .icon-ongoing {
+          color: #2563eb;
         }
         
         .info-content {
-          font-size: 0.8rem;
-          line-height: 1.6;
-          color: #334155;
+          font-size: 0.875rem;
+          line-height: 1.625;
+          color: #374151;
           white-space: pre-line;
         }
         
         .lessons-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 0.8rem;
-          margin-top: 0.8rem;
+          gap: 1rem;
+          margin-top: 0.5rem;
         }
         
         .lessons-section {
           border-radius: 8px;
-          padding: 0.8rem;
+          padding: 1rem;
         }
         
         .lessons-section.learned {
           background: #fffbeb;
-          border: 1px solid #fcd34d;
+          border: 1px solid #fbbf24;
         }
         
         .lessons-section.suggestions {
           background: #faf5ff;
-          border: 1px solid #c084fc;
+          border: 1px solid #a855f7;
         }
         
         .lessons-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #0f172a;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #111827;
           margin-bottom: 0.5rem;
           display: flex;
           align-items: center;
-          gap: 0.4rem;
+          gap: 0.5rem;
         }
         
         .lessons-content {
-          font-size: 0.8rem;
-          line-height: 1.6;
-          color: #334155;
+          font-size: 0.875rem;
+          line-height: 1.625;
+          color: #374151;
           white-space: pre-line;
         }
         
@@ -1609,8 +1647,13 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                 <!-- Header Section -->
                 <div class="project-header-section">
                   <div class="project-header">
-                    <div style="flex: 1;">
-                      <div class="project-name">${index + 1}. ${project.projectName || 'N/A'}</div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div class="project-name-row">
+                        <div class="project-name">${index + 1}. ${project.projectName || 'N/A'}</div>
+                        <span class="status-badge status-${project.status}">
+                          ${project.status === 'win' ? '✓ WIN' : project.status === 'loss' ? '✗ LOSS' : '⟳ ONGOING'}
+                        </span>
+                      </div>
                       <div class="project-meta">
                         ${project.userName ? `
                           <span class="meta-item">
@@ -1636,13 +1679,10 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                           <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          ${new Date(project.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                          ${new Date(project.updatedAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}
                         </span>
                       </div>
                     </div>
-                    <span class="status-badge status-${project.status}">
-                      ${project.status === 'win' ? '✓ WIN' : project.status === 'loss' ? '✗ LOSS' : '⟳ ONGOING'}
-                    </span>
                   </div>
                 </div>
                 
@@ -1652,12 +1692,12 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                     <div class="content-section">
                       <div class="project-description">
                         <div class="desc-title">
-                          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
                           Project Description
                         </div>
-                        ${project.description}
+                        <div class="desc-content">${project.description}</div>
                       </div>
                     </div>
                   ` : ''}
@@ -1666,7 +1706,10 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                     <div class="content-section">
                       <div class="info-section win">
                         <div class="info-title">
-                          <span>🎯</span> Key Success Factors
+                          <svg class="icon-win" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Key Success Factors
                         </div>
                         <div class="info-content">${project.keySuccessFactors}</div>
                       </div>
@@ -1677,7 +1720,10 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                     <div class="content-section">
                       <div class="info-section loss">
                         <div class="info-title">
-                          <span>⚠️</span> Reasons for Loss
+                          <svg class="icon-loss" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Reasons for Loss
                         </div>
                         <div class="info-content">${project.reasonsForLoss}</div>
                       </div>
@@ -1688,7 +1734,10 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
                     <div class="content-section">
                       <div class="info-section ongoing">
                         <div class="info-title">
-                          <span>📊</span> Current Progress & Status
+                          <svg class="icon-ongoing" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          Current Progress & Status
                         </div>
                         <div class="info-content">${project.keySuccessFactors}</div>
                       </div>
