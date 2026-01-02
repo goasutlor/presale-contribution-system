@@ -102,7 +102,16 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
 
   query += ' ORDER BY cp.createdAt DESC';
   const rows = await dbQuery(query, params);
-  const data = rows.map(mapRowToProject);
+  let data = rows.map(mapRowToProject);
+
+  // Additional filter for year if year field is NULL (fallback to createdAt year)
+  // This handles cases where year field might be NULL
+  if (year) {
+    data = data.filter(project => {
+      const projectYear = project.year || new Date(project.createdAt).getFullYear();
+      return projectYear === year;
+    });
+  }
 
   res.json({ success: true, data });
 }));
