@@ -48,6 +48,8 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
 
   // Filter by year - prioritize year field, fallback to contributionMonth if year is NULL
   // This ensures we only get data for the selected year
+  // When year = 2025: show all data (all existing data is for 2025)
+  // When year = 2026: show 0 (no data for 2026 yet)
   whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
   queryParams.push(year, `${year}-%`);
 
@@ -83,10 +85,11 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const accountsRow: any = await dbQueryOne(accountsQuery, accountsParams);
   const totalAccounts = accountsRow?.totalAccounts || 0;
 
-  console.log('🔍 Dashboard query:', baseQuery);
+  console.log('🔍 Dashboard query for year', year, ':', baseQuery);
   console.log('🔍 Dashboard query params:', queryParams);
   const row: any = await dbQueryOne(baseQuery, queryParams);
-  console.log('🔍 Dashboard query result:', row);
+  console.log('🔍 Dashboard query result for year', year, ':', row);
+  console.log('🔍 Total contributions found:', row?.totalContributions || 0);
   
   const dashboardData = {
     totalContributions: row?.totalContributions || 0,
