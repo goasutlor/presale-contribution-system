@@ -1266,37 +1266,54 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
         .project-card {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 0.9rem;
-          margin-bottom: 0.9rem;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+          border-radius: 12px;
+          margin-bottom: 1.2rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           page-break-inside: avoid;
+          overflow: hidden;
+        }
+        
+        .project-header-section {
+          background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+          border-bottom: 1px solid #e5e7eb;
+          padding: 0.8rem 1rem;
         }
         
         .project-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
+          gap: 1rem;
           margin-bottom: 0.6rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid #f3f4f6;
         }
         
         .project-name {
-          font-size: 0.95rem;
-          font-weight: 700;
+          font-size: 1.1rem;
+          font-weight: 800;
           color: #0f172a;
-          margin-bottom: 0.2rem;
+          margin-bottom: 0.4rem;
           line-height: 1.3;
         }
         
         .project-meta {
           display: flex;
-          gap: 0.8rem;
+          gap: 1rem;
           flex-wrap: wrap;
           font-size: 0.75rem;
           color: #64748b;
-          margin-top: 0.2rem;
+          align-items: center;
+        }
+        
+        .meta-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+        }
+        
+        .meta-icon {
+          width: 14px;
+          height: 14px;
+          opacity: 0.6;
         }
         
         .status-badge {
@@ -1329,71 +1346,114 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
           border: 1px solid #93c5fd;
         }
         
+        .project-content {
+          padding: 1rem;
+          space-y: 0.8rem;
+        }
+        
+        .content-section {
+          margin-bottom: 0.8rem;
+        }
+        
         .project-description {
-          background: #f8fafc;
-          border-left: 3px solid #3b82f6;
-          padding: 0.6rem 0.8rem;
-          margin-bottom: 0.6rem;
-          border-radius: 3px;
+          background: #eff6ff;
+          border-left: 4px solid #3b82f6;
+          border-radius: 0 6px 6px 0;
+          padding: 0.7rem 0.9rem;
+          margin-bottom: 0.8rem;
           font-size: 0.8rem;
-          line-height: 1.5;
-          color: #334155;
+          line-height: 1.6;
+          color: #1e3a8a;
+        }
+        
+        .desc-title {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #1e40af;
+          margin-bottom: 0.4rem;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
         }
         
         .info-section {
-          margin-bottom: 0.6rem;
+          margin-bottom: 0.8rem;
+        }
+        
+        .info-section.win {
+          background: #f0fdf4;
+          border-left: 4px solid #22c55e;
+          border-radius: 0 6px 6px 0;
+          padding: 0.7rem 0.9rem;
+        }
+        
+        .info-section.loss {
+          background: #fef2f2;
+          border-left: 4px solid #ef4444;
+          border-radius: 0 6px 6px 0;
+          padding: 0.7rem 0.9rem;
+        }
+        
+        .info-section.ongoing {
+          background: #eff6ff;
+          border-left: 4px solid #3b82f6;
+          border-radius: 0 6px 6px 0;
+          padding: 0.7rem 0.9rem;
         }
         
         .info-title {
           font-size: 0.75rem;
           font-weight: 700;
-          color: #1e40af;
+          color: #0f172a;
           margin-bottom: 0.4rem;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
           display: flex;
           align-items: center;
           gap: 0.4rem;
         }
         
         .info-content {
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          padding: 0.6rem 0.8rem;
           font-size: 0.8rem;
           line-height: 1.6;
-          color: #475569;
+          color: #334155;
           white-space: pre-line;
         }
         
         .lessons-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 0.6rem;
-          margin-top: 0.6rem;
+          gap: 0.8rem;
+          margin-top: 0.8rem;
         }
         
         .lessons-section {
-          background: #f8fafc;
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          padding: 0.7rem;
+          border-radius: 8px;
+          padding: 0.8rem;
+        }
+        
+        .lessons-section.learned {
+          background: #fffbeb;
+          border: 1px solid #fcd34d;
+        }
+        
+        .lessons-section.suggestions {
+          background: #faf5ff;
+          border: 1px solid #c084fc;
         }
         
         .lessons-title {
           font-size: 0.75rem;
           font-weight: 700;
-          color: #1e40af;
-          margin-bottom: 0.4rem;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
+          color: #0f172a;
+          margin-bottom: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
         }
         
         .lessons-content {
           font-size: 0.8rem;
           line-height: 1.6;
-          color: #475569;
+          color: #334155;
           white-space: pre-line;
         }
         
@@ -1546,62 +1606,104 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
             <h2 class="section-title">Project Details & Lessons Learned</h2>
             ${projects.length > 0 ? projects.map((project, index) => `
               <div class="project-card">
-                <div class="project-header">
-                  <div style="flex: 1;">
-                    <div class="project-name">${index + 1}. ${project.projectName || 'N/A'}</div>
-                    <div class="project-meta">
-                      <span><strong>Account:</strong> ${project.accountName || 'N/A'}</span>
-                      <span><strong>Sales:</strong> ${project.salesName || 'N/A'}</span>
-                      ${project.userName ? `<span><strong>Owner:</strong> ${project.userName}</span>` : ''}
+                <!-- Header Section -->
+                <div class="project-header-section">
+                  <div class="project-header">
+                    <div style="flex: 1;">
+                      <div class="project-name">${index + 1}. ${project.projectName || 'N/A'}</div>
+                      <div class="project-meta">
+                        ${project.userName ? `
+                          <span class="meta-item">
+                            <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <strong>${project.userName}</strong>
+                          </span>
+                        ` : ''}
+                        <span class="meta-item">
+                          <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          ${project.accountName || 'N/A'}
+                        </span>
+                        <span class="meta-item">
+                          <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                          ${project.salesName || 'N/A'}
+                        </span>
+                        <span class="meta-item" style="margin-left: auto;">
+                          <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          ${new Date(project.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
                     </div>
+                    <span class="status-badge status-${project.status}">
+                      ${project.status === 'win' ? '✓ WIN' : project.status === 'loss' ? '✗ LOSS' : '⟳ ONGOING'}
+                    </span>
                   </div>
-                  <span class="status-badge status-${project.status}">
-                    ${project.status === 'win' ? '✓ WIN' : project.status === 'loss' ? '✗ LOSS' : '⟳ ONGOING'}
-                  </span>
                 </div>
                 
-                ${project.description ? `
-                  <div class="project-description">
-                    <strong>Project Description:</strong><br>
-                    ${project.description}
-                  </div>
-                ` : ''}
-                
-                ${project.status === 'win' && project.keySuccessFactors ? `
-                  <div class="info-section">
-                    <div class="info-title">
-                      <span>🎯</span> Key Success Factors
+                <!-- Content Section -->
+                <div class="project-content">
+                  ${project.description ? `
+                    <div class="content-section">
+                      <div class="project-description">
+                        <div class="desc-title">
+                          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Project Description
+                        </div>
+                        ${project.description}
+                      </div>
                     </div>
-                    <div class="info-content">${project.keySuccessFactors}</div>
-                  </div>
-                ` : ''}
-                
-                ${project.status === 'loss' && project.reasonsForLoss ? `
-                  <div class="info-section">
-                    <div class="info-title">
-                      <span>⚠️</span> Reasons for Loss
+                  ` : ''}
+                  
+                  ${project.status === 'win' && project.keySuccessFactors ? `
+                    <div class="content-section">
+                      <div class="info-section win">
+                        <div class="info-title">
+                          <span>🎯</span> Key Success Factors
+                        </div>
+                        <div class="info-content">${project.keySuccessFactors}</div>
+                      </div>
                     </div>
-                    <div class="info-content">${project.reasonsForLoss}</div>
-                  </div>
-                ` : ''}
-                
-                ${project.status === 'ongoing' && project.keySuccessFactors ? `
-                  <div class="info-section">
-                    <div class="info-title">
-                      <span>📊</span> Current Progress & Status
+                  ` : ''}
+                  
+                  ${project.status === 'loss' && project.reasonsForLoss ? `
+                    <div class="content-section">
+                      <div class="info-section loss">
+                        <div class="info-title">
+                          <span>⚠️</span> Reasons for Loss
+                        </div>
+                        <div class="info-content">${project.reasonsForLoss}</div>
+                      </div>
                     </div>
-                    <div class="info-content">${project.keySuccessFactors}</div>
-                  </div>
-                ` : ''}
-                
-                <div class="lessons-grid">
-                  <div class="lessons-section">
-                    <div class="lessons-title">📚 Lessons Learned</div>
-                    <div class="lessons-content">${project.lessonsLearned || 'N/A'}</div>
-                  </div>
-                  <div class="lessons-section">
-                    <div class="lessons-title">💡 Suggestions for Improvement</div>
-                    <div class="lessons-content">${project.suggestionsForImprovement || 'N/A'}</div>
+                  ` : ''}
+                  
+                  ${project.status === 'ongoing' && project.keySuccessFactors ? `
+                    <div class="content-section">
+                      <div class="info-section ongoing">
+                        <div class="info-title">
+                          <span>📊</span> Current Progress & Status
+                        </div>
+                        <div class="info-content">${project.keySuccessFactors}</div>
+                      </div>
+                    </div>
+                  ` : ''}
+                  
+                  <div class="lessons-grid">
+                    <div class="lessons-section learned">
+                      <div class="lessons-title">📚 Lessons Learned</div>
+                      <div class="lessons-content">${project.lessonsLearned || 'N/A'}</div>
+                    </div>
+                    <div class="lessons-section suggestions">
+                      <div class="lessons-title">💡 Suggestions for Improvement</div>
+                      <div class="lessons-content">${project.suggestionsForImprovement || 'N/A'}</div>
+                    </div>
                   </div>
                 </div>
               </div>
