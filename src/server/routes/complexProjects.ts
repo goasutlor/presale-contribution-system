@@ -89,10 +89,9 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
   }
 
   // Filter by year if provided
-  // Since all existing data is for 2025, we check year field
-  // For NULL year, we'll filter in application layer (handled by mapRowToProject)
+  // First filter by year field in database
   if (year) {
-    whereConditions.push('cp.year = ?');
+    whereConditions.push('(cp.year = ? OR cp.year IS NULL)');
     params.push(year);
   }
 
@@ -104,8 +103,10 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
   const rows = await dbQuery(query, params);
   let data = rows.map(mapRowToProject);
 
-  // Additional filter for year if year field is NULL (fallback to createdAt year)
-  // This handles cases where year field might be NULL
+  // Application-level filter for year (handles NULL year by using createdAt)
+  // This ensures we only return data for the selected year
+  // When year = 2025: show all data (all existing data is for 2025)
+  // When year = 2026: show 0 (no data for 2026 yet)
   if (year) {
     data = data.filter(project => {
       const projectYear = project.year || new Date(project.createdAt).getFullYear();

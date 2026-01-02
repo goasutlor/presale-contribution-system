@@ -27,7 +27,7 @@ const reportFilterValidation = [
 router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
-  const year = req.query.year ? parseInt(req.query.year as string) : 2025; // Default to 2025 (all existing data is for 2025)
+  const year = req.query.year ? parseInt(req.query.year as string) : 2026; // Default to 2026 (new year)
 
   // Build base query based on user role
   let baseQuery = `
@@ -110,7 +110,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
 router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
-  const year = req.query.year ? parseInt(req.query.year as string) : 2025; // Default to 2025 (all existing data is for 2025)
+  const year = req.query.year ? parseInt(req.query.year as string) : 2026; // Default to 2026 (new year)
 
   // Build base query based on user role
   let baseQuery = `
