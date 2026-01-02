@@ -714,7 +714,6 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-
         {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -730,7 +729,7 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-          {showFilters && (
+        {showFilters && (
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -816,10 +815,9 @@ const Reports: React.FC = () => {
                   <option value="rejected">Rejected</option>
                 </select>
                 </div>
-                    </div>
-                  </div>
-                )}
-              
+              </div>
+            </div>
+          )}
 
         {/* Print Fields Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
