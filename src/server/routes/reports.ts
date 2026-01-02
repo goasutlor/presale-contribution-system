@@ -47,8 +47,9 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const whereConditions: string[] = [];
 
   // Filter by year - check both year field and contributionMonth format (YYYY-MM)
-  // This ensures we catch all data for the selected year
-  whereConditions.push(`(year = ? OR contributionMonth LIKE ?)`);
+  // Use AND to ensure we only get data for the selected year
+  // If year field matches OR contributionMonth starts with the year, include it
+  whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
   queryParams.push(year, `${year}-%`);
 
   if (!isAdmin) {
@@ -68,7 +69,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const accountsParams: any[] = [];
   const accountsWhereConditions: string[] = [];
   
-  accountsWhereConditions.push(`(year = ? OR contributionMonth LIKE ?)`);
+  accountsWhereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
   accountsParams.push(year, `${year}-%`);
   
   if (!isAdmin) {
@@ -114,7 +115,7 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
       impact,
       COUNT(*) as count
     FROM contributions
-    WHERE (year = ? OR contributionMonth LIKE ?)
+    WHERE (year = ? OR (year IS NULL AND contributionMonth LIKE ?))
   `;
 
   const queryParams: any[] = [year, `${year}-%`];
