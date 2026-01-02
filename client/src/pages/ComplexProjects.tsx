@@ -81,7 +81,8 @@ const ComplexProjects: React.FC = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await apiService.getComplexProjects();
+        // Pass selectedYear to API for server-side filtering
+        const res = await apiService.getComplexProjects(selectedYear);
         if (res.success) setItems(res.data || []);
         else toast.error(res.message || 'โหลดข้อมูลไม่สำเร็จ');
       } catch (err: any) {
@@ -91,7 +92,7 @@ const ComplexProjects: React.FC = () => {
       }
     };
     load();
-  }, []);
+  }, [selectedYear]);
 
   useEffect(() => {
     // Auto prefill account/sales when there is only one option
@@ -133,7 +134,7 @@ const ComplexProjects: React.FC = () => {
         await apiService.createComplexProject(payload);
         toast.success('บันทึกข้อมูลเรียบร้อย');
       }
-      const refreshed = await apiService.getComplexProjects();
+      const refreshed = await apiService.getComplexProjects(selectedYear);
       if (refreshed.success) setItems(refreshed.data);
       resetForm();
       setShowForm(false);
@@ -166,7 +167,7 @@ const ComplexProjects: React.FC = () => {
     try {
       await apiService.deleteComplexProject(id);
       toast.success('ลบข้อมูลเรียบร้อย');
-      const refreshed = await apiService.getComplexProjects();
+      const refreshed = await apiService.getComplexProjects(selectedYear);
       if (refreshed.success) setItems(refreshed.data);
     } catch (err: any) {
       toast.error(err.message || 'ลบข้อมูลไม่สำเร็จ');
