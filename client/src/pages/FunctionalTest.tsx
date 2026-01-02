@@ -31,6 +31,7 @@ const FunctionalTest: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastRun, setLastRun] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
 
   const runFullTest = async () => {
     if (!user || user.role !== 'admin') {
@@ -108,6 +109,42 @@ const FunctionalTest: React.FC = () => {
     }
   };
 
+  const restoreData = async (file: File) => {
+    if (!user || user.role !== 'admin') {
+      alert('Only administrators can restore data.');
+      return;
+    }
+    const ok = window.confirm(
+      '⚠️ Restore จะเขียนทับข้อมูลทั้งระบบทั้งหมด (Users/Contributions/Complex Projects) และไม่สามารถ Undo ได้\n\nต้องการดำเนินการต่อหรือไม่?'
+    );
+    if (!ok) return;
+
+    setRestoring(true);
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/reports/restore-data', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.message || err?.error || 'Restore failed');
+      }
+      alert('✅ Restore completed. กรุณา refresh หน้าเว็บ/ logout-login ใหม่');
+    } catch (e) {
+      console.error('Restore error', e);
+      alert('Restore failed.');
+    } finally {
+      setRestoring(false);
+    }
+  };
+
   if (user?.role !== 'admin') {
     return (
       <div className="text-center py-12">
@@ -133,6 +170,21 @@ const FunctionalTest: React.FC = () => {
           >
             Export Data
           </button>
+          <label className={`inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-danger-500 transition-colors duration-200 ${restoring ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+            <input
+              type="file"
+              accept="application/json"
+              className="hidden"
+              disabled={restoring}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) restoreData(f);
+                // reset so selecting the same file again will trigger onChange
+                e.currentTarget.value = '';
+              }}
+            />
+            {restoring ? 'Restoring...' : 'Restore Data'}
+          </label>
           <button
             onClick={runFullTest}
             disabled={loading}

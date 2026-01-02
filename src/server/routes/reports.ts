@@ -1,10 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { dbQuery, dbQueryOne } from '../database/init';
+import { dbExecute, dbQuery, dbQueryOne } from '../database/init';
 import { authenticateToken, requireUser, AuthRequest } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { ReportFilter, ReportData } from '../types';
+import { getDatabase as getPgDatabase, convertQuery } from '../database/postgres';
+import { getDatabase as getSqliteDatabase } from '../database/sqlite';
 
 const router = Router();
 
@@ -388,21 +390,46 @@ router.get('/user/:userId', requireUser, asyncHandler(async (req: AuthRequest, r
   res.json({ success: true, data: { contributions, summary: { totalContributions, approvedContributions, submittedContributions, draftContributions, impactBreakdown, typeBreakdown } } });
 }));
 
-export { router as reportRoutes };
+// ===========================
+// Full System Export / Restore
+// ===========================
 
-// Export all data as JSON (admin only via requireUser + role check)
+// Export all system data as JSON (admin only)
 router.get('/export-data', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   if (req.user!.role !== 'admin') {
     throw createError('Admin access required', 403);
   }
 
+  // Ensure app_meta exists (created by migrations, but keep safe here)
+  try {
+    await dbExecute(`
+      CREATE TABLE IF NOT EXISTS app_meta (
+        key TEXT PRIMARY KEY,
+        value TEXT
+      )
+    `);
+  } catch {
+    // Ignore if dialect doesn't support this exact statement; table likely exists already
+  }
+
   const users = await dbQuery('SELECT * FROM users ORDER BY createdAt DESC');
   const contributions = await dbQuery('SELECT * FROM contributions ORDER BY createdAt DESC');
+  const complexProjects = await dbQuery('SELECT * FROM complex_projects ORDER BY createdAt DESC');
+
+  let appMeta: any[] = [];
+  try {
+    appMeta = await dbQuery('SELECT * FROM app_meta');
+  } catch {
+    appMeta = [];
+  }
 
   const payload = {
+    version: 1,
     exportedAt: new Date().toISOString(),
     users,
-    contributions
+    contributions,
+    complexProjects,
+    appMeta
   };
 
   const json = JSON.stringify(payload, null, 2);
@@ -410,3 +437,149 @@ router.get('/export-data', requireUser, asyncHandler(async (req: AuthRequest, re
   res.setHeader('Content-Disposition', 'attachment; filename="asc3_export.json"');
   res.send(json);
 }));
+
+// Restore all system data from JSON (admin only)
+router.post('/restore-data', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') {
+    throw createError('Admin access required', 403);
+  }
+
+  const payload = req.body;
+  if (!payload || typeof payload !== 'object') {
+    throw createError('Invalid payload', 400);
+  }
+
+  const users: any[] = Array.isArray(payload.users) ? payload.users : [];
+  const contributions: any[] = Array.isArray(payload.contributions) ? payload.contributions : [];
+  const complexProjects: any[] = Array.isArray(payload.complexProjects) ? payload.complexProjects : [];
+  const appMeta: any[] = Array.isArray(payload.appMeta) ? payload.appMeta : [];
+
+  const usePostgreSQL = !!process.env.DATABASE_URL;
+
+  const nowIso = new Date().toISOString();
+
+  if (usePostgreSQL) {
+    const pool = getPgDatabase();
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Ensure app_meta exists
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS app_meta (
+          key VARCHAR(255) PRIMARY KEY,
+          value TEXT
+        )
+      `);
+
+      // Wipe data (order + CASCADE to satisfy FK constraints)
+      await client.query('TRUNCATE TABLE contributions, complex_projects, app_meta, users RESTART IDENTITY CASCADE');
+
+      const insertRow = async (table: string, row: Record<string, any>, columns: string[]) => {
+        const cols = columns.filter((c) => row[c] !== undefined);
+        const values = cols.map((c) => row[c]);
+        if (cols.length === 0) return;
+        const placeholders = cols.map(() => '?').join(', ');
+        const sql = `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`;
+        const converted = convertQuery(sql, values);
+        await client.query(converted.query, converted.params);
+      };
+
+      // Insert users first (FK parent)
+      for (const u of users) {
+        await insertRow('users', u, [
+          'id','fullName','staffId','email','password','involvedAccountNames','involvedSaleNames','involvedSaleEmails','blogLinks',
+          'role','status','canViewOthers','createdAt','updatedAt'
+        ]);
+      }
+
+      // Insert contributions
+      for (const c of contributions) {
+        await insertRow('contributions', c, [
+          'id','userId','accountName','saleName','saleEmail','contributionType','title','description','impact','effort',
+          'estimatedImpactValue','contributionMonth','year','status','tags','attachments','saleApproval','saleApprovalDate','saleApprovalNotes',
+          'createdAt','updatedAt'
+        ]);
+      }
+
+      // Insert complex projects
+      for (const p of complexProjects) {
+        await insertRow('complex_projects', p, [
+          'id','userId','projectName','description','salesName','accountName','status','keySuccessFactors','reasonsForLoss',
+          'lessonsLearned','suggestionsForImprovement','year','createdAt','updatedAt'
+        ]);
+      }
+
+      // Insert app meta
+      for (const m of appMeta) {
+        await insertRow('app_meta', m, ['key','value']);
+      }
+
+      await client.query('COMMIT');
+      res.json({ success: true, message: 'Restore completed', restoredAt: nowIso });
+    } catch (e: any) {
+      await client.query('ROLLBACK');
+      throw createError(`Restore failed: ${e?.message || 'unknown error'}`, 500);
+    } finally {
+      client.release();
+    }
+    return;
+  }
+
+  // SQLite restore
+  const db = getSqliteDatabase();
+  const run = (sql: string, params: any[] = []) =>
+    new Promise<void>((resolve, reject) => {
+      db.run(sql, params, (err) => (err ? reject(err) : resolve()));
+    });
+
+  try {
+    await run('BEGIN');
+    await run(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT)`);
+
+    // Wipe data (child first)
+    await run('DELETE FROM contributions');
+    await run('DELETE FROM complex_projects');
+    await run('DELETE FROM app_meta');
+    await run('DELETE FROM users');
+
+    const insertSqlite = async (table: string, row: Record<string, any>, columns: string[]) => {
+      const cols = columns.filter((c) => row[c] !== undefined);
+      const values = cols.map((c) => row[c]);
+      if (cols.length === 0) return;
+      const placeholders = cols.map(() => '?').join(', ');
+      const sql = `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`;
+      await run(sql, values);
+    };
+
+    for (const u of users) {
+      await insertSqlite('users', u, [
+        'id','fullName','staffId','email','password','involvedAccountNames','involvedSaleNames','involvedSaleEmails','blogLinks',
+        'role','status','canViewOthers','createdAt','updatedAt'
+      ]);
+    }
+    for (const c of contributions) {
+      await insertSqlite('contributions', c, [
+        'id','userId','accountName','saleName','saleEmail','contributionType','title','description','impact','effort',
+        'estimatedImpactValue','contributionMonth','year','status','tags','createdAt','updatedAt'
+      ]);
+    }
+    for (const p of complexProjects) {
+      await insertSqlite('complex_projects', p, [
+        'id','userId','projectName','description','salesName','accountName','status','keySuccessFactors','reasonsForLoss',
+        'lessonsLearned','suggestionsForImprovement','year','createdAt','updatedAt'
+      ]);
+    }
+    for (const m of appMeta) {
+      await insertSqlite('app_meta', m, ['key','value']);
+    }
+
+    await run('COMMIT');
+    res.json({ success: true, message: 'Restore completed', restoredAt: nowIso });
+  } catch (e: any) {
+    try { await run('ROLLBACK'); } catch {}
+    throw createError(`Restore failed: ${e?.message || 'unknown error'}`, 500);
+  }
+}));
+
+export { router as reportRoutes };
