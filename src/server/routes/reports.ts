@@ -46,9 +46,8 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const queryParams: any[] = [];
   const whereConditions: string[] = [];
 
-  // Filter by year - check both year field and contributionMonth format (YYYY-MM)
-  // Use AND to ensure we only get data for the selected year
-  // If year field matches OR contributionMonth starts with the year, include it
+  // Filter by year - prioritize year field, fallback to contributionMonth if year is NULL
+  // This ensures we only get data for the selected year
   whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
   queryParams.push(year, `${year}-%`);
 
@@ -84,7 +83,11 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const accountsRow: any = await dbQueryOne(accountsQuery, accountsParams);
   const totalAccounts = accountsRow?.totalAccounts || 0;
 
+  console.log('🔍 Dashboard query:', baseQuery);
+  console.log('🔍 Dashboard query params:', queryParams);
   const row: any = await dbQueryOne(baseQuery, queryParams);
+  console.log('🔍 Dashboard query result:', row);
+  
   const dashboardData = {
     totalContributions: row?.totalContributions || 0,
     approvedContributions: row?.approvedContributions || 0,
@@ -99,6 +102,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
     }
   };
 
+  console.log('🔍 Dashboard data for year', year, ':', dashboardData);
   res.json({ success: true, data: dashboardData });
 }));
 
