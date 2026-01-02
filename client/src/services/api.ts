@@ -222,12 +222,14 @@ class ApiService {
   }
 
   // Dashboard endpoints
-  async getDashboardData(): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>('/api/reports/dashboard');
+  async getDashboardData(year?: number): Promise<ApiResponse<any>> {
+    const yearParam = year || 2026;
+    return this.request<ApiResponse<any>>(`/api/reports/dashboard?year=${yearParam}`);
   }
 
-  async getTimelineData(): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>('/api/reports/timeline');
+  async getTimelineData(year?: number): Promise<ApiResponse<any>> {
+    const yearParam = year || 2026;
+    return this.request<ApiResponse<any>>(`/api/reports/timeline?year=${yearParam}`);
   }
 
   // Contribution endpoints
