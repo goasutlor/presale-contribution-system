@@ -120,41 +120,27 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       console.log('🔍 Fetching admin dashboard data for year:', selectedYear);
       
-      // Get contributions data and filter by year
-      const contributionsResponse = await apiService.getContributions();
-      console.log('🔍 Contributions response:', contributionsResponse);
+      // Use dashboard API which already filters by year
+      const dashboardResponse = await apiService.getDashboardData(selectedYear);
+      console.log('🔍 Dashboard API response:', dashboardResponse);
       
       // Get users data
       const usersResponse = await apiService.getUsers();
       console.log('🔍 Users response:', usersResponse);
       
-      if (contributionsResponse.success && usersResponse.success) {
-        const allContributions = contributionsResponse.data;
-        // Filter contributions by selected year
-        const contributions = allContributions.filter((c: any) => {
-          const contribYear = c.year || 
-            (c.contributionMonth ? parseInt(c.contributionMonth.split('-')[0]) : new Date(c.createdAt).getFullYear());
-          return contribYear === selectedYear;
-        });
+      if (dashboardResponse.success && usersResponse.success) {
         const users = usersResponse.data;
         
-        // Calculate statistics for selected year
-        const totalContributions = contributions.length;
-        const totalUsers = users.length;
-        const uniqueAccounts = new Set(contributions.map((c: any) => c.accountName)).size;
-        
-        const impactBreakdown = {
-          critical: contributions.filter((c: any) => c.impact === 'critical').length,
-          high: contributions.filter((c: any) => c.impact === 'high').length,
-          medium: contributions.filter((c: any) => c.impact === 'medium').length,
-          low: contributions.filter((c: any) => c.impact === 'low').length
-        };
-        
         const dashboardData: AdminDashboardData = {
-          totalContributions,
-          totalUsers,
-          totalAccounts: uniqueAccounts,
-          impactBreakdown
+          totalContributions: dashboardResponse.data.totalContributions || 0,
+          totalUsers: users.length,
+          totalAccounts: dashboardResponse.data.totalAccounts || 0,
+          impactBreakdown: dashboardResponse.data.impactBreakdown || {
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0
+          }
         };
         
         console.log('🔍 Calculated dashboard data for year', selectedYear, ':', dashboardData);

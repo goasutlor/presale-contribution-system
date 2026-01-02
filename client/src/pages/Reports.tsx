@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import Tooltip from '../components/Tooltip';
-import { RocketLaunchIcon } from '@heroicons/react/24/outline';
+import { RocketLaunchIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 // Icons removed for minimal aesthetic
 import { generateEarthToneReport, generateComplexProjectsReport } from '../utils/printTemplate';
 
@@ -60,6 +60,8 @@ const Reports: React.FC = () => {
   // Complex Projects state
   const [complexProjects, setComplexProjects] = useState<any[]>([]);
   const [loadingComplexProjects, setLoadingComplexProjects] = useState(false);
+  const [selectedYearContributions, setSelectedYearContributions] = useState<number>(2025); // Default to 2025
+  const [selectedYearComplexProjects, setSelectedYearComplexProjects] = useState<number>(2025); // Default to 2025
 
   const reportTypes = [
     { value: 'comprehensive', label: 'Comprehensive Report', description: 'รายงานแบบละเอียดพร้อม Timeline' }
@@ -69,12 +71,12 @@ const Reports: React.FC = () => {
     console.log('🔍 Reports useEffect triggered, user:', user);
     loadReportData();
     loadComplexProjects();
-  }, []);
+  }, [selectedYearContributions, selectedYearComplexProjects]);
 
   const loadReportData = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Loading report data...');
+      console.log('🔍 Loading report data for year:', selectedYearContributions);
       
       // Load contributions data
       const contributionsResponse = await apiService.getContributions();
@@ -82,37 +84,43 @@ const Reports: React.FC = () => {
       
       if (contributionsResponse.success) {
         const allContributions = contributionsResponse.data;
-        console.log('🔍 All contributions data:', allContributions);
+        // Filter by selected year
+        const filteredContributions = allContributions.filter((c: any) => {
+          const contribYear = c.year || 
+            (c.contributionMonth ? parseInt(c.contributionMonth.split('-')[0]) : new Date(c.createdAt).getFullYear());
+          return contribYear === selectedYearContributions;
+        });
+        console.log('🔍 Filtered contributions for year', selectedYearContributions, ':', filteredContributions.length);
         
-        // Store all contributions for filtering
+        // Store filtered contributions for filtering
         setReportData({
-          contributions: allContributions,
-          totalContributions: allContributions.length,
-          totalUsers: new Set(allContributions.map((c: any) => c.userId)).size,
-          totalAccounts: new Set(allContributions.map((c: any) => c.accountName)).size,
-          highImpact: allContributions.filter((c: any) => c.impact === 'high').length,
-          mediumImpact: allContributions.filter((c: any) => c.impact === 'medium').length,
-          lowImpact: allContributions.filter((c: any) => c.impact === 'low').length,
-          criticalImpact: 0
+          contributions: filteredContributions,
+          totalContributions: filteredContributions.length,
+          totalUsers: new Set(filteredContributions.map((c: any) => c.userId)).size,
+          totalAccounts: new Set(filteredContributions.map((c: any) => c.accountName)).size,
+          highImpact: filteredContributions.filter((c: any) => c.impact === 'high').length,
+          mediumImpact: filteredContributions.filter((c: any) => c.impact === 'medium').length,
+          lowImpact: filteredContributions.filter((c: any) => c.impact === 'low').length,
+          criticalImpact: filteredContributions.filter((c: any) => c.impact === 'critical').length
         });
         
-        // Generate filter options - remove duplicates, empty values, and invalid entries
+        // Generate filter options from filtered contributions - remove duplicates, empty values, and invalid entries
         const accounts = Array.from(new Set(
-          allContributions
+          filteredContributions
             .map((c: any) => c.accountName)
             .filter(Boolean)
             .filter(account => account.trim() !== '')
             .filter(account => !account.toLowerCase().includes('all accounts'))
         ));
         const sales = Array.from(new Set(
-          allContributions
+          filteredContributions
             .map((c: any) => c.saleName)
             .filter(Boolean)
             .filter(sale => sale.trim() !== '')
             .filter(sale => !sale.toLowerCase().includes('all sales'))
         ));
         const presales = Array.from(new Set(
-          allContributions
+          filteredContributions
             .map((c: any) => c.userName)
             .filter(Boolean)
             .filter(presale => presale.trim() !== '')
@@ -125,9 +133,7 @@ const Reports: React.FC = () => {
           presales: presales.sort()
         });
         
-        console.log('🔍 All contributions:', allContributions);
-        console.log('🔍 Raw account names:', allContributions.map((c: any) => c.accountName));
-        console.log('🔍 Filtered accounts:', accounts);
+        console.log('🔍 Filtered contributions for year', selectedYearContributions, ':', filteredContributions.length);
         console.log('🔍 Filter options:', { accounts, sales, presales });
       } else {
         toast.error('Failed to load contributions data');
@@ -145,7 +151,13 @@ const Reports: React.FC = () => {
       setLoadingComplexProjects(true);
       const response = await apiService.getComplexProjects();
       if (response.success) {
-        setComplexProjects(response.data || []);
+        const allProjects = response.data || [];
+        // Filter by selected year
+        const filtered = allProjects.filter((project: any) => {
+          const projectYear = project.year || new Date(project.createdAt).getFullYear();
+          return projectYear === selectedYearComplexProjects;
+        });
+        setComplexProjects(filtered);
       } else {
         toast.error('Failed to load complex projects data');
       }
@@ -367,6 +379,13 @@ const Reports: React.FC = () => {
     console.log('🔍 Sample contribution data:', reportData.contributions[0]);
 
     const filteredContributions = reportData.contributions.filter((contrib: any) => {
+      // Filter by year first
+      const contribYear = contrib.year || 
+        (contrib.contributionMonth ? parseInt(contrib.contributionMonth.split('-')[0]) : new Date(contrib.createdAt).getFullYear());
+      if (contribYear !== selectedYearContributions) {
+        return false;
+      }
+      
       console.log('🔍 Checking contribution:', contrib.title, {
         saleName: contrib.saleName,
         userName: contrib.userName,
@@ -459,52 +478,81 @@ const Reports: React.FC = () => {
           </p>
       </div>
 
-      {/* Statistics Cards */}
-      {reportData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Contributions</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.totalContributions}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Active Users</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.totalUsers}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Accounts</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.totalAccounts}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">High/Critical Impact</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{reportData.highImpact + reportData.criticalImpact}</p>
+      {/* Contribution Report Section */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-indigo-200 dark:border-gray-600 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <DocumentTextIcon className="h-6 w-6 text-indigo-600" />
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Contribution Report
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  รายงาน Contributions แบบละเอียดพร้อม Timeline และ Filters
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
+              <select
+                value={selectedYearContributions}
+                onChange={(e) => setSelectedYearContributions(parseInt(e.target.value))}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value={2025}>2025</option>
+                <option value={2026}>2026</option>
+              </select>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Impact Distribution Chart */}
-      {reportData && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-8 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Impact distribution</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400">Critical</p>
-              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.criticalImpact}</p>
+        {/* Statistics Cards for Contributions */}
+        {filteredData && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Contributions (ปี {selectedYearContributions})</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalContributions}</p>
             </div>
-            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400">High</p>
-              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.highImpact}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Active Users</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalUsers}</p>
             </div>
-            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400">Medium</p>
-              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.mediumImpact}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Accounts</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalAccounts}</p>
             </div>
-            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400">Low</p>
-              <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{reportData.lowImpact}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">High/Critical Impact</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.highImpact + filteredData.criticalImpact}</p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Impact Distribution Chart */}
+        {filteredData && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Impact distribution (ปี {selectedYearContributions})</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Critical</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.criticalImpact}</p>
+              </div>
+              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400">High</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.highImpact}</p>
+              </div>
+              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Medium</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.mediumImpact}</p>
+              </div>
+              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Low</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.lowImpact}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Report Type Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
@@ -549,17 +597,30 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Complex Projects Report Section */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-blue-200 dark:border-gray-600 shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <RocketLaunchIcon className="h-6 w-6 text-primary-600" />
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Complex, Big, or Challenging Projects
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                  รายงาน Lessons & Learn สำหรับโครงการขนาดใหญ่หรือท้าทาย ประจำปี 2025
-                </p>
+        <div className="mt-12 mb-8">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-blue-200 dark:border-gray-600 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <RocketLaunchIcon className="h-6 w-6 text-primary-600" />
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Complex Projects Report
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    รายงาน Lessons & Learn สำหรับโครงการขนาดใหญ่หรือท้าทาย
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
+                <select
+                  value={selectedYearComplexProjects}
+                  onChange={(e) => setSelectedYearComplexProjects(parseInt(e.target.value))}
+                  className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value={2025}>2025</option>
+                  <option value={2026}>2026</option>
+                </select>
               </div>
             </div>
             <div className="flex gap-2">
@@ -643,10 +704,12 @@ const Reports: React.FC = () => {
           
           {!loadingComplexProjects && complexProjects.length === 0 && (
             <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-              <p className="mb-2">ยังไม่มีข้อมูลโครงการ</p>
+              <p className="mb-2">ยังไม่มีข้อมูลโครงการสำหรับปี {selectedYearComplexProjects}</p>
               <p className="text-sm">กรุณาเพิ่มข้อมูลในหน้า <span className="font-semibold text-primary-600">Complex Projects</span> ก่อนพิมพ์รายงาน</p>
             </div>
           )}
+          </div>
+        </div>
         </div>
 
         {/* Filters */}

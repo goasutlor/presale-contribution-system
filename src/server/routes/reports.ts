@@ -47,6 +47,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const whereConditions: string[] = [];
 
   // Filter by year (use year field or extract from contributionMonth)
+  // Handle both cases: year field exists or extract from contributionMonth
   whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
   queryParams.push(year, `${year}-%`);
 
@@ -59,12 +60,36 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
     baseQuery += ' WHERE ' + whereConditions.join(' AND ');
   }
 
+  // Get total accounts count
+  let accountsQuery = `
+    SELECT COUNT(DISTINCT accountName) as totalAccounts
+    FROM contributions
+  `;
+  const accountsParams: any[] = [];
+  const accountsWhereConditions: string[] = [];
+  
+  accountsWhereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
+  accountsParams.push(year, `${year}-%`);
+  
+  if (!isAdmin) {
+    accountsWhereConditions.push('userId = ?');
+    accountsParams.push(userId);
+  }
+  
+  if (accountsWhereConditions.length > 0) {
+    accountsQuery += ' WHERE ' + accountsWhereConditions.join(' AND ');
+  }
+  
+  const accountsRow: any = await dbQueryOne(accountsQuery, accountsParams);
+  const totalAccounts = accountsRow?.totalAccounts || 0;
+
   const row: any = await dbQueryOne(baseQuery, queryParams);
   const dashboardData = {
     totalContributions: row?.totalContributions || 0,
     approvedContributions: row?.approvedContributions || 0,
     submittedContributions: row?.submittedContributions || 0,
     draftContributions: row?.draftContributions || 0,
+    totalAccounts: totalAccounts,
     impactBreakdown: {
       critical: row?.criticalImpact || 0,
       high: row?.highImpact || 0,
