@@ -38,7 +38,7 @@ const createValidation = [
 ];
 
 const updateValidation = [
-  body('status').optional().isIn(['win', 'loss']).withMessage('Status must be win or loss'),
+  body('status').optional().isIn(['win', 'loss', 'ongoing']).withMessage('Status must be win, loss, or ongoing'),
   body('projectName').optional().trim().isLength({ min: 1 }).withMessage('Project Name is required'),
   body('description').optional().trim().isLength({ min: 5 }).withMessage('Description is required'),
   body('salesName').optional().trim().isLength({ min: 1 }).withMessage('Sales Name is required'),
@@ -176,18 +176,20 @@ router.put('/:id', requireUser, updateValidation, asyncHandler(async (req: AuthR
 
   const data: UpdateComplexProjectRequest = req.body;
 
-  // Validate permissioned fields
-  if (data.accountName) {
-    const allowedAccounts = req.user!.involvedAccountNames || [];
-    if (allowedAccounts.length > 0 && !allowedAccounts.includes(data.accountName.trim())) {
-      throw createError(`Account "${data.accountName}" not in your allowed list`, 400);
+  // Validate permissioned fields (skip for admin)
+  if (req.user!.role !== 'admin') {
+    if (data.accountName) {
+      const allowedAccounts = req.user!.involvedAccountNames || [];
+      if (allowedAccounts.length > 0 && !allowedAccounts.includes(data.accountName.trim())) {
+        throw createError(`Account "${data.accountName}" not in your allowed list`, 400);
+      }
     }
-  }
 
-  if (data.salesName) {
-    const allowedSales = req.user!.involvedSaleNames || [];
-    if (allowedSales.length > 0 && !allowedSales.includes(data.salesName.trim())) {
-      throw createError('Sales Name not in your allowed list', 400);
+    if (data.salesName) {
+      const allowedSales = req.user!.involvedSaleNames || [];
+      if (allowedSales.length > 0 && !allowedSales.includes(data.salesName.trim())) {
+        throw createError('Sales Name not in your allowed list', 400);
+      }
     }
   }
 

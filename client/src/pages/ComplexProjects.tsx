@@ -99,7 +99,7 @@ const ComplexProjects: React.FC = () => {
 
     const payload = {
       ...form,
-      keySuccessFactors: form.status === 'win' ? form.keySuccessFactors : '',
+      keySuccessFactors: form.status === 'win' || form.status === 'ongoing' ? form.keySuccessFactors : '',
       reasonsForLoss: form.status === 'loss' ? form.reasonsForLoss : '',
     };
 
