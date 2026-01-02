@@ -73,6 +73,7 @@ const mapRowToProject = (row: any) => ({
 router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
+  const year = req.query.year ? parseInt(req.query.year as string) : null; // Optional year filter
 
   let query = `
     SELECT cp.*, u.fullName as userName
@@ -80,10 +81,23 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
     JOIN users u ON cp.userId = u.id
   `;
   const params: any[] = [];
+  const whereConditions: string[] = [];
 
   if (!isAdmin) {
-    query += ' WHERE cp.userId = ?';
+    whereConditions.push('cp.userId = ?');
     params.push(userId);
+  }
+
+  // Filter by year if provided
+  // Since all existing data is for 2025, we check year field
+  // For NULL year, we'll filter in application layer (handled by mapRowToProject)
+  if (year) {
+    whereConditions.push('cp.year = ?');
+    params.push(year);
+  }
+
+  if (whereConditions.length > 0) {
+    query += ' WHERE ' + whereConditions.join(' AND ');
   }
 
   query += ' ORDER BY cp.createdAt DESC';

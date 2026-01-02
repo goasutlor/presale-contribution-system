@@ -268,8 +268,9 @@ class ApiService {
   }
 
   // Complex Projects endpoints
-  async getComplexProjects(): Promise<ApiResponse<any[]>> {
-    return this.request<ApiResponse<any[]>>('/api/complex-projects');
+  async getComplexProjects(year?: number): Promise<ApiResponse<any[]>> {
+    const yearParam = year ? `?year=${year}` : '';
+    return this.request<ApiResponse<any[]>>(`/api/complex-projects${yearParam}`);
   }
 
   async getComplexProjectById(id: string): Promise<ApiResponse<any>> {

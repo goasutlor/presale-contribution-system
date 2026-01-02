@@ -149,15 +149,13 @@ const Reports: React.FC = () => {
   const loadComplexProjects = async () => {
     try {
       setLoadingComplexProjects(true);
-      const response = await apiService.getComplexProjects();
+      console.log('🔍 Loading complex projects for year:', selectedYearComplexProjects);
+      // Pass year parameter to API for server-side filtering
+      const response = await apiService.getComplexProjects(selectedYearComplexProjects);
       if (response.success) {
-        const allProjects = response.data || [];
-        // Filter by selected year
-        const filtered = allProjects.filter((project: any) => {
-          const projectYear = project.year || new Date(project.createdAt).getFullYear();
-          return projectYear === selectedYearComplexProjects;
-        });
-        setComplexProjects(filtered);
+        const projects = response.data || [];
+        console.log('🔍 Loaded complex projects for year', selectedYearComplexProjects, ':', projects.length);
+        setComplexProjects(projects);
       } else {
         toast.error('Failed to load complex projects data');
       }
