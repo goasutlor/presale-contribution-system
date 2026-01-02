@@ -208,7 +208,7 @@ const Reports: React.FC = () => {
         printWindow.document.close();
         printWindow.focus();
         printWindow.print();
-    } else {
+      } else {
         console.error('❌ Failed to open print window');
         toast.error('Failed to open print window');
       }
@@ -259,7 +259,7 @@ const Reports: React.FC = () => {
         previewWindow.document.write(reportContent);
         previewWindow.document.close();
         previewWindow.focus();
-    } else {
+      } else {
         console.error('❌ Failed to open preview window');
         toast.error('Failed to open preview window');
       }
