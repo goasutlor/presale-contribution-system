@@ -14,6 +14,7 @@ interface ContributionFormData {
   estimatedImpactValue?: number;
   description: string;
   contributionMonth: string;
+  year: number;
   tags: string[];
 }
 
@@ -82,6 +83,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       estimatedImpactValue: 0,
       description: '',
       contributionMonth: '',
+      year: new Date().getFullYear(),
       tags: []
     },
     mode: 'onChange'
@@ -91,6 +93,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const watchedSaleName = watch('saleName');
   const watchedSaleEmail = watch('saleEmail');
   const watchedContributionType = watch('contributionType');
+  const watchedYear = watch('year');
 
   // Auto-fill all fields when component mounts
   useEffect(() => {
@@ -107,6 +110,8 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       setValue('estimatedImpactValue', initialData.estimatedImpactValue || 0);
       setValue('description', initialData.description || '');
       setValue('contributionMonth', initialData.contributionMonth || '');
+      setValue('year', initialData.year || 
+        (initialData.contributionMonth ? parseInt(initialData.contributionMonth.split('-')[0]) : new Date().getFullYear()));
       setValue('tags', initialData.tags || []);
       setTagsInput(initialData.tags ? initialData.tags.join(', ') : '');
       console.log('🔍 Edit Mode - Set values:', {
@@ -171,6 +176,13 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       if (!submitData.contributionMonth) {
         toast.error('กรุณาเลือกเดือนที่ทำ Contribution');
         return;
+      }
+      
+      // Auto-extract year from contributionMonth if not provided
+      if (!submitData.year && submitData.contributionMonth) {
+        submitData.year = parseInt(submitData.contributionMonth.split('-')[0]);
+      } else if (!submitData.year) {
+        submitData.year = new Date().getFullYear();
       }
       
       // Validate user data consistency
@@ -583,6 +595,43 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               )}
             </div>
 
+            {/* Year */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Year <span className="text-red-500">*</span>
+              </label>
+              <Controller
+                name="year"
+                control={control}
+                rules={{ required: 'กรุณาเลือกปี' }}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    onChange={(e) => {
+                      const newYear = parseInt(e.target.value);
+                      field.onChange(newYear);
+                      // Update contributionMonth if it exists to match new year
+                      const currentMonth = getValues('contributionMonth');
+                      if (currentMonth) {
+                        const monthPart = currentMonth.split('-')[1];
+                        setValue('contributionMonth', `${newYear}-${monthPart}`);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i + 1).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+              {errors.year && (
+                <p className="mt-1 text-sm text-red-600">{errors.year.message}</p>
+              )}
+            </div>
+
             {/* Contribution Month */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -592,26 +641,41 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                 name="contributionMonth"
                 control={control}
                 rules={{ required: 'กรุณาเลือกเดือนที่ทำ Contribution' }}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">เลือกเดือน/ปี</option>
-                    <option value="2025-01">มกราคม 2025</option>
-                    <option value="2025-02">กุมภาพันธ์ 2025</option>
-                    <option value="2025-03">มีนาคม 2025</option>
-                    <option value="2025-04">เมษายน 2025</option>
-                    <option value="2025-05">พฤษภาคม 2025</option>
-                    <option value="2025-06">มิถุนายน 2025</option>
-                    <option value="2025-07">กรกฎาคม 2025</option>
-                    <option value="2025-08">สิงหาคม 2025</option>
-                    <option value="2025-09">กันยายน 2025</option>
-                    <option value="2025-10">ตุลาคม 2025</option>
-                    <option value="2025-11">พฤศจิกายน 2025</option>
-                    <option value="2025-12">ธันวาคม 2025</option>
-                  </select>
-                )}
+                render={({ field }) => {
+                  const year = watchedYear || new Date().getFullYear();
+                  const months = [
+                    { value: '01', label: 'มกราคม' },
+                    { value: '02', label: 'กุมภาพันธ์' },
+                    { value: '03', label: 'มีนาคม' },
+                    { value: '04', label: 'เมษายน' },
+                    { value: '05', label: 'พฤษภาคม' },
+                    { value: '06', label: 'มิถุนายน' },
+                    { value: '07', label: 'กรกฎาคม' },
+                    { value: '08', label: 'สิงหาคม' },
+                    { value: '09', label: 'กันยายน' },
+                    { value: '10', label: 'ตุลาคม' },
+                    { value: '11', label: 'พฤศจิกายน' },
+                    { value: '12', label: 'ธันวาคม' }
+                  ];
+                  return (
+                    <select
+                      {...field}
+                      onChange={(e) => {
+                        const month = e.target.value;
+                        field.onChange(`${year}-${month}`);
+                      }}
+                      value={field.value ? field.value.split('-')[1] : ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">เลือกเดือน</option>
+                      {months.map((month) => (
+                        <option key={month.value} value={month.value}>
+                          {month.label} {year}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                }}
               />
               {errors.contributionMonth && (
                 <p className="mt-1 text-sm text-red-600">{errors.contributionMonth.message}</p>

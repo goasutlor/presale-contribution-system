@@ -37,6 +37,7 @@ const createContributionValidation = [
     throw new Error('Estimated impact value must be a number');
   }),
   body('contributionMonth').isLength({ min: 7 }).withMessage('Valid contribution month is required (YYYY-MM)'),
+  body('year').optional().isInt({ min: 2000, max: 2100 }).withMessage('Year must be a valid year'),
   body('status').optional().isIn(['draft', 'submitted']).withMessage('Valid status is required'),
   body('tags').custom((value) => {
     // Allow both array and string (comma-separated)
@@ -59,6 +60,7 @@ const updateContributionValidation = [
   body('effort').optional().isIn(['low', 'medium', 'high']).withMessage('Valid effort level is required'),
   body('estimatedImpactValue').optional().isNumeric().withMessage('Estimated impact value must be a number'),
   body('contributionMonth').optional().isLength({ min: 7 }).withMessage('Valid contribution month is required (YYYY-MM)'),
+  body('year').optional().isInt({ min: 2000, max: 2100 }).withMessage('Year must be a valid year'),
   body('status').optional().isIn(['draft', 'submitted']).withMessage('Valid status is required'),
   body('tags').optional().isArray().withMessage('Tags must be an array')
 ];
@@ -138,6 +140,7 @@ router.get('/admin', requireUser, asyncHandler(async (req: AuthRequest, res: Res
       effort: row.effort,
       estimatedImpactValue: row.estimatedImpactValue || 0,
       contributionMonth: row.contributionMonth,
+      year: row.year ? parseInt(row.year) : new Date(row.createdAt).getFullYear(),
       status: row.status,
       saleApproval: Boolean(row.saleApproval),
       saleApprovalDate: row.saleApprovalDate,
@@ -180,6 +183,7 @@ router.get('/:id', requireUser, asyncHandler(async (req: AuthRequest, res: Respo
     effort: row.effort,
     estimatedImpactValue: row.estimatedImpactValue || 0,
     contributionMonth: row.contributionMonth,
+    year: row.year ? parseInt(row.year) : new Date(row.createdAt).getFullYear(),
     status: row.status,
     saleApproval: Boolean(row.saleApproval),
     saleApprovalDate: row.saleApprovalDate,
@@ -308,12 +312,16 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
     fullContributionData: contributionData
   });
   
+  // Extract year from contributionMonth (YYYY-MM) or use provided year or current year
+  const year = contributionData.year || 
+    (contributionData.contributionMonth ? parseInt(contributionData.contributionMonth.split('-')[0]) : new Date().getFullYear());
+
   await dbExecute(`
     INSERT INTO contributions (
       id, userId, accountName, saleName, saleEmail, contributionType, 
       title, description, impact, effort, estimatedImpactValue, contributionMonth, 
-      status, tags, attachments
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      year, status, tags, attachments
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     contributionId,
     userId,
@@ -327,6 +335,7 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
     contributionData.effort,
     contributionData.estimatedImpactValue || 0,
     contributionData.contributionMonth,
+    year,
     finalStatus,
     JSON.stringify(contributionData.tags),
     JSON.stringify([])
@@ -426,6 +435,16 @@ router.put('/:id', requireUser, updateContributionValidation, asyncHandler(async
     if (updateData.contributionMonth !== undefined) {
       updateFields.push('contributionMonth = ?');
       updateValues.push(updateData.contributionMonth);
+    }
+
+    if (updateData.year !== undefined) {
+      updateFields.push('year = ?');
+      updateValues.push(updateData.year);
+    } else if (updateData.contributionMonth !== undefined) {
+      // Auto-extract year from contributionMonth if year not provided
+      const year = parseInt(updateData.contributionMonth.split('-')[0]);
+      updateFields.push('year = ?');
+      updateValues.push(year);
     }
 
     if (updateData.status !== undefined) {

@@ -28,6 +28,7 @@ interface Contribution {
   effort: string;
   estimatedImpactValue: number;
   contributionMonth: string;
+  year: number;
   status: 'draft' | 'submitted' | 'approved' | 'rejected';
   tags: string[];
   createdAt: string;
@@ -39,6 +40,7 @@ const MyContributions: React.FC = () => {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [showForm, setShowForm] = useState(false);
   const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -266,14 +268,51 @@ const MyContributions: React.FC = () => {
     );
   };
 
+  // Get available years from contributions
+  const availableYears = React.useMemo(() => {
+    const years = new Set<number>();
+    contributions.forEach(contrib => {
+      if (contrib.year) {
+        years.add(contrib.year);
+      } else {
+        // Fallback: extract year from contributionMonth or createdAt
+        const year = contrib.contributionMonth 
+          ? parseInt(contrib.contributionMonth.split('-')[0])
+          : new Date(contrib.createdAt).getFullYear();
+        years.add(year);
+      }
+    });
+    const sortedYears = Array.from(years).sort((a, b) => b - a);
+    // If no years found, add current year and previous year
+    if (sortedYears.length === 0) {
+      const currentYear = new Date().getFullYear();
+      return [currentYear, currentYear - 1];
+    }
+    return sortedYears;
+  }, [contributions]);
+
+  // Filter contributions by year and status
   const filteredContributions = contributions.filter(contrib => {
+    // Filter by year
+    const contribYear = contrib.year || 
+      (contrib.contributionMonth ? parseInt(contrib.contributionMonth.split('-')[0]) : new Date(contrib.createdAt).getFullYear());
+    if (contribYear !== selectedYear) return false;
+    
+    // Filter by status
     if (filterStatus === 'all') return true;
     return contrib.status === filterStatus;
   });
 
-  const draftCount = contributions.filter(c => c.status === 'draft').length;
-  const submittedCount = contributions.filter(c => c.status === 'submitted').length;
-  const approvedCount = contributions.filter(c => c.status === 'approved').length;
+  // Filter stats by year
+  const yearContributions = contributions.filter(contrib => {
+    const contribYear = contrib.year || 
+      (contrib.contributionMonth ? parseInt(contrib.contributionMonth.split('-')[0]) : new Date(contrib.createdAt).getFullYear());
+    return contribYear === selectedYear;
+  });
+
+  const draftCount = yearContributions.filter(c => c.status === 'draft').length;
+  const submittedCount = yearContributions.filter(c => c.status === 'submitted').length;
+  const approvedCount = yearContributions.filter(c => c.status === 'approved').length;
 
   if (loading) {
     return (
@@ -346,16 +385,49 @@ const MyContributions: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{contributions.length}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{yearContributions.length}</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Year Selector */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-soft p-4 border border-gray-100 dark:border-gray-700">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
+          {availableYears.map((year) => (
+            <button
+              key={year}
+              onClick={() => setSelectedYear(year)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedYear === year
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {year}
+            </button>
+          ))}
+          {/* Add button to add new year */}
+          <button
+            onClick={() => {
+              const newYear = new Date().getFullYear();
+              if (!availableYears.includes(newYear)) {
+                setSelectedYear(newYear);
+              }
+            }}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1"
+          >
+            <PlusIcon className="h-4 w-4" />
+            เพิ่มปีใหม่
+          </button>
         </div>
       </div>
 
       {/* Filter */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-soft p-6 border border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Contributions</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Contributions (ปี {selectedYear})</h2>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -378,8 +450,8 @@ const MyContributions: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No contributions found</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               {filterStatus === 'all' 
-                ? "You haven't created any contributions yet." 
-                : `No contributions with status "${filterStatus}" found.`
+                ? `You haven't created any contributions for year ${selectedYear} yet.` 
+                : `No contributions with status "${filterStatus}" found for year ${selectedYear}.`
               }
             </p>
             <Link

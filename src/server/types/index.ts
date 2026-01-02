@@ -27,6 +27,7 @@ export interface Contribution {
   effort: 'low' | 'medium' | 'high';
   estimatedImpactValue?: number; // New field for business impact value
   contributionMonth: string; // Changed from startDate/endDate to single month field
+  year: number;
   status: 'draft' | 'submitted' | 'approved' | 'rejected'; // Updated status field
   attachments?: string[];
   tags: string[];
@@ -124,6 +125,7 @@ export interface CreateContributionRequest {
   effort: 'low' | 'medium' | 'high';
   estimatedImpactValue?: number; // New field for business impact value
   contributionMonth: string; // Changed from startDate/endDate to single month field
+  year?: number;
   status?: 'draft' | 'submitted' | 'approved' | 'rejected'; // Added status field
   tags: string[];
 }
@@ -139,6 +141,7 @@ export interface UpdateContributionRequest {
   effort?: 'low' | 'medium' | 'high';
   estimatedImpactValue?: number; // New field for business impact value
   contributionMonth?: string; // Changed from startDate/endDate to single month field
+  year?: number;
   status?: 'draft' | 'submitted' | 'approved' | 'rejected'; // Updated status field
   tags?: string[];
 }
@@ -164,6 +167,7 @@ export interface UpdateComplexProjectRequest {
   status?: 'win' | 'loss' | 'ongoing';
   keySuccessFactors?: string;
   reasonsForLoss?: string;
+  year?: number;
   lessonsLearned?: string;
   suggestionsForImprovement?: string;
 }
