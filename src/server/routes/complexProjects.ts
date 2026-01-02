@@ -35,6 +35,7 @@ const createValidation = [
   }),
   body('lessonsLearned').trim().isLength({ min: 3 }).withMessage('Lessons Learned is required'),
   body('suggestionsForImprovement').trim().isLength({ min: 3 }).withMessage('Suggestions for Improvement is required'),
+  body('year').optional().isInt({ min: 2000, max: 2100 }).withMessage('Year must be a valid year'),
 ];
 
 const updateValidation = [
@@ -47,6 +48,7 @@ const updateValidation = [
   body('reasonsForLoss').optional().isString(),
   body('lessonsLearned').optional().trim().isLength({ min: 3 }).withMessage('Lessons Learned is required'),
   body('suggestionsForImprovement').optional().trim().isLength({ min: 3 }).withMessage('Suggestions for Improvement is required'),
+  body('year').optional().isInt({ min: 2000, max: 2100 }).withMessage('Year must be a valid year'),
 ];
 
 const mapRowToProject = (row: any) => ({
@@ -62,6 +64,7 @@ const mapRowToProject = (row: any) => ({
   reasonsForLoss: row.reasonsForLoss,
   lessonsLearned: row.lessonsLearned,
   suggestionsForImprovement: row.suggestionsForImprovement,
+  year: row.year ? parseInt(row.year) : new Date(row.createdAt).getFullYear(),
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 });
@@ -141,8 +144,8 @@ router.post('/', requireUser, createValidation, asyncHandler(async (req: AuthReq
   await dbExecute(`
     INSERT INTO complex_projects (
       id, userId, projectName, description, salesName, accountName, status,
-      keySuccessFactors, reasonsForLoss, lessonsLearned, suggestionsForImprovement
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      keySuccessFactors, reasonsForLoss, lessonsLearned, suggestionsForImprovement, year
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     id,
     userId,
@@ -154,7 +157,8 @@ router.post('/', requireUser, createValidation, asyncHandler(async (req: AuthReq
     data.keySuccessFactors || '',
     data.reasonsForLoss || '',
     data.lessonsLearned,
-    data.suggestionsForImprovement
+    data.suggestionsForImprovement,
+    data.year || new Date().getFullYear()
   ]);
 
   res.status(201).json({ success: true, message: 'Complex project saved', data: { id } });
@@ -218,6 +222,7 @@ router.put('/:id', requireUser, updateValidation, asyncHandler(async (req: AuthR
   if (data.reasonsForLoss !== undefined) setField('reasonsForLoss', data.reasonsForLoss);
   if (data.lessonsLearned !== undefined) setField('lessonsLearned', data.lessonsLearned);
   if (data.suggestionsForImprovement !== undefined) setField('suggestionsForImprovement', data.suggestionsForImprovement);
+  if (data.year !== undefined) setField('year', data.year);
 
   if (fields.length === 0) {
     throw createError('No fields to update', 400);

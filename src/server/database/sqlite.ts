@@ -91,6 +91,7 @@ export async function initializeDatabase(): Promise<void> {
             reasonsForLoss TEXT,
             lessonsLearned TEXT NOT NULL,
             suggestionsForImprovement TEXT NOT NULL,
+            year INTEGER NOT NULL DEFAULT (strftime('%Y', 'now')),
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
             updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (userId) REFERENCES users(id)
@@ -106,6 +107,11 @@ export async function initializeDatabase(): Promise<void> {
           database.run('ALTER TABLE complex_projects ADD COLUMN description TEXT', (alterErr) => {
             if (alterErr && !alterErr.message.includes('duplicate column')) {
               console.warn('⚠️ Could not add description column to complex_projects:', alterErr.message);
+            }
+          });
+          database.run('ALTER TABLE complex_projects ADD COLUMN year INTEGER DEFAULT (strftime(\'%Y\', \'now\'))', (alterErr) => {
+            if (alterErr && !alterErr.message.includes('duplicate column')) {
+              console.warn('⚠️ Could not add year column to complex_projects:', alterErr.message);
             }
           });
 

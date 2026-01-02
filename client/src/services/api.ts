@@ -265,7 +265,7 @@ class ApiService {
     });
   }
 
-  // Complex Projects 2025 endpoints
+  // Complex Projects endpoints
   async getComplexProjects(): Promise<ApiResponse<any[]>> {
     return this.request<ApiResponse<any[]>>('/api/complex-projects');
   }

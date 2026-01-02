@@ -50,7 +50,7 @@ const AppRoutes: React.FC = () => {
         <Route path="my-contributions" element={
           user?.role === 'admin' ? <AllContributions /> : <MyContributions />
         } />
-            <Route path="complex-projects-2025" element={<ComplexProjects />} />
+            <Route path="complex-projects" element={<ComplexProjects />} />
             <Route path="reports" element={<Reports />} />
             <Route path="user-management" element={<UserManagement />} />
             <Route path="portfolio-summary" element={<PortfolioSummary />} />

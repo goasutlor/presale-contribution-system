@@ -434,7 +434,7 @@ const translations: Record<string, Record<string, string>> = {
     // Navigation
     'nav.dashboard': 'Dashboard',
     'nav.contributions': 'Contributions',
-    'nav.complexProjects': 'Complex Projects 2025',
+    'nav.complexProjects': 'Complex Projects',
     'nav.reports': 'Reports',
     'nav.userManagement': 'User Management',
     'nav.functionalTest': 'Functional Test',

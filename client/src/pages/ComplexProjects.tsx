@@ -17,6 +17,7 @@ interface ComplexProject {
   reasonsForLoss?: string;
   lessonsLearned: string;
   suggestionsForImprovement: string;
+  year: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,6 +32,7 @@ type ComplexProjectForm = {
   reasonsForLoss: string;
   lessonsLearned: string;
   suggestionsForImprovement: string;
+  year: number;
 };
 
 const defaultForm: ComplexProjectForm = {
@@ -43,6 +45,7 @@ const defaultForm: ComplexProjectForm = {
   reasonsForLoss: '',
   lessonsLearned: '',
   suggestionsForImprovement: '',
+  year: new Date().getFullYear(),
 };
 
 const ComplexProjects: React.FC = () => {
@@ -53,16 +56,49 @@ const ComplexProjects: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ComplexProjectForm>(defaultForm);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   const accountOptions = useMemo(() => user?.involvedAccountNames || [], [user]);
   const salesOptions = useMemo(() => user?.involvedSaleNames || [], [user]);
+
+  // Get available years from items
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    items.forEach(item => {
+      if (item.year) {
+        years.add(item.year);
+      } else {
+        // Fallback: extract year from createdAt if year field doesn't exist
+        const year = new Date(item.createdAt).getFullYear();
+        years.add(year);
+      }
+    });
+    const sortedYears = Array.from(years).sort((a, b) => b - a);
+    // If no years found, add current year and previous year
+    if (sortedYears.length === 0) {
+      const currentYear = new Date().getFullYear();
+      return [currentYear, currentYear - 1];
+    }
+    return sortedYears;
+  }, [items]);
+
+  // Filter items by selected year
+  const filteredItems = useMemo(() => {
+    return items.filter(item => {
+      if (item.year) {
+        return item.year === selectedYear;
+      }
+      // Fallback: use createdAt year
+      return new Date(item.createdAt).getFullYear() === selectedYear;
+    });
+  }, [items, selectedYear]);
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         const res = await apiService.getComplexProjects();
-        if (res.success) setItems(res.data);
+        if (res.success) setItems(res.data || []);
         else toast.error(res.message || 'โหลดข้อมูลไม่สำเร็จ');
       } catch (err: any) {
         toast.error(err.message || 'โหลดข้อมูลไม่สำเร็จ');
@@ -83,7 +119,7 @@ const ComplexProjects: React.FC = () => {
   }, [accountOptions, salesOptions]);
 
   const resetForm = () => {
-    setForm(defaultForm);
+    setForm({ ...defaultForm, year: selectedYear });
     setEditingId(null);
   };
 
@@ -99,6 +135,7 @@ const ComplexProjects: React.FC = () => {
 
     const payload = {
       ...form,
+      year: form.year || selectedYear,
       keySuccessFactors: form.status === 'win' || form.status === 'ongoing' ? form.keySuccessFactors : '',
       reasonsForLoss: form.status === 'loss' ? form.reasonsForLoss : '',
     };
@@ -135,6 +172,7 @@ const ComplexProjects: React.FC = () => {
       reasonsForLoss: project.reasonsForLoss || '',
       lessonsLearned: project.lessonsLearned,
       suggestionsForImprovement: project.suggestionsForImprovement,
+      year: project.year || new Date(project.createdAt).getFullYear(),
     });
     setShowForm(true);
   };
@@ -157,10 +195,10 @@ const ComplexProjects: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <RocketLaunchIcon className="h-7 w-7 text-primary-600" />
-            Complex, Big, or Challenging Projects 2025
+            Complex, Big, or Challenging Projects
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            เมนูแยกสำหรับกรอกข้อมูลโครงการขนาดใหญ่หรือท้าทาย ประจำปี 2025
+            เมนูแยกสำหรับกรอกข้อมูลโครงการขนาดใหญ่หรือท้าทาย
           </p>
         </div>
         <button
@@ -173,6 +211,39 @@ const ComplexProjects: React.FC = () => {
           <PlusIcon className="h-5 w-5 mr-2" />
           เพิ่มบันทึกใหม่
         </button>
+      </div>
+
+      {/* Year Selector */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-soft p-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
+          {availableYears.map((year) => (
+            <button
+              key={year}
+              onClick={() => setSelectedYear(year)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedYear === year
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {year}
+            </button>
+          ))}
+          {/* Add button to add new year */}
+          <button
+            onClick={() => {
+              const newYear = new Date().getFullYear();
+              if (!availableYears.includes(newYear)) {
+                setSelectedYear(newYear);
+              }
+            }}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1"
+          >
+            <PlusIcon className="h-4 w-4" />
+            เพิ่มปีใหม่
+          </button>
+        </div>
       </div>
 
       {/* Form drawer */}
@@ -201,6 +272,23 @@ const ComplexProjects: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Year <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={form.year}
+                onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i + 1).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Project Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -212,7 +300,7 @@ const ComplexProjects: React.FC = () => {
               />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Project Description <span className="text-red-500">*</span>
               </label>
@@ -381,16 +469,16 @@ const ComplexProjects: React.FC = () => {
             <ClipboardDocumentListIcon className="h-5 w-5" />
             รายการโครงการ
           </div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">{items.length} รายการ</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{filteredItems.length} รายการ (ปี {selectedYear})</span>
         </div>
 
         {loading ? (
           <div className="py-12 text-center text-gray-500 dark:text-gray-400">กำลังโหลด...</div>
-        ) : items.length === 0 ? (
-          <div className="py-12 text-center text-gray-500 dark:text-gray-400">ยังไม่มีข้อมูล</div>
+        ) : filteredItems.length === 0 ? (
+          <div className="py-12 text-center text-gray-500 dark:text-gray-400">ยังไม่มีข้อมูลสำหรับปี {selectedYear}</div>
         ) : (
           <div className="space-y-6">
-            {items.map((project) => (
+            {filteredItems.map((project) => (
               <div 
                 key={project.id} 
                 className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"

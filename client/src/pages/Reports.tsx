@@ -307,7 +307,10 @@ const Reports: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Complex_Projects_2025_Report_${new Date().toISOString().split('T')[0]}.html`;
+      const year = complexProjects.length > 0 && complexProjects[0].year 
+        ? complexProjects[0].year 
+        : new Date().getFullYear();
+      link.download = `Complex_Projects_${year}_Report_${new Date().toISOString().split('T')[0]}.html`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -552,7 +555,7 @@ const Reports: React.FC = () => {
               <RocketLaunchIcon className="h-6 w-6 text-primary-600" />
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Complex, Big, or Challenging Projects 2025
+                  Complex, Big, or Challenging Projects
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   รายงาน Lessons & Learn สำหรับโครงการขนาดใหญ่หรือท้าทาย ประจำปี 2025

@@ -47,6 +47,7 @@ export interface ComplexProject {
   reasonsForLoss?: string;
   lessonsLearned: string;
   suggestionsForImprovement: string;
+  year: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -152,6 +153,7 @@ export interface CreateComplexProjectRequest {
   reasonsForLoss?: string;
   lessonsLearned: string;
   suggestionsForImprovement: string;
+  year: number;
 }
 
 export interface UpdateComplexProjectRequest {

@@ -1052,6 +1052,11 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
     day: 'numeric'
   });
 
+  // Get year from projects (use first project's year, or current year as fallback)
+  const reportYear = projects.length > 0 && projects[0].year 
+    ? projects[0].year 
+    : new Date().getFullYear();
+
   // Calculate statistics
   const totalProjects = projects.length;
   const winProjects = projects.filter(p => p.status === 'win').length;
@@ -1065,7 +1070,7 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>Complex, Big, or Challenging Projects 2025 - Lessons & Learn Report</title>
+      <title>Complex, Big, or Challenging Projects ${reportYear} - Lessons & Learn Report</title>
       <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
       <style>
         :root {
@@ -1609,7 +1614,7 @@ export const generateComplexProjectsReport = (projects: any[], user: any) => {
     <body>
       <div class="report-container">
         <div class="report-header">
-          <h1 class="report-title">Complex, Big, or Challenging Projects 2025</h1>
+          <h1 class="report-title">Complex, Big, or Challenging Projects ${reportYear}</h1>
           <p class="report-subtitle">Lessons & Learn Reference Report</p>
           <p class="report-date">Generated on ${currentDate}</p>
         </div>
