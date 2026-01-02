@@ -115,6 +115,20 @@ export async function initializeDatabase(): Promise<void> {
                   console.warn('⚠️ Could not update year to 2025 for contributions:', updateErr.message);
                 }
               });
+
+              // Also fix any rows where year drifted from contributionMonth (YYYY-MM)
+              // Example drift: year=2026 but contributionMonth=2025-xx
+              database.run(
+                `UPDATE contributions
+                 SET year = CAST(substr(contributionMonth, 1, 4) AS INTEGER)
+                 WHERE contributionMonth LIKE '____-__'
+                   AND (year IS NULL OR year != CAST(substr(contributionMonth, 1, 4) AS INTEGER))`,
+                (fixErr) => {
+                  if (fixErr) {
+                    console.warn('⚠️ Could not normalize year from contributionMonth for contributions:', fixErr.message);
+                  }
+                }
+              );
             }
           });
           database.run('ALTER TABLE complex_projects ADD COLUMN description TEXT', (alterErr) => {

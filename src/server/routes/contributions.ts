@@ -100,6 +100,7 @@ router.get('/', requireUser, asyncHandler(async (req: AuthRequest, res: Response
       effort: row.effort,
       estimatedImpactValue: row.estimatedImpactValue || 0,
       contributionMonth: row.contributionMonth,
+      year: row.year ? parseInt(row.year) : (row.contributionMonth ? parseInt(String(row.contributionMonth).split('-')[0]) : new Date(row.createdAt).getFullYear()),
       status: row.status,
       saleApproval: Boolean(row.saleApproval),
       saleApprovalDate: row.saleApprovalDate,
@@ -312,9 +313,9 @@ router.post('/', requireUser, createContributionValidation, asyncHandler(async (
     fullContributionData: contributionData
   });
   
-  // Extract year from contributionMonth (YYYY-MM) or use provided year or current year
-  const year = contributionData.year || 
-    (contributionData.contributionMonth ? parseInt(contributionData.contributionMonth.split('-')[0]) : new Date().getFullYear());
+  // IMPORTANT: Derive year from contributionMonth (single source of truth).
+  // This prevents data drift (e.g. year=2026 but contributionMonth=2025-xx)
+  const year = parseInt(contributionData.contributionMonth.split('-')[0]);
 
   await dbExecute(`
     INSERT INTO contributions (
@@ -437,14 +438,13 @@ router.put('/:id', requireUser, updateContributionValidation, asyncHandler(async
       updateValues.push(updateData.contributionMonth);
     }
 
-    if (updateData.year !== undefined) {
+    // Always keep year in sync with contributionMonth (single source of truth)
+    // If month isn't updated, use existing month from DB.
+    const effectiveMonth = (updateData.contributionMonth !== undefined ? updateData.contributionMonth : row.contributionMonth) as string;
+    if (effectiveMonth && /^\d{4}-\d{2}$/.test(effectiveMonth)) {
+      const yearFromMonth = parseInt(effectiveMonth.split('-')[0]);
       updateFields.push('year = ?');
-      updateValues.push(updateData.year);
-    } else if (updateData.contributionMonth !== undefined) {
-      // Auto-extract year from contributionMonth if year not provided
-      const year = parseInt(updateData.contributionMonth.split('-')[0]);
-      updateFields.push('year = ?');
-      updateValues.push(year);
+      updateValues.push(yearFromMonth);
     }
 
     if (updateData.status !== undefined) {

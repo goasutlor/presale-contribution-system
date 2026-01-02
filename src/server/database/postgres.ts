@@ -187,10 +187,16 @@ async function createTables(): Promise<void> {
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalDate TIMESTAMP`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS saleApprovalNotes TEXT`);
   await db.query(`ALTER TABLE contributions ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT 2025`);
-  // Update existing records without year to 2025
-  await db.query(`UPDATE contributions SET year = 2025 WHERE year IS NULL`);
-  // Also update based on contributionMonth if year is still NULL
-  await db.query(`UPDATE contributions SET year = CAST(SUBSTRING(contributionMonth, 1, 4) AS INTEGER) WHERE year IS NULL AND contributionMonth LIKE '2025-%'`);
+  // Normalize year from contributionMonth (single source of truth)
+  // This also fixes "drift" (e.g. year=2026 but contributionMonth=2025-xx)
+  await db.query(`
+    UPDATE contributions
+    SET year = CAST(SUBSTRING(contributionMonth, 1, 4) AS INTEGER)
+    WHERE contributionMonth IS NOT NULL
+      AND LENGTH(contributionMonth) >= 7
+      AND (year IS NULL OR year != CAST(SUBSTRING(contributionMonth, 1, 4) AS INTEGER))
+  `);
+  // Safety fallback for any remaining NULLs
   await db.query(`UPDATE contributions SET year = 2025 WHERE year IS NULL`);
   
   await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS description TEXT`);

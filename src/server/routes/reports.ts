@@ -46,12 +46,13 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const queryParams: any[] = [];
   const whereConditions: string[] = [];
 
-  // Filter by year - prioritize year field, fallback to contributionMonth if year is NULL
-  // This ensures we only get data for the selected year
-  // When year = 2025: show all data (all existing data is for 2025)
-  // When year = 2026: show 0 (no data for 2026 yet)
-  whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
-  queryParams.push(year, `${year}-%`);
+  // Year filtering: use contributionMonth as the source of truth (YYYY-MM).
+  // This prevents "year column drift" (e.g., year=2026 but contributionMonth=2025-xx).
+  // Expected behavior:
+  // - year=2025 => show all current data
+  // - year=2026 => show 0 until someone submits 2026-xx
+  whereConditions.push(`contributionMonth LIKE ?`);
+  queryParams.push(`${year}-%`);
 
   if (!isAdmin) {
     whereConditions.push('userId = ?');
@@ -70,8 +71,8 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const accountsParams: any[] = [];
   const accountsWhereConditions: string[] = [];
   
-  accountsWhereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
-  accountsParams.push(year, `${year}-%`);
+  accountsWhereConditions.push(`contributionMonth LIKE ?`);
+  accountsParams.push(`${year}-%`);
   
   if (!isAdmin) {
     accountsWhereConditions.push('userId = ?');
@@ -122,10 +123,10 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
       impact,
       COUNT(*) as count
     FROM contributions
-    WHERE (year = ? OR (year IS NULL AND contributionMonth LIKE ?))
+    WHERE contributionMonth LIKE ?
   `;
 
-  const queryParams: any[] = [year, `${year}-%`];
+  const queryParams: any[] = [`${year}-%`];
 
   if (!isAdmin) {
     baseQuery += ' AND userId = ?';
