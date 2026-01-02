@@ -295,6 +295,54 @@ const Reports: React.FC = () => {
     }
   };
 
+  const handleDownloadComplexProjectsHTML = () => {
+    if (!complexProjects || complexProjects.length === 0) {
+      toast.error('No complex projects data available. Please check if there are any projects in the system.');
+      return;
+    }
+
+    try {
+      const reportContent = generateComplexProjectsReport(complexProjects, user);
+      const blob = new Blob([reportContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Complex_Projects_2025_Report_${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('ดาวน์โหลด HTML Report สำเร็จ');
+    } catch (error) {
+      console.error('Error downloading HTML:', error);
+      toast.error('เกิดข้อผิดพลาดในการดาวน์โหลด HTML');
+    }
+  };
+
+  const handleDownloadComprehensiveHTML = () => {
+    if (!filteredData || filteredData.contributions.length === 0) {
+      toast.error('No data matches the current filters. Please adjust your filters and try again.');
+      return;
+    }
+
+    try {
+      const reportContent = generateEarthToneReport(filteredData, selectedReport, user, filters, printFields);
+      const blob = new Blob([reportContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Comprehensive_Report_${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('ดาวน์โหลด HTML Report สำเร็จ');
+    } catch (error) {
+      console.error('Error downloading HTML:', error);
+      toast.error('เกิดข้อผิดพลาดในการดาวน์โหลด HTML');
+    }
+  };
+
   const handleFilterChange = (key: string, value: string) => {
     console.log('🔍 Filter changed:', key, '=', value);
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -472,6 +520,18 @@ const Reports: React.FC = () => {
                   Show Preview
                 </button>
               </Tooltip>
+              <Tooltip content="ดาวน์โหลด HTML Report">
+                <button
+                  onClick={handleDownloadComprehensiveHTML}
+                  disabled={!filteredData || filteredData.contributions.length === 0}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download HTML
+                </button>
+              </Tooltip>
               <Tooltip content="พิมพ์รายงาน">
                 <button
                   onClick={handlePrintReport}
@@ -511,6 +571,18 @@ const Reports: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                   Show Preview
+                </button>
+              </Tooltip>
+              <Tooltip content="ดาวน์โหลด HTML Report">
+                <button
+                  onClick={handleDownloadComplexProjectsHTML}
+                  disabled={loadingComplexProjects || complexProjects.length === 0}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download HTML
                 </button>
               </Tooltip>
               <Tooltip content="พิมพ์รายงาน Lessons & Learn">
