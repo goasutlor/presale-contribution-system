@@ -223,12 +223,12 @@ class ApiService {
 
   // Dashboard endpoints
   async getDashboardData(year?: number): Promise<ApiResponse<any>> {
-    const yearParam = year || 2026;
+    const yearParam = year || 2025; // Default to 2025 (all existing data is for 2025)
     return this.request<ApiResponse<any>>(`/api/reports/dashboard?year=${yearParam}`);
   }
 
   async getTimelineData(year?: number): Promise<ApiResponse<any>> {
-    const yearParam = year || 2026;
+    const yearParam = year || 2025; // Default to 2025 (all existing data is for 2025)
     return this.request<ApiResponse<any>>(`/api/reports/timeline?year=${yearParam}`);
   }
 
