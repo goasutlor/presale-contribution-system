@@ -146,6 +146,20 @@ export async function initializeDatabase(): Promise<void> {
                   console.warn('⚠️ Could not update year to 2025 for complex_projects:', updateErr.message);
                 }
               });
+
+              // Normalize year from createdAt (fix drift for existing rows)
+              // If a row has year not matching createdAt year, align it to createdAt year.
+              database.run(
+                `UPDATE complex_projects
+                 SET year = CAST(strftime('%Y', createdAt) AS INTEGER)
+                 WHERE createdAt IS NOT NULL
+                   AND (year IS NULL OR year != CAST(strftime('%Y', createdAt) AS INTEGER))`,
+                (fixErr) => {
+                  if (fixErr) {
+                    console.warn('⚠️ Could not normalize year from createdAt for complex_projects:', fixErr.message);
+                  }
+                }
+              );
             }
           });
 

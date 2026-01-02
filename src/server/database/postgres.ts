@@ -201,7 +201,14 @@ async function createTables(): Promise<void> {
   
   await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS description TEXT`);
   await db.query(`ALTER TABLE complex_projects ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT 2025`);
-  // Update existing records without year to 2025
+  // Normalize year from createdAt (fix drift for existing rows)
+  await db.query(`
+    UPDATE complex_projects
+    SET year = EXTRACT(YEAR FROM createdAt)::int
+    WHERE createdAt IS NOT NULL
+      AND (year IS NULL OR year != EXTRACT(YEAR FROM createdAt)::int)
+  `);
+  // Safety fallback for any remaining NULLs
   await db.query(`UPDATE complex_projects SET year = 2025 WHERE year IS NULL`);
 
   console.log('✅ Database tables created/verified');

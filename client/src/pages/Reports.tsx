@@ -86,8 +86,10 @@ const Reports: React.FC = () => {
         const allContributions = contributionsResponse.data;
         // Filter by selected year
         const filteredContributions = allContributions.filter((c: any) => {
-          const contribYear = c.year || 
-            (c.contributionMonth ? parseInt(c.contributionMonth.split('-')[0]) : new Date(c.createdAt).getFullYear());
+          // Use contributionMonth as source of truth for year (prevents drift: year=2026 but month=2025-xx)
+          const contribYear = c.contributionMonth
+            ? parseInt(c.contributionMonth.split('-')[0])
+            : (c.year ?? new Date(c.createdAt).getFullYear());
           return contribYear === selectedYearContributions;
         });
         console.log('🔍 Filtered contributions for year', selectedYearContributions, ':', filteredContributions.length);
@@ -378,8 +380,10 @@ const Reports: React.FC = () => {
 
     const filteredContributions = reportData.contributions.filter((contrib: any) => {
       // Filter by year first
-      const contribYear = contrib.year || 
-        (contrib.contributionMonth ? parseInt(contrib.contributionMonth.split('-')[0]) : new Date(contrib.createdAt).getFullYear());
+      // Use contributionMonth as source of truth for year (prevents drift)
+      const contribYear = contrib.contributionMonth
+        ? parseInt(contrib.contributionMonth.split('-')[0])
+        : (contrib.year ?? new Date(contrib.createdAt).getFullYear());
       if (contribYear !== selectedYearContributions) {
         return false;
       }
