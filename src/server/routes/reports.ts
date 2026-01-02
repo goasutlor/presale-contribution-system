@@ -46,8 +46,8 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const queryParams: any[] = [];
   const whereConditions: string[] = [];
 
-  // Filter by year (use year field or extract from contributionMonth)
-  // Handle both cases: year field exists or extract from contributionMonth
+  // Filter by year - prioritize year field, fallback to contributionMonth if year is NULL
+  // Since all existing data is for 2025, we check both year field and contributionMonth
   whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
   queryParams.push(year, `${year}-%`);
 
