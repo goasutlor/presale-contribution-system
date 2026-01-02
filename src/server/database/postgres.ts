@@ -89,6 +89,7 @@ const COLUMN_NAME_MAP: Record<string, string> = {
 
   // aggregate aliases used in dashboard queries
   totalcontributions: 'totalContributions',
+  totalaccounts: 'totalAccounts',
   approvedcontributions: 'approvedContributions',
   submittedcontributions: 'submittedContributions',
   draftcontributions: 'draftContributions',

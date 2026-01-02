@@ -86,7 +86,8 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   }
   
   const accountsRow: any = await dbQueryOne(accountsQuery, accountsParams);
-  const totalAccounts = accountsRow?.totalAccounts || 0;
+  // In PostgreSQL, aliases are often lowercased (totalaccounts) unless quoted.
+  const totalAccounts = accountsRow?.totalAccounts ?? accountsRow?.totalaccounts ?? 0;
 
   console.log('🔍 Dashboard query for year', year, ':', baseQuery);
   console.log('🔍 Dashboard query params:', queryParams);
