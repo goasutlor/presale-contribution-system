@@ -708,9 +708,8 @@ const Reports: React.FC = () => {
               <p className="text-sm">กรุณาเพิ่มข้อมูลในหน้า <span className="font-semibold text-primary-600">Complex Projects</span> ก่อนพิมพ์รายงาน</p>
             </div>
           )}
-          </div>
         </div>
-        </div>
+      </div>
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
