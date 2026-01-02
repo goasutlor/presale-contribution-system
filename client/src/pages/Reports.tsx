@@ -476,6 +476,123 @@ const Reports: React.FC = () => {
           </p>
       </div>
 
+      {/* Complex Projects Report Section - Moved to top */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-blue-200 dark:border-gray-600 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <RocketLaunchIcon className="h-6 w-6 text-primary-600" />
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Complex Projects Report
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  รายงาน Lessons & Learn สำหรับโครงการขนาดใหญ่หรือท้าทาย
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">
+                  ⚠️ ข้อมูลทั้งหมดเป็นของปี 2025 เท่านั้น • ปี 2026 = 0
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
+              <select
+                value={selectedYearComplexProjects}
+                onChange={(e) => setSelectedYearComplexProjects(parseInt(e.target.value))}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value={2025}>2025</option>
+                <option value={2026}>2026</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Tooltip content="ดูตัวอย่างรายงานก่อนพิมพ์">
+              <button
+                onClick={handlePreviewComplexProjects}
+                disabled={loadingComplexProjects || complexProjects.length === 0}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Show Preview
+              </button>
+            </Tooltip>
+            <Tooltip content="ดาวน์โหลด HTML Report">
+              <button
+                onClick={handleDownloadComplexProjectsHTML}
+                disabled={loadingComplexProjects || complexProjects.length === 0}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download HTML
+              </button>
+            </Tooltip>
+            <Tooltip content="พิมพ์รายงาน Lessons & Learn">
+              <button
+                onClick={handlePrintComplexProjects}
+                disabled={loadingComplexProjects || complexProjects.length === 0}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print Report
+              </button>
+            </Tooltip>
+          </div>
+        </div>
+        
+        {loadingComplexProjects ? (
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">กำลังโหลดข้อมูล...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">{complexProjects.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Projects</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {complexProjects.filter(p => p.status === 'win').length}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Win Projects</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                {complexProjects.filter(p => p.status === 'loss').length}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Loss Projects</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {complexProjects.filter(p => p.status === 'ongoing').length}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Ongoing Projects</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {new Set(complexProjects.map(p => p.accountName)).size}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Unique Accounts</div>
+            </div>
+          </div>
+        )}
+        
+        {!loadingComplexProjects && complexProjects.length === 0 && (
+          <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+            <p className="mb-2">ยังไม่มีข้อมูลโครงการสำหรับปี {selectedYearComplexProjects}</p>
+            <p className="text-sm">กรุณาเพิ่มข้อมูลในหน้า <span className="font-semibold text-primary-600">Complex Projects</span> ก่อนพิมพ์รายงาน</p>
+          </div>
+        )}
+      </div>
+
       {/* Contribution Report Section */}
       <div className="mb-8">
         <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-indigo-200 dark:border-gray-600 shadow-lg">
@@ -488,6 +605,9 @@ const Reports: React.FC = () => {
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   รายงาน Contributions แบบละเอียดพร้อม Timeline และ Filters
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">
+                  ⚠️ ข้อมูลทั้งหมดเป็นของปี 2025 เท่านั้น • ปี 2026 = 0
                 </p>
               </div>
             </div>
@@ -594,120 +714,6 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* Complex Projects Report Section */}
-        <div className="mt-12 mb-8">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-blue-200 dark:border-gray-600 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <RocketLaunchIcon className="h-6 w-6 text-primary-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Complex Projects Report
-                  </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                    รายงาน Lessons & Learn สำหรับโครงการขนาดใหญ่หรือท้าทาย
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">เลือกปี:</span>
-                <select
-                  value={selectedYearComplexProjects}
-                  onChange={(e) => setSelectedYearComplexProjects(parseInt(e.target.value))}
-                  className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                >
-                  <option value={2025}>2025</option>
-                  <option value={2026}>2026</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Tooltip content="ดูตัวอย่างรายงานก่อนพิมพ์">
-                <button
-                  onClick={handlePreviewComplexProjects}
-                  disabled={loadingComplexProjects || complexProjects.length === 0}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  Show Preview
-                </button>
-              </Tooltip>
-              <Tooltip content="ดาวน์โหลด HTML Report">
-                <button
-                  onClick={handleDownloadComplexProjectsHTML}
-                  disabled={loadingComplexProjects || complexProjects.length === 0}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Download HTML
-                </button>
-              </Tooltip>
-              <Tooltip content="พิมพ์รายงาน Lessons & Learn">
-                <button
-                  onClick={handlePrintComplexProjects}
-                  disabled={loadingComplexProjects || complexProjects.length === 0}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                  </svg>
-                  Print Report
-                </button>
-              </Tooltip>
-            </div>
-          </div>
-          
-          {loadingComplexProjects ? (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">กำลังโหลดข้อมูล...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">{complexProjects.length}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Projects</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {complexProjects.filter(p => p.status === 'win').length}
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Win Projects</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {complexProjects.filter(p => p.status === 'loss').length}
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Loss Projects</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {complexProjects.filter(p => p.status === 'ongoing').length}
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Ongoing Projects</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {new Set(complexProjects.map(p => p.accountName)).size}
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Unique Accounts</div>
-              </div>
-            </div>
-          )}
-          
-          {!loadingComplexProjects && complexProjects.length === 0 && (
-            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-              <p className="mb-2">ยังไม่มีข้อมูลโครงการสำหรับปี {selectedYearComplexProjects}</p>
-              <p className="text-sm">กรุณาเพิ่มข้อมูลในหน้า <span className="font-semibold text-primary-600">Complex Projects</span> ก่อนพิมพ์รายงาน</p>
-            </div>
-          )}
-        </div>
-      </div>
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
