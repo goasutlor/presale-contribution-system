@@ -56,7 +56,7 @@ const ComplexProjects: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ComplexProjectForm>(defaultForm);
-  const [selectedYear, setSelectedYear] = useState<number>(2025); // Default to 2025 (current data)
+  const [selectedYear, setSelectedYear] = useState<number>(2026); // Default to 2026 (new year)
 
   const accountOptions = useMemo(() => user?.involvedAccountNames || [], [user]);
   const salesOptions = useMemo(() => user?.involvedSaleNames || [], [user]);

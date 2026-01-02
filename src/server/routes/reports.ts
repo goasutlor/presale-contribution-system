@@ -27,7 +27,7 @@ const reportFilterValidation = [
 router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
-  const year = req.query.year ? parseInt(req.query.year as string) : 2025; // Default to 2025
+  const year = req.query.year ? parseInt(req.query.year as string) : 2026; // Default to 2026
 
   // Build base query based on user role
   let baseQuery = `
@@ -46,9 +46,9 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const queryParams: any[] = [];
   const whereConditions: string[] = [];
 
-  // Filter by year - prioritize year field, fallback to contributionMonth if year is NULL
-  // Since all existing data is for 2025, we check both year field and contributionMonth
-  whereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
+  // Filter by year - check both year field and contributionMonth format (YYYY-MM)
+  // This ensures we catch all data for the selected year
+  whereConditions.push(`(year = ? OR contributionMonth LIKE ?)`);
   queryParams.push(year, `${year}-%`);
 
   if (!isAdmin) {
@@ -68,7 +68,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
   const accountsParams: any[] = [];
   const accountsWhereConditions: string[] = [];
   
-  accountsWhereConditions.push(`(year = ? OR (year IS NULL AND contributionMonth LIKE ?))`);
+  accountsWhereConditions.push(`(year = ? OR contributionMonth LIKE ?)`);
   accountsParams.push(year, `${year}-%`);
   
   if (!isAdmin) {
@@ -105,7 +105,7 @@ router.get('/dashboard', requireUser, asyncHandler(async (req: AuthRequest, res:
 router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const isAdmin = req.user!.role === 'admin';
-  const year = req.query.year ? parseInt(req.query.year as string) : 2025; // Default to 2025
+  const year = req.query.year ? parseInt(req.query.year as string) : 2026; // Default to 2026
 
   // Build base query based on user role
   let baseQuery = `
@@ -114,7 +114,7 @@ router.get('/timeline', requireUser, asyncHandler(async (req: AuthRequest, res: 
       impact,
       COUNT(*) as count
     FROM contributions
-    WHERE (year = ? OR (year IS NULL AND contributionMonth LIKE ?))
+    WHERE (year = ? OR contributionMonth LIKE ?)
   `;
 
   const queryParams: any[] = [year, `${year}-%`];

@@ -51,7 +51,7 @@ const Dashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [timelineData, setTimelineData] = useState<TimelineData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedYear, setSelectedYear] = useState<number>(2025); // Default to 2025 (current data)
+  const [selectedYear, setSelectedYear] = useState<number>(2026); // Default to 2026 (new year)
 
   useEffect(() => {
     // Only fetch data if user is authenticated

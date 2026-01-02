@@ -66,7 +66,7 @@ const AdminDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
   const [userContributions, setUserContributions] = useState<UserContribution[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedYear, setSelectedYear] = useState<number>(2025); // Default to 2025 (current data)
+  const [selectedYear, setSelectedYear] = useState<number>(2026); // Default to 2026 (new year)
   const [selectedUser, setSelectedUser] = useState<UserContribution | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
