@@ -60,6 +60,55 @@ app.use(morgan('combined'));
 // Force production mode for Railway
 const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
 
+// Public Portfolio Route (no authentication required)
+app.get('/portfolio/:userId/:year', async (req, res): Promise<void> => {
+  try {
+    const { userId, year } = req.params;
+    const yearNum = parseInt(year);
+    
+    // Import here to avoid circular dependency
+    const { dbQueryOne } = require('./database/init');
+    const { generatePortfolioHTML } = require('./routes/reports');
+    
+    // Get user data
+    const userRow: any = await dbQueryOne('SELECT * FROM users WHERE id = ?', [userId]);
+    if (!userRow) {
+      res.status(404).send('<html><body><h1>404 - User not found</h1></body></html>');
+      return;
+    }
+    
+    // Don't serve portfolio for admin users
+    if (userRow.role === 'admin') {
+      res.status(404).send('<html><body><h1>404 - Portfolio not available</h1></body></html>');
+      return;
+    }
+    
+    // Parse blogLinks
+    const blogLinks = Array.isArray(userRow.blogLinks) 
+      ? userRow.blogLinks 
+      : (userRow.blogLinks ? JSON.parse(userRow.blogLinks) : []);
+    
+    // Generate HTML Portfolio
+    const html = generatePortfolioHTML({
+      user: {
+        id: userRow.id,
+        fullName: userRow.fullName,
+        staffId: userRow.staffId,
+        email: userRow.email,
+        blogLinks: blogLinks
+      },
+      year: yearNum,
+      baseUrl: process.env.BASE_URL || (req.protocol + '://' + req.get('host'))
+    });
+    
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (error: any) {
+    console.error('❌ Error serving portfolio:', error);
+    res.status(500).send('<html><body><h1>500 - Internal Server Error</h1></body></html>');
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

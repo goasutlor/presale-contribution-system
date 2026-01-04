@@ -583,4 +583,301 @@ router.post('/restore-data', requireUser, asyncHandler(async (req: AuthRequest, 
   }
 }));
 
+// ===========================
+// Portfolio Report
+// ===========================
+
+// Generate HTML Portfolio for a user (admin only)
+router.get('/generate-portfolio/:userId/:year', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') {
+    throw createError('Admin access required', 403);
+  }
+
+  const { userId, year } = req.params;
+  const yearNum = parseInt(year);
+
+  // Get user data
+  const userRow: any = await dbQueryOne('SELECT * FROM users WHERE id = ?', [userId]);
+  if (!userRow) {
+    throw createError('User not found', 404);
+  }
+
+  // Don't generate portfolio for admin users
+  if (userRow.role === 'admin') {
+    throw createError('Cannot generate portfolio for admin users', 400);
+  }
+
+  // Parse blogLinks
+  const blogLinks = Array.isArray(userRow.blogLinks) 
+    ? userRow.blogLinks 
+    : (userRow.blogLinks ? JSON.parse(userRow.blogLinks) : []);
+
+  // Generate HTML Portfolio
+  const html = generatePortfolioHTML({
+    user: {
+      id: userRow.id,
+      fullName: userRow.fullName,
+      staffId: userRow.staffId,
+      email: userRow.email,
+      blogLinks: blogLinks
+    },
+    year: yearNum,
+    baseUrl: process.env.BASE_URL || (req.protocol + '://' + req.get('host'))
+  });
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
+}));
+
+// Helper function to generate HTML Portfolio (shared with index.ts public route)
+export function generatePortfolioHTML(data: { user: any; year: number; baseUrl: string }): string {
+  const { user, year, baseUrl } = data;
+  const publicUrl = `${baseUrl}/portfolio/${user.id}/${year}`;
+  
+  // Extract domains from blog links
+  const extractDomain = (url: string): string => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname.replace('www.', '');
+    } catch {
+      return url;
+    }
+  };
+
+  const blogLinksHTML = user.blogLinks && user.blogLinks.length > 0
+    ? user.blogLinks.map((link: string) => `
+      <div class="blog-link-item">
+        <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+        </svg>
+        <a href="${link}" target="_blank" rel="noopener noreferrer" class="blog-link">
+          ${extractDomain(link)}
+          <svg class="external-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          </svg>
+        </a>
+      </div>
+    `).join('')
+    : '<p class="no-links">ยังไม่มี Blog Links</p>';
+
+  return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio - ${user.fullName} (${year})</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+      color: #333;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .header .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 0.5rem;
+    }
+    .header .year {
+      font-size: 1rem;
+      opacity: 0.8;
+      background: rgba(255, 255, 255, 0.2);
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      margin-top: 1rem;
+    }
+    .content {
+      padding: 3rem 2rem;
+    }
+    .user-info {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .user-info h2 {
+      font-size: 1.8rem;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    .user-info .staff-id {
+      color: #6b7280;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .user-info .email {
+      color: #9ca3af;
+      font-size: 0.9rem;
+    }
+    .section {
+      margin-bottom: 3rem;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      color: #1f2937;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title svg {
+      width: 24px;
+      height: 24px;
+      color: #667eea;
+    }
+    .blog-links {
+      display: grid;
+      gap: 1rem;
+    }
+    .blog-link-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      transition: all 0.2s;
+    }
+    .blog-link-item:hover {
+      background: #f3f4f6;
+      border-color: #667eea;
+      transform: translateX(4px);
+    }
+    .link-icon {
+      width: 20px;
+      height: 20px;
+      color: #667eea;
+      flex-shrink: 0;
+    }
+    .blog-link {
+      flex: 1;
+      color: #1f2937;
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .blog-link:hover {
+      color: #667eea;
+    }
+    .external-icon {
+      width: 16px;
+      height: 16px;
+      color: #9ca3af;
+    }
+    .no-links {
+      text-align: center;
+      color: #9ca3af;
+      font-style: italic;
+      padding: 2rem;
+    }
+    .footer {
+      background: #f9fafb;
+      padding: 2rem;
+      text-align: center;
+      border-top: 1px solid #e5e7eb;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+    .footer .note {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #fef3c7;
+      border-radius: 8px;
+      color: #92400e;
+      font-size: 0.85rem;
+    }
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .container {
+        box-shadow: none;
+      }
+    }
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem;
+      }
+      .header {
+        padding: 2rem 1.5rem;
+      }
+      .header h1 {
+        font-size: 2rem;
+      }
+      .content {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Portfolio Summary</h1>
+      <div class="subtitle">${user.fullName}</div>
+      <div class="year">ปี ${year}</div>
+    </div>
+    <div class="content">
+      <div class="user-info">
+        <h2>${user.fullName}</h2>
+        <div class="staff-id">Staff ID: ${user.staffId}</div>
+        <div class="email">${user.email}</div>
+      </div>
+      <div class="section">
+        <div class="section-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+          </svg>
+          <span>Blog Links & Portfolio</span>
+        </div>
+        <div class="blog-links">
+          ${blogLinksHTML}
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Generated on ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      <div class="note">
+        ⚠️ บทความทั้งหมดใน Portfolio นี้เป็นของปี 2025 ทั้งหมด
+      </div>
+      <p style="margin-top: 1rem;">
+        <strong>Public Link:</strong><br>
+        <a href="${publicUrl}" style="color: #667eea; word-break: break-all;">${publicUrl}</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export { router as reportRoutes };

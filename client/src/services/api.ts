@@ -343,4 +343,26 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
+  // Portfolio Report endpoints
+  async generatePortfolio(userId: string, year: number): Promise<Blob> {
+    const response = await fetch(`${this.baseURL}/api/reports/generate-portfolio/${userId}/${year}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to generate portfolio' }));
+      throw new Error(error.message || 'Failed to generate portfolio');
+    }
+
+    return response.blob();
+  }
+
+  getPortfolioPublicUrl(userId: string, year: number): string {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/portfolio/${userId}/${year}`;
+  }
+
 export default apiService;
