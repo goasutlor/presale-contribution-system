@@ -343,10 +343,13 @@ class ApiService {
 
   // Portfolio Report endpoints
   async generatePortfolio(userId: string, year: number): Promise<Blob> {
-    const response = await fetch(`${this.baseURL}/api/reports/generate-portfolio/${userId}/${year}`, {
+    const url = `${API_BASE_URL}/api/reports/generate-portfolio/${userId}/${year}`;
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${this.getToken()}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
