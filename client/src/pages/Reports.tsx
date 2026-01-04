@@ -64,12 +64,12 @@ const Reports: React.FC = () => {
   const [selectedYearComplexProjects, setSelectedYearComplexProjects] = useState<number>(2026); // Default to 2026 (new year)
 
   // Portfolio Report state
-  const [users, setUsers] = useState<any[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [selectedPortfolioUser, setSelectedPortfolioUser] = useState<string>('');
-  const [selectedPortfolioYear, setSelectedPortfolioYear] = useState<number>(2026); // Default to 2026 (new year)
-  const [generatingPortfolio, setGeneratingPortfolio] = useState(false);
-  const [portfolioPublicUrl, setPortfolioPublicUrl] = useState<string>('');
+  const [portfolioSummaryYear, setPortfolioSummaryYear] = useState<number>(2026); // Default to 2026 (new year)
+  const [portfolioSummaryExists, setPortfolioSummaryExists] = useState(false);
+  const [portfolioSummaryPublicUrl, setPortfolioSummaryPublicUrl] = useState<string>('');
+  const [loadingPortfolioSummaryStatus, setLoadingPortfolioSummaryStatus] = useState(false);
+  const [generatingPortfolioSummary, setGeneratingPortfolioSummary] = useState(false);
+  const [removingPortfolioSummary, setRemovingPortfolioSummary] = useState(false);
 
   const reportTypes = [
     { value: 'comprehensive', label: 'Comprehensive Report', description: 'รายงานแบบละเอียดพร้อม Timeline' }
@@ -80,9 +80,9 @@ const Reports: React.FC = () => {
     loadReportData();
     loadComplexProjects();
     if (user?.role === 'admin') {
-      loadUsers();
+      loadPortfolioSummaryStatus();
     }
-  }, [selectedYearContributions, selectedYearComplexProjects, user?.role]);
+  }, [selectedYearContributions, selectedYearComplexProjects, user?.role, portfolioSummaryYear]);
 
   const loadReportData = async () => {
     try {
@@ -180,58 +180,62 @@ const Reports: React.FC = () => {
     }
   };
 
-  const loadUsers = async () => {
+  const loadPortfolioSummaryStatus = async () => {
     try {
-      setLoadingUsers(true);
-      const response = await apiService.getUsers();
-      if (response.success && response.data) {
-        // Filter out admin users (only show regular users for portfolio)
-        const regularUsers = response.data.filter((u: any) => u.role !== 'admin');
-        setUsers(regularUsers);
-        if (regularUsers.length > 0 && !selectedPortfolioUser) {
-          setSelectedPortfolioUser(regularUsers[0].id);
-        }
+      setLoadingPortfolioSummaryStatus(true);
+      const response = await apiService.getPortfolioSummaryStatus(portfolioSummaryYear);
+      if (response.success) {
+        setPortfolioSummaryExists(!!response.data?.exists);
+        setPortfolioSummaryPublicUrl(response.data?.publicUrl || apiService.getPortfolioSummaryPublicUrl(portfolioSummaryYear));
       }
     } catch (error) {
-      console.error('Error loading users:', error);
-      toast.error('Failed to load users');
+      console.error('Error loading portfolio summary status:', error);
     } finally {
-      setLoadingUsers(false);
+      setLoadingPortfolioSummaryStatus(false);
     }
   };
 
-  const handleGeneratePortfolio = async () => {
-    if (!selectedPortfolioUser) {
-      toast.error('กรุณาเลือกผู้ใช้');
-      return;
-    }
-
+  const handleGeneratePortfolioSummary = async () => {
     try {
-      setGeneratingPortfolio(true);
-      const blob = await apiService.generatePortfolio(selectedPortfolioUser, selectedPortfolioYear);
-      
-      // Create download link
+      setGeneratingPortfolioSummary(true);
+      const blob = await apiService.generatePortfolioSummary(portfolioSummaryYear);
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      const selectedUser = users.find((u: any) => u.id === selectedPortfolioUser);
-      const fileName = `Portfolio_${selectedUser?.fullName || selectedPortfolioUser}_${selectedPortfolioYear}_${new Date().toISOString().split('T')[0]}.html`;
-      link.download = fileName;
+      link.download = `Portfolio_Summary_${portfolioSummaryYear}_${new Date().toISOString().split('T')[0]}.html`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Set public URL
-      const publicUrl = apiService.getPortfolioPublicUrl(selectedPortfolioUser, selectedPortfolioYear);
-      setPortfolioPublicUrl(publicUrl);
-      
-      toast.success('ดาวน์โหลด Portfolio HTML สำเร็จ');
+      await loadPortfolioSummaryStatus();
+      toast.success('ดาวน์โหลด Portfolio Summary สำเร็จ');
     } catch (error: any) {
-      console.error('Error generating portfolio:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้าง Portfolio');
+      console.error('Error generating portfolio summary:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้าง Portfolio Summary');
     } finally {
-      setGeneratingPortfolio(false);
+      setGeneratingPortfolioSummary(false);
+    }
+  };
+
+  const handleRemovePortfolioSummary = async () => {
+    const ok = window.confirm(`Remove public Portfolio Summary for year ${portfolioSummaryYear}?`);
+    if (!ok) return;
+    try {
+      setRemovingPortfolioSummary(true);
+      const response = await apiService.deletePortfolioSummary(portfolioSummaryYear);
+      if (response.success) {
+        await loadPortfolioSummaryStatus();
+        toast.success('Remove Public Link สำเร็จ');
+      } else {
+        toast.error(response.message || 'Remove ไม่สำเร็จ');
+      }
+    } catch (error: any) {
+      console.error('Error removing portfolio summary:', error);
+      toast.error(error.message || 'Remove ไม่สำเร็จ');
+    } finally {
+      setRemovingPortfolioSummary(false);
     }
   };
 
@@ -672,56 +676,27 @@ const Reports: React.FC = () => {
                 <LinkIcon className="h-6 w-6 text-purple-600" />
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Portfolio Report
+                    Portfolio Summary (All Users)
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                    Export Portfolio Summary ของแต่ละคนเป็น HTML File พร้อม Public Link
+                    สรุป Blog Links/Portfolio ของทุกคน (ยกเว้น Admin) ออกเป็น HTML + Public Link (ไม่ต้อง Login)
                   </p>
                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">
-                    ⚠️ บทความทั้งหมดใน Portfolio นี้เป็นของปี 2025 ทั้งหมด
+                    ⚠️ ลิงก์ทั้งหมดเป็นของปี 2025 เท่านั้น • ปี 2026 = 0
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              {/* User Selector */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  เลือกผู้ใช้:
-                </label>
-                {loadingUsers ? (
-                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-10 rounded-lg"></div>
-                ) : (
-                  <select
-                    value={selectedPortfolioUser}
-                    onChange={(e) => {
-                      setSelectedPortfolioUser(e.target.value);
-                      setPortfolioPublicUrl(''); // Clear public URL when user changes
-                    }}
-                    className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <option value="">-- เลือกผู้ใช้ --</option>
-                    {users.map((u: any) => (
-                      <option key={u.id} value={u.id}>
-                        {u.fullName} ({u.staffId})
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
               {/* Year Selector */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   เลือกปี:
                 </label>
                 <select
-                  value={selectedPortfolioYear}
-                  onChange={(e) => {
-                    setSelectedPortfolioYear(parseInt(e.target.value));
-                    setPortfolioPublicUrl(''); // Clear public URL when year changes
-                  }}
+                  value={portfolioSummaryYear}
+                  onChange={(e) => setPortfolioSummaryYear(parseInt(e.target.value))}
                   className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 >
                   <option value={2025}>2025</option>
@@ -732,11 +707,11 @@ const Reports: React.FC = () => {
               {/* Generate Button */}
               <div className="flex items-end">
                 <button
-                  onClick={handleGeneratePortfolio}
-                  disabled={!selectedPortfolioUser || generatingPortfolio || loadingUsers}
+                  onClick={handleGeneratePortfolioSummary}
+                  disabled={generatingPortfolioSummary}
                   className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
                 >
-                  {generatingPortfolio ? (
+                  {generatingPortfolioSummary ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       กำลังสร้าง...
@@ -746,7 +721,30 @@ const Reports: React.FC = () => {
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      Generate & Download Portfolio
+                      Generate & Download Summary
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Remove Button */}
+              <div className="flex items-end">
+                <button
+                  onClick={handleRemovePortfolioSummary}
+                  disabled={!portfolioSummaryExists || removingPortfolioSummary}
+                  className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                >
+                  {removingPortfolioSummary ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Removing...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7m3-3h4a1 1 0 011 1v2H9V5a1 1 0 011-1z" />
+                      </svg>
+                      Remove Public Link
                     </>
                   )}
                 </button>
@@ -754,7 +752,11 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Public Link Display */}
-            {portfolioPublicUrl && (
+            {loadingPortfolioSummaryStatus ? (
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mx-auto"></div>
+              </div>
+            ) : portfolioSummaryExists ? (
               <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -766,16 +768,16 @@ const Reports: React.FC = () => {
                     </p>
                     <div className="flex items-center gap-2">
                       <a
-                        href={portfolioPublicUrl}
+                        href={portfolioSummaryPublicUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm text-green-700 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 hover:underline break-all"
                       >
-                        {portfolioPublicUrl}
+                        {portfolioSummaryPublicUrl}
                       </a>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(portfolioPublicUrl);
+                          navigator.clipboard.writeText(portfolioSummaryPublicUrl);
                           toast.success('คัดลอก Link สำเร็จ');
                         }}
                         className="flex-shrink-0 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
@@ -789,11 +791,9 @@ const Reports: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
-
-            {users.length === 0 && !loadingUsers && (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                <p className="text-sm">ยังไม่มีผู้ใช้ (ไม่รวม Admin) ในระบบ</p>
+            ) : (
+              <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm text-yellow-800 dark:text-yellow-300">
+                ยังไม่มี Public Link สำหรับปี {portfolioSummaryYear} (ต้อง Generate ก่อน)
               </div>
             )}
           </div>

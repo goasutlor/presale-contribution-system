@@ -365,6 +365,39 @@ class ApiService {
     const baseUrl = window.location.origin;
     return `${baseUrl}/portfolio/${userId}/${year}`;
   }
+
+  // Portfolio Summary (All Users) endpoints
+  async generatePortfolioSummary(year: number): Promise<Blob> {
+    const url = `${API_BASE_URL}/api/reports/generate-portfolio-summary/${year}`;
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to generate portfolio summary' }));
+      throw new Error(error.message || 'Failed to generate portfolio summary');
+    }
+
+    return response.blob();
+  }
+
+  async getPortfolioSummaryStatus(year: number): Promise<ApiResponse<{ exists: boolean; publicUrl: string }>> {
+    return this.request<ApiResponse<{ exists: boolean; publicUrl: string }>>(`/api/reports/portfolio-summary/${year}/status`);
+  }
+
+  async deletePortfolioSummary(year: number): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/reports/portfolio-summary/${year}`, { method: 'DELETE' });
+  }
+
+  getPortfolioSummaryPublicUrl(year: number): string {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/portfolio-summary/${year}`;
+  }
 }
 
 export const apiService = new ApiService();

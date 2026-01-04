@@ -587,6 +587,433 @@ router.post('/restore-data', requireUser, asyncHandler(async (req: AuthRequest, 
 // Portfolio Report
 // ===========================
 
+// ===========================
+// Portfolio Summary Report (All Users, Public Link stored in DB)
+// ===========================
+
+async function ensurePublicReportsTable() {
+  try {
+    await dbExecute(`
+      CREATE TABLE IF NOT EXISTS public_reports (
+        report_key TEXT PRIMARY KEY,
+        report_type TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        html TEXT NOT NULL,
+        created_by TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `);
+  } catch {
+    // Best-effort: table may already exist or dialect may handle differently.
+  }
+}
+
+function safeParseJsonArray(value: any): any[] {
+  if (Array.isArray(value)) return value;
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function generatePortfolioSummaryHTML(data: {
+  year: number;
+  users: Array<{ fullName: string; staffId: string; email: string; status?: string; blogLinks: string[] }>;
+  baseUrl: string;
+}): string {
+  const { year, users, baseUrl } = data;
+  const publicUrl = `${baseUrl}/portfolio-summary/${year}`;
+
+  const effectiveUsers = users.map((u) => ({
+    ...u,
+    blogLinks: year === 2025 ? (u.blogLinks || []) : []
+  }));
+
+  const totalUsers = effectiveUsers.length;
+  const usersWithLinks = effectiveUsers.filter((u) => (u.blogLinks || []).length > 0).length;
+  const totalLinks = effectiveUsers.reduce((sum, u) => sum + (u.blogLinks || []).length, 0);
+
+  const extractDomain = (url: string): string => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname.replace('www.', '');
+    } catch {
+      return url;
+    }
+  };
+
+  const rowsHtml = effectiveUsers
+    .sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''))
+    .map((u) => {
+      const links = (u.blogLinks || []).slice(0, 50);
+      const linksHtml =
+        links.length > 0
+          ? links
+              .map(
+                (link) => `
+                <a class="link" href="${link}" target="_blank" rel="noopener noreferrer">
+                  <span class="link-domain">${extractDomain(link)}</span>
+                  <span class="link-url">${link}</span>
+                </a>
+              `
+              )
+              .join('')
+          : `<span class="muted">—</span>`;
+
+      return `
+        <tr>
+          <td>
+            <div class="name">${u.fullName || '-'}</div>
+            <div class="sub">${u.staffId || '-'} • ${u.email || '-'}</div>
+          </td>
+          <td class="center">
+            <span class="badge">${u.status || 'unknown'}</span>
+          </td>
+          <td class="center mono">${(u.blogLinks || []).length}</td>
+          <td class="links">${linksHtml}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  const generatedAt = new Date().toLocaleString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  return `<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Summary (ปี ${year})</title>
+    <style>
+      :root {
+        --bg: #f3f4f6;
+        --card: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --primary: #2563eb;
+        --primary-50: #eff6ff;
+        --success-50: #ecfdf5;
+        --success: #16a34a;
+        --warning-50: #fffbeb;
+        --warning: #b45309;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 16px;
+      }
+      .header {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 20px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      }
+      .title-row {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .year-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: var(--primary-50);
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 13px;
+        border: 1px solid #dbeafe;
+      }
+      .subline {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .stats {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .stat {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        background: #fff;
+      }
+      .stat .k { color: var(--muted); font-size: 12px; }
+      .stat .v { margin-top: 4px; font-size: 20px; font-weight: 700; }
+      .notice {
+        margin-top: 12px;
+        border: 1px solid #fde68a;
+        background: var(--warning-50);
+        color: var(--warning);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .table-card {
+        margin-top: 16px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: #f9fafb;
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px;
+      }
+      tbody td {
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px;
+        vertical-align: top;
+        font-size: 13px;
+      }
+      tbody tr:hover td {
+        background: #fbfdff;
+      }
+      .name { font-weight: 700; }
+      .sub { color: var(--muted); margin-top: 3px; font-size: 12px; }
+      .muted { color: var(--muted); }
+      .center { text-align: center; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; }
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #fff;
+        font-size: 12px;
+        color: #374151;
+      }
+      .links {
+        min-width: 360px;
+      }
+      .link {
+        display: block;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--text);
+        background: #fff;
+        margin-bottom: 8px;
+      }
+      .link:hover {
+        border-color: #bfdbfe;
+        box-shadow: 0 6px 14px rgba(37,99,235,0.10);
+      }
+      .link-domain {
+        display: inline-block;
+        font-weight: 700;
+        color: var(--primary);
+        background: var(--primary-50);
+        border: 1px solid #dbeafe;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+      .link-url {
+        display: block;
+        color: var(--muted);
+        margin-top: 4px;
+        font-size: 12px;
+        word-break: break-all;
+      }
+      .footer {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+      .public {
+        margin-top: 10px;
+        background: var(--success-50);
+        border: 1px solid #bbf7d0;
+        color: var(--success);
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .public a {
+        color: inherit;
+        text-decoration: underline;
+        word-break: break-all;
+      }
+      @media (max-width: 768px) {
+        .stats { grid-template-columns: 1fr; }
+        .links { min-width: auto; }
+      }
+      @media print {
+        body { background: #fff; }
+        .header, .table-card { box-shadow: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="header">
+        <div class="title-row">
+          <h1>Portfolio Summary (All Users)</h1>
+          <div class="year-pill">ปี ${year}</div>
+        </div>
+        <div class="subline">สรุป Blog Links / Portfolio ของทุกคน (ยกเว้น Admin) • Generated: ${generatedAt}</div>
+        <div class="stats">
+          <div class="stat"><div class="k">Total Users</div><div class="v">${totalUsers}</div></div>
+          <div class="stat"><div class="k">Users With Links</div><div class="v">${usersWithLinks}</div></div>
+          <div class="stat"><div class="k">Total Links</div><div class="v">${totalLinks}</div></div>
+        </div>
+        <div class="notice">⚠️ ลิงก์ทั้งหมดถูกนับเป็นของปี 2025 เท่านั้น • เลือกปี 2026 = 0</div>
+        <div class="public">Public Link: <a href="${publicUrl}">${publicUrl}</a></div>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 260px;">User</th>
+              <th style="width: 120px;" class="center">Status</th>
+              <th style="width: 120px;" class="center">Links</th>
+              <th>Blog Links / Portfolio URLs</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml || `<tr><td colspan="4" class="center muted" style="padding: 24px;">No users found</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="footer">This page is public and does not require login. Managed by Admin via Reports.</div>
+    </div>
+  </body>
+</html>`;
+}
+
+// Generate Portfolio Summary HTML for all users (admin only). Also stores the HTML for public access.
+router.get('/generate-portfolio-summary/:year', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') {
+    throw createError('Admin access required', 403);
+  }
+
+  await ensurePublicReportsTable();
+
+  const yearNum = parseInt(req.params.year);
+  if (![2025, 2026].includes(yearNum)) {
+    throw createError('Invalid year', 400);
+  }
+
+  const rows: any[] = await dbQuery(
+    `SELECT id, fullName, staffId, email, status, role, blogLinks FROM users WHERE role != 'admin' ORDER BY fullName ASC`
+  );
+
+  const users = rows.map((r: any) => ({
+    fullName: r.fullName,
+    staffId: r.staffId,
+    email: r.email,
+    status: r.status,
+    blogLinks: safeParseJsonArray(r.blogLinks).filter((x: any) => typeof x === 'string' && x.trim() !== '')
+  }));
+
+  const baseUrl = process.env.BASE_URL || (req.protocol + '://' + req.get('host'));
+  const html = generatePortfolioSummaryHTML({ year: yearNum, users, baseUrl });
+
+  const now = new Date().toISOString();
+  const reportKey = `portfolio_summary_${yearNum}`;
+
+  await dbExecute(
+    `INSERT INTO public_reports (report_key, report_type, year, html, created_by, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(report_key) DO UPDATE SET
+       html = excluded.html,
+       created_by = excluded.created_by,
+       updated_at = excluded.updated_at`,
+    [reportKey, 'portfolio_summary', yearNum, html, req.user!.id, now, now]
+  );
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="Portfolio_Summary_${yearNum}_${now.split('T')[0]}.html"`);
+  res.send(html);
+}));
+
+// Status for Portfolio Summary public link (admin only)
+router.get('/portfolio-summary/:year/status', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') {
+    throw createError('Admin access required', 403);
+  }
+
+  await ensurePublicReportsTable();
+
+  const yearNum = parseInt(req.params.year);
+  if (![2025, 2026].includes(yearNum)) {
+    throw createError('Invalid year', 400);
+  }
+
+  const reportKey = `portfolio_summary_${yearNum}`;
+  const row = await dbQueryOne(`SELECT report_key as reportKey FROM public_reports WHERE report_key = ?`, [reportKey]);
+
+  const baseUrl = process.env.BASE_URL || (req.protocol + '://' + req.get('host'));
+  const publicUrl = `${baseUrl}/portfolio-summary/${yearNum}`;
+  res.json({ success: true, data: { exists: !!row, publicUrl } });
+}));
+
+// Remove Portfolio Summary public link (admin only)
+router.delete('/portfolio-summary/:year', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') {
+    throw createError('Admin access required', 403);
+  }
+
+  await ensurePublicReportsTable();
+
+  const yearNum = parseInt(req.params.year);
+  if (![2025, 2026].includes(yearNum)) {
+    throw createError('Invalid year', 400);
+  }
+
+  const reportKey = `portfolio_summary_${yearNum}`;
+  await dbExecute(`DELETE FROM public_reports WHERE report_key = ?`, [reportKey]);
+  res.json({ success: true, message: 'Portfolio Summary public link removed' });
+}));
+
 // Generate HTML Portfolio for a user (admin only)
 router.get('/generate-portfolio/:userId/:year', requireUser, asyncHandler(async (req: AuthRequest, res: Response) => {
   if (req.user!.role !== 'admin') {
