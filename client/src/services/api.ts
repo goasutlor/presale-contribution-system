@@ -340,9 +340,7 @@ class ApiService {
   async healthCheck(): Promise<ApiResponse<any>> {
     return this.request<ApiResponse<any>>('/api/health');
   }
-}
 
-export const apiService = new ApiService();
   // Portfolio Report endpoints
   async generatePortfolio(userId: string, year: number): Promise<Blob> {
     const response = await fetch(`${this.baseURL}/api/reports/generate-portfolio/${userId}/${year}`, {
@@ -364,5 +362,7 @@ export const apiService = new ApiService();
     const baseUrl = window.location.origin;
     return `${baseUrl}/portfolio/${userId}/${year}`;
   }
+}
 
+export const apiService = new ApiService();
 export default apiService;
