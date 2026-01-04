@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { apiService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import Tooltip from '../components/Tooltip';
-import { RocketLaunchIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { RocketLaunchIcon, DocumentTextIcon, LinkIcon } from '@heroicons/react/24/outline';
 // Icons removed for minimal aesthetic
 import { generateEarthToneReport, generateComplexProjectsReport } from '../utils/printTemplate';
 
@@ -63,6 +63,14 @@ const Reports: React.FC = () => {
   const [selectedYearContributions, setSelectedYearContributions] = useState<number>(2026); // Default to 2026 (new year)
   const [selectedYearComplexProjects, setSelectedYearComplexProjects] = useState<number>(2026); // Default to 2026 (new year)
 
+  // Portfolio Report state
+  const [users, setUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [selectedPortfolioUser, setSelectedPortfolioUser] = useState<string>('');
+  const [selectedPortfolioYear, setSelectedPortfolioYear] = useState<number>(2026); // Default to 2026 (new year)
+  const [generatingPortfolio, setGeneratingPortfolio] = useState(false);
+  const [portfolioPublicUrl, setPortfolioPublicUrl] = useState<string>('');
+
   const reportTypes = [
     { value: 'comprehensive', label: 'Comprehensive Report', description: 'รายงานแบบละเอียดพร้อม Timeline' }
   ];
@@ -71,7 +79,10 @@ const Reports: React.FC = () => {
     console.log('🔍 Reports useEffect triggered, user:', user);
     loadReportData();
     loadComplexProjects();
-  }, [selectedYearContributions, selectedYearComplexProjects]);
+    if (user?.role === 'admin') {
+      loadUsers();
+    }
+  }, [selectedYearContributions, selectedYearComplexProjects, user?.role]);
 
   const loadReportData = async () => {
     try {
@@ -169,6 +180,61 @@ const Reports: React.FC = () => {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const response = await apiService.getUsers();
+      if (response.success && response.data) {
+        // Filter out admin users (only show regular users for portfolio)
+        const regularUsers = response.data.filter((u: any) => u.role !== 'admin');
+        setUsers(regularUsers);
+        if (regularUsers.length > 0 && !selectedPortfolioUser) {
+          setSelectedPortfolioUser(regularUsers[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+      toast.error('Failed to load users');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleGeneratePortfolio = async () => {
+    if (!selectedPortfolioUser) {
+      toast.error('กรุณาเลือกผู้ใช้');
+      return;
+    }
+
+    try {
+      setGeneratingPortfolio(true);
+      const blob = await apiService.generatePortfolio(selectedPortfolioUser, selectedPortfolioYear);
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const selectedUser = users.find((u: any) => u.id === selectedPortfolioUser);
+      const fileName = `Portfolio_${selectedUser?.fullName || selectedPortfolioUser}_${selectedPortfolioYear}_${new Date().toISOString().split('T')[0]}.html`;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Set public URL
+      const publicUrl = apiService.getPortfolioPublicUrl(selectedPortfolioUser, selectedPortfolioYear);
+      setPortfolioPublicUrl(publicUrl);
+      
+      toast.success('ดาวน์โหลด Portfolio HTML สำเร็จ');
+    } catch (error: any) {
+      console.error('Error generating portfolio:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้าง Portfolio');
+    } finally {
+      setGeneratingPortfolio(false);
+    }
+  };
+
   const handlePrintReport = () => {
     console.log('🔍 handlePrintReport called');
     console.log('🔍 reportData:', reportData);
@@ -208,7 +274,7 @@ const Reports: React.FC = () => {
         printWindow.document.close();
         printWindow.focus();
         printWindow.print();
-      } else {
+    } else {
         console.error('❌ Failed to open print window');
         toast.error('Failed to open print window');
       }
@@ -259,7 +325,7 @@ const Reports: React.FC = () => {
         previewWindow.document.write(reportContent);
         previewWindow.document.close();
         previewWindow.focus();
-      } else {
+    } else {
         console.error('❌ Failed to open preview window');
         toast.error('Failed to open preview window');
       }
@@ -597,6 +663,143 @@ const Reports: React.FC = () => {
         )}
       </div>
 
+      {/* Portfolio Report Section - Only for Admin */}
+      {user?.role === 'admin' && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-purple-200 dark:border-gray-600 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <LinkIcon className="h-6 w-6 text-purple-600" />
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Portfolio Report
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    Export Portfolio Summary ของแต่ละคนเป็น HTML File พร้อม Public Link
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">
+                    ⚠️ บทความทั้งหมดใน Portfolio นี้เป็นของปี 2025 ทั้งหมด
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* User Selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  เลือกผู้ใช้:
+                </label>
+                {loadingUsers ? (
+                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-10 rounded-lg"></div>
+                ) : (
+                  <select
+                    value={selectedPortfolioUser}
+                    onChange={(e) => {
+                      setSelectedPortfolioUser(e.target.value);
+                      setPortfolioPublicUrl(''); // Clear public URL when user changes
+                    }}
+                    className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="">-- เลือกผู้ใช้ --</option>
+                    {users.map((u: any) => (
+                      <option key={u.id} value={u.id}>
+                        {u.fullName} ({u.staffId})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Year Selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  เลือกปี:
+                </label>
+                <select
+                  value={selectedPortfolioYear}
+                  onChange={(e) => {
+                    setSelectedPortfolioYear(parseInt(e.target.value));
+                    setPortfolioPublicUrl(''); // Clear public URL when year changes
+                  }}
+                  className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value={2025}>2025</option>
+                  <option value={2026}>2026</option>
+                </select>
+              </div>
+
+              {/* Generate Button */}
+              <div className="flex items-end">
+                <button
+                  onClick={handleGeneratePortfolio}
+                  disabled={!selectedPortfolioUser || generatingPortfolio || loadingUsers}
+                  className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                >
+                  {generatingPortfolio ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      กำลังสร้าง...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Generate & Download Portfolio
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Public Link Display */}
+            {portfolioPublicUrl && (
+              <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-1">
+                      Public Link (ไม่ต้อง Authentication):
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={portfolioPublicUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-green-700 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 hover:underline break-all"
+                      >
+                        {portfolioPublicUrl}
+                      </a>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(portfolioPublicUrl);
+                          toast.success('คัดลอก Link สำเร็จ');
+                        }}
+                        className="flex-shrink-0 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                        title="คัดลอก Link"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {users.length === 0 && !loadingUsers && (
+              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                <p className="text-sm">ยังไม่มีผู้ใช้ (ไม่รวม Admin) ในระบบ</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Contribution Report Section */}
       <div className="mb-8">
         <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 mb-6 border border-indigo-200 dark:border-gray-600 shadow-lg">
@@ -632,56 +835,56 @@ const Reports: React.FC = () => {
         {/* Statistics Cards for Contributions */}
         {filteredData && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Contributions (ปี {selectedYearContributions})</p>
               <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalContributions}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Active Users</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalUsers}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Accounts</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalAccounts}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">High/Critical Impact</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.highImpact + filteredData.criticalImpact}</p>
-            </div>
           </div>
-        )}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Active Users</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalUsers}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Accounts</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.totalAccounts}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">High/Critical Impact</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{filteredData.highImpact + filteredData.criticalImpact}</p>
+          </div>
+        </div>
+      )}
 
-        {/* Impact Distribution Chart */}
+      {/* Impact Distribution Chart */}
         {filteredData && (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Impact distribution (ปี {selectedYearContributions})</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Critical</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Critical</p>
                 <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.criticalImpact}</p>
-              </div>
-              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">High</p>
+            </div>
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">High</p>
                 <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.highImpact}</p>
-              </div>
-              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Medium</p>
+            </div>
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Medium</p>
                 <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.mediumImpact}</p>
-              </div>
-              <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Low</p>
+            </div>
+            <div className="text-center border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Low</p>
                 <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{filteredData.lowImpact}</p>
-              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Report Type Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('reports.comprehensiveReport')}</h2>
-              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">รายงานแบบละเอียดพร้อม Timeline และปุ่ม Print</p>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('reports.comprehensiveReport')}</h2>
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">รายงานแบบละเอียดพร้อม Timeline และปุ่ม Print</p>
             </div>
             <div className="flex gap-2">
               <Tooltip content="ดูตัวอย่างรายงานก่อนพิมพ์">
@@ -733,7 +936,7 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {showFilters && (
+          {showFilters && (
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -819,9 +1022,9 @@ const Reports: React.FC = () => {
                   <option value="rejected">Rejected</option>
                 </select>
                 </div>
-              </div>
-            </div>
-          )}
+                    </div>
+                  </div>
+                )}
 
         {/* Print Fields Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700">
@@ -1048,7 +1251,7 @@ const Reports: React.FC = () => {
         )}
 
       </div>
-    </div>
+      </div>
     </div>
   );
 };
